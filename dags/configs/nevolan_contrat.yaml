@@ -1,0 +1,125 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_CREDIT.xlsx
+  sheet_name: NEVOLAN_CONTRAT
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: NEVOLAN_CONTRAT
+domain: credit
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des dossiers Non Evolan
+bronze:
+  table: bronze_sftp_nevolan_contrat
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_nevolan_contrat
+  primary_key:
+  - IDF_REFERENCE_CONTRAT
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_REFERENCE_CONTRAT
+    type: StringType
+    nullable: false
+  - name: COMPTE_GENERAL_PCB
+    type: StringType
+    nullable: true
+  - name: COMPTE_GENERAL_PCEC
+    type: StringType
+    nullable: true
+  - name: LIBELLE
+    type: StringType
+    nullable: true
+  - name: COMPTE_CLIENT
+    type: StringType
+    nullable: true
+  - name: OBJET_CREDIT
+    type: StringType
+    nullable: true
+  - name: COD_DEVISE_CREDIT
+    type: StringType
+    nullable: true
+  - name: DATE_ACCORD
+    type: DateType
+    nullable: true
+  - name: DATE_DEBUT
+    type: DateType
+    nullable: true
+  - name: DATE_MATURITE
+    type: DateType
+    nullable: true
+  - name: TOP_PERIODE_FRANCHISE
+    type: StringType
+    nullable: true
+  - name: DUREE_FRANCHISE
+    type: DecimalType(10)
+    nullable: true
+  - name: DATE_PREMIERE_ECH_INTERET
+    type: DateType
+    nullable: true
+  - name: DATE_DERNIERE_ECH_PAYEE
+    type: DateType
+    nullable: true
+  - name: TOP_PERIODE_DIFFERE
+    type: StringType
+    nullable: true
+  - name: DUREE_DIFFERE
+    type: DecimalType(10)
+    nullable: true
+  - name: DATE_PREMIERE_ECH_PRINCIPAL
+    type: DateType
+    nullable: true
+  - name: MNT_NOMINAL
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_CAPITAL_RESTANT_DU
+    type: DecimalType(18,3)
+    nullable: true
+  - name: TYPE_AMORTISSEMENT
+    type: StringType
+    nullable: true
+  - name: PERIODICITE_REMBOUR_CAPITAL
+    type: StringType
+    nullable: true
+  - name: PERIODICITE_REMBOUR_INTERET
+    type: StringType
+    nullable: true
+  - name: BASE_CALCUL_INTERET
+    type: StringType
+    nullable: true
+  - name: METHODE_CALCUL_INTERET
+    type: StringType
+    nullable: true
+  - name: TOP_CAPITALISATION_INTERET
+    type: StringType
+    nullable: true
+  - name: TYPE_TAUX
+    type: StringType
+    nullable: true
+  - name: COD_INDEX
+    type: StringType
+    nullable: true
+  - name: LIBELLE_INDEX
+    type: StringType
+    nullable: true
+  - name: TX_MARGE
+    type: DecimalType(8,5)
+    nullable: true
+  - name: TX_SORTIE
+    type: DecimalType(8,5)
+    nullable: true
+  - name: MNT_FRAIS_DOSSIER
+    type: DecimalType(18,3)
+    nullable: true
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_REFERENCE_CONTRAT
+  - rule: unique
+    columns:
+    - IDF_REFERENCE_CONTRAT
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 1 * *
+owner: data-team  # TODO: à confirmer
+frequency: Mensuel (actuellemnt à la demande)
+storage_type: STOCK

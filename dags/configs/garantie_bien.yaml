@@ -1,0 +1,71 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_GARWEB.xlsx
+  sheet_name: GARANTIE_BIEN
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: GARANTIE_BIEN
+domain: garweb
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des biens GARWEB
+bronze:
+  table: bronze_sftp_garantie_bien
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_garantie_bien
+  primary_key:
+  - IDF_NUM_CTR_GARANTIE
+  - IDF_NUM_BIEN
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_CTR_GARANTIE
+    type: StringType
+    nullable: false
+    description: Numéro de contrat garantie
+  - name: IDF_NUM_BIEN
+    type: StringType
+    nullable: false
+    description: Numéro de Bien (séquentiel)
+  - name: COD_NAT_BIEN
+    type: StringType
+    nullable: true
+    description: Nature du Bien (SPITAB GARNAB)
+  - name: MNT_VALEUR_BIEN_ESTIMEE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Valeur estimée du Bien
+  - name: COD_DEVISE_VALEUR
+    type: StringType
+    nullable: true
+    description: Devise de la valeur estimée
+  - name: DATE_ESTIMATION
+    type: DateType
+    nullable: true
+    description: Date de l'estimation du Bien
+  - name: DATE_MAJ_OCCURENCE
+    type: StringType
+    nullable: true
+    description: Mise à jour de l'occurrence
+  - name: DESCRIPTION_BIEN
+    type: StringType
+    nullable: true
+    description: Description du Bien
+  - name: DETAIL_BIEN
+    type: StringType
+    nullable: true
+    description: Détail du bien (contenu different / depend de la nature )
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_BIEN
+  - rule: unique
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_BIEN
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

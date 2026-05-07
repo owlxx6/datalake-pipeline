@@ -1,0 +1,107 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_CREDIT.xlsx
+  sheet_name: CREDIT_AMORT_TA
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: CREDIT_AMORT_TA
+domain: credit
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table du tableau d'amortissement EVOLAN
+bronze:
+  table: bronze_sftp_credit_amort_ta
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_credit_amort_ta
+  primary_key:
+  - IDF_NUMERO_DOSSIER
+  - IDF_NUMERO_SOUS_LIGNE
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUMERO_DOSSIER
+    type: StringType
+    nullable: false
+    description: Numéro de dossier
+  - name: IDF_NUMERO_SOUS_LIGNE
+    type: StringType
+    nullable: false
+    description: Numéro de sous ligne
+  - name: NUMERO_UTILISATION
+    type: StringType
+    nullable: true
+    description: Numéro d'utilisation
+  - name: COD_TYPE_CONTRAT
+    type: StringType
+    nullable: true
+    description: Type Contrat
+  - name: TX_PALIER
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux de palier
+  - name: COD_EVENEMENT
+    type: StringType
+    nullable: true
+    description: Code evenement
+  - name: DATE_EVENEMENT
+    type: DateType
+    nullable: true
+    description: Date événement
+  - name: NUMERO_TERME
+    type: StringType
+    nullable: true
+    description: Numéro de terme
+  - name: DATE_ECHEANCE
+    type: DateType
+    nullable: true
+    description: Date d'échéance
+  - name: MNT_ECHEANCE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant de l'échéance
+  - name: MNT_INTERET
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant d'intérêt
+  - name: MNT_ASSURANCE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant d'assurance
+  - name: MNT_ACCESSOIRE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant d'accessoire
+  - name: MNT_CAPITAL_AMORTI
+    type: DecimalType(18,3)
+    nullable: true
+    description: Capital amorti
+  - name: MNT_SOMME_CAP_DIFF_ECH
+    type: DecimalType(±(18,3))
+    nullable: true
+    description: Sommes capitalisées/ différées à l'échéance
+  - name: MNT_CAPITAL_DU_RESTANT
+    type: DecimalType(±(18,3))
+    nullable: true
+    description: Capital restant dû
+  - name: MNT_SOMME_CAPITAL_RESTANT_DU
+    type: DecimalType(±(18,3))
+    nullable: true
+    description: Somme capitalisée restant due
+  - name: MNT_SOMME_TOTAL_RESTANT_DU
+    type: DecimalType(±(18,3))
+    nullable: true
+    description: Somme totale restant due
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUMERO_DOSSIER
+    - IDF_NUMERO_SOUS_LIGNE
+  - rule: unique
+    columns:
+    - IDF_NUMERO_DOSSIER
+    - IDF_NUMERO_SOUS_LIGNE
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 1 * *
+owner: data-team  # TODO: à confirmer
+frequency: Mensuel (non automatisé)
+storage_type: STOCK

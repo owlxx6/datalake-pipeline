@@ -1,0 +1,51 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_DEPASSEMENT.xlsx
+  sheet_name: DEPASSEMENT
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: DEPASSEMENT
+domain: depassement
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: LES DONNEES DU DEPASSEMENT
+bronze:
+  table: bronze_sftp_depassement
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_depassement
+  primary_key: []  # WARNING: aucune PK détectée
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: NUM_COMPTE
+    type: StringType
+    nullable: false
+    description: RIB
+  - name: DATE_ENTREE
+    type: StringType
+    nullable: false
+    description: date d'entree
+  - name: DATE_SORTIE
+    type: StringType
+    nullable: true
+    description: date de sortie
+  - name: COMPTE_GENERAL
+    type: StringType
+    nullable: false
+    description: compte general
+  - name: MNT_DEPASSEMENT
+    type: StringType
+    nullable: false
+    description: solde de depassement
+  quality_rules:
+  - rule: not_null
+    columns:
+    - NUM_COMPTE
+    - DATE_ENTREE
+    - COMPTE_GENERAL
+    - MNT_DEPASSEMENT
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

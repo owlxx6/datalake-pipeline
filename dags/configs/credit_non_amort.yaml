@@ -1,0 +1,176 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_AUTORISATIONS.xlsx
+  sheet_name: CREDIT_NON_AMORT
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: CREDIT_NON_AMORT
+domain: autorisations
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des autorisations
+bronze:
+  table: bronze_sftp_credit_non_amort
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_credit_non_amort
+  primary_key:
+  - IDF_REF_AUTO
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_REF_AUTO
+    type: StringType
+    nullable: false
+    description: Référence autorisation
+  - name: NUM_COMPTE
+    type: StringType
+    nullable: true
+    description: Numéro compte
+  - name: COD_NAT_AUTO
+    type: StringType
+    nullable: true
+    description: Nature de l'autorisation
+  - name: REF_PRODUIT
+    type: StringType
+    nullable: true
+    description: Code POPS
+  - name: COD_ETAT_AUTO
+    type: StringType
+    nullable: true
+    description: Etat autorisation (OUV, GES, TER, ANU)
+  - name: COD_TYP_AUTO
+    type: StringType
+    nullable: true
+    description: 'Type de l''autorisation R ou F : Revolving ou Fixe'
+  - name: NUM_DOSS
+    type: StringType
+    nullable: true
+    description: Numéro dossier
+  - name: COD_SRC_DOSS
+    type: StringType
+    nullable: true
+    description: Source du dossier (A, I, E, P)
+  - name: COD_DEV_AUTO
+    type: StringType
+    nullable: true
+    description: Devise autorisation
+  - name: TX_DEV_AUTO
+    type: StringType
+    nullable: true
+    description: Taux devise de l'autorisation
+  - name: DATE_REF_TX
+    type: DateType
+    nullable: true
+    description: Date du cours de change (DEVISE)
+  - name: MNT_AUTO_TOT_DEV
+    type: DecimalType(15,3) = 19
+    nullable: true
+    description: Montant total en devise
+  - name: MNT_AUTO_DEB_DEV
+    type: DecimalType(15,3) = 19
+    nullable: true
+    description: Montant débloqué en devise
+  - name: MNT_AUTO_TOT_MAD
+    type: DecimalType(15,3) = 19
+    nullable: true
+    description: Montant total en MAD
+  - name: MNT_AUTO_DEB_MAD
+    type: DecimalType(15,3) = 19
+    nullable: true
+    description: Montant débloqué en MAD
+  - name: DATE_COMITE
+    type: DateType
+    nullable: true
+    description: Date comité
+  - name: DATE_GESTION
+    type: DateType
+    nullable: true
+    description: Date mise en gestion
+  - name: DATE_ECHEANCE
+    type: DateType
+    nullable: true
+    description: Date échéance
+  - name: COD_GAR_CTT
+    type: StringType
+    nullable: true
+    description: 'Garantie constituée : O/N'
+  - name: COD_AUTO_IRREV
+    type: StringType
+    nullable: true
+    description: Irrévocable
+  - name: COD_FIN_SPE
+    type: StringType
+    nullable: true
+    description: Financement spécialisé
+  - name: RANG_AUTO
+    type: StringType
+    nullable: true
+    description: 'Rang de l''autorisation : Principale ou Secondaire P/S'
+  - name: AUTO_CUMUL
+    type: StringType
+    nullable: true
+    description: Référence ligne mère
+  - name: TX_COM
+    type: StringType
+    nullable: true
+    description: Taux de commission
+  - name: MNT_COM
+    type: DecimalType(15,3) = 19
+    nullable: true
+    description: Montant commission
+  - name: MNT_FRAIS
+    type: DecimalType(15,3) = 19
+    nullable: true
+    description: Montant frais dossier
+  - name: DATE_OUVERTURE
+    type: DateType
+    nullable: true
+    description: Date souscription ligne
+  - name: DATE_MAJ
+    type: DateType
+    nullable: true
+    description: Date mis à jour ligne
+  - name: DATE_CLOTURE
+    type: DateType
+    nullable: true
+    description: Date clôture ligne
+  - name: COD_TYP_COND
+    type: StringType
+    nullable: true
+    description: 'Type de condition : normal (N) ou préférentiel (P)'
+  - name: CPT_GENERAL
+    type: StringType
+    nullable: true
+    description: Compte générale
+  - name: COD_NAT_LIGNE
+    type: StringType
+    nullable: true
+    description: Nature de la ligne
+  - name: COD_TYP_FR_DOSS
+    type: StringType
+    nullable: true
+    description: 'Type frais dossier : Standard (S) ou préférentiel (P)'
+  - name: TX_MAJORATION
+    type: DecimalType(3,5) = 9
+    nullable: true
+    description: Taux de majoration en cas de dépassement
+  - name: LIB_AUT_COND
+    type: StringType
+    nullable: true
+    description: Libellé du taux
+  - name: POSITION_LIGNE/TYPE TAUX
+    type: StringType
+    nullable: true
+    description: Position de la ligne / Le type du taux
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_REF_AUTO
+  - rule: unique
+    columns:
+    - IDF_REF_AUTO
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

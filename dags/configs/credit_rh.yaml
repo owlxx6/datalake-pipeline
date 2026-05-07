@@ -1,0 +1,89 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_CREDIT.xlsx
+  sheet_name: CREDIT_RH
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: CREDIT_RH
+domain: credit
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table du tableau d'amortissement (à venir) du personnel
+bronze:
+  table: bronze_sftp_credit_rh
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_credit_rh
+  primary_key:
+  - NUM_COMPTE_CLIENT
+  - DATE_ECHEANCE
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: CENTRE_DE_FRAIS
+    type: StringType
+    nullable: true
+  - name: COMPTE_GENERAL
+    type: StringType
+    nullable: true
+  - name: NUM_COMPTE_CLIENT
+    type: StringType
+    nullable: false
+  - name: DATE_ECHEANCE
+    type: DateType
+    nullable: false
+  - name: NUM_BILLET_TRAITE
+    type: StringType
+    nullable: true
+  - name: MNT_CAPITAL
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_TRAITE
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_REMBOURS1
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_INTERET1
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_REMBOURS2
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_INTERET2
+    type: DecimalType(19)
+    nullable: true
+  - name: TX_INTERET1
+    type: DecimalType(9)
+    nullable: true
+  - name: TX_INTERET2
+    type: DecimalType(9)
+    nullable: true
+  - name: MNT_ENCOURS
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_TVA1
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_TVA2
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_GRACE_TVA
+    type: DecimalType(19)
+    nullable: true
+  - name: MNT_GRACE_AUTRE
+    type: DecimalType(19)
+    nullable: true
+  quality_rules:
+  - rule: not_null
+    columns:
+    - NUM_COMPTE_CLIENT
+    - DATE_ECHEANCE
+  - rule: unique
+    columns:
+    - NUM_COMPTE_CLIENT
+    - DATE_ECHEANCE
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 1 * *
+owner: data-team  # TODO: à confirmer
+frequency: Mensuel
+storage_type: STOCK

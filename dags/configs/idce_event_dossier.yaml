@@ -1,0 +1,98 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IDCE.xlsx
+  sheet_name: IDCE_EVENT_DOSSIER
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IDCE_EVENT_DOSSIER
+domain: idce
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des évenements des dossiers IDCE
+bronze:
+  table: bronze_sftp_idce_event_dossier
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_idce_event_dossier
+  primary_key:
+  - IDF_DOSSIER
+  - IDF_DATE_EVENEMENT
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_DOSSIER
+    type: StringType
+    nullable: false
+    description: numero de dossier
+  - name: DATE_OPC
+    type: StringType
+    nullable: true
+    description: date de traitement
+  - name: IDF_DATE_EVENEMENT
+    type: DateType
+    nullable: false
+    description: date d'événement
+  - name: ENTITE_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: entite gestionnaire du dossier
+  - name: COD_EVENEMENT
+    type: StringType
+    nullable: true
+    description: code d'evenement
+  - name: COD_MOTIF_TRANSFERT
+    type: StringType
+    nullable: true
+    description: motif de transfert
+  - name: ENTITE_GES_ENVOI
+    type: StringType
+    nullable: true
+    description: entite gestionnaire envoi
+  - name: DATE_ENVOI_DOSSIER
+    type: DateType
+    nullable: true
+    description: la date d'envoi dossier
+  - name: COD_SAS_ENVOI
+    type: StringType
+    nullable: true
+    description: |-
+      = Matricule envoi pour les evenements transferts de dossier
+      = Gestionnaire d’origine pour les evenements Changement de gestionnaire
+      = Gestionnaire à l’origine de l’evenement pour les autres evenements
+  - name: DATE_DEB_PRISE_EN_CHARGE
+    type: DateType
+    nullable: true
+    description: la date du début de la prise en charge
+  - name: DATE_FIN_PRISE_EN_CHARGE
+    type: DateType
+    nullable: true
+    description: la date Fin de la prise en charge
+  - name: ENTITE_GES_DESTINATAIRE
+    type: StringType
+    nullable: true
+    description: entite gestionnaire destinataire
+  - name: COD_SAS_DESTINATAIRE
+    type: StringType
+    nullable: true
+    description: Matricule destinataire
+  - name: NUM_DOSSIER_FUSION
+    type: StringType
+    nullable: true
+    description: numero de dossier absorbe lors de la fusion de dossier
+  - name: FILLER
+    type: StringType
+    nullable: true
+    description: filler
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_DOSSIER
+    - IDF_DATE_EVENEMENT
+  - rule: unique
+    columns:
+    - IDF_DOSSIER
+    - IDF_DATE_EVENEMENT
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

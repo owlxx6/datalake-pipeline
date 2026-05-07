@@ -1,0 +1,84 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_TYPOLOGIE.xlsx
+  sheet_name: TYPOLOGIE
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: TYPOLOGIE
+domain: typologie
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table de la typologie commerciale des tiers
+bronze:
+  table: bronze_sftp_typologie
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_typologie
+  primary_key:
+  - IDF_NUM_TIERS
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_TIERS
+    type: StringType
+    nullable: false
+    description: Numéro de tiers
+  - name: COD_MARCHE
+    type: StringType
+    nullable: true
+    description: Code marché
+  - name: COD_SS_MARCHE
+    type: StringType
+    nullable: true
+    description: Code sous marché
+  - name: DATE_EFFET_MARCHE
+    type: DateType
+    nullable: true
+    description: Date effet marché
+  - name: DATE_FIN_MARCHE
+    type: DateType
+    nullable: true
+    description: Date fin marché
+  - name: COD_STN
+    type: StringType
+    nullable: true
+    description: Code Strate
+  - name: COD_SS_STN
+    type: StringType
+    nullable: true
+    description: Code sous strate
+  - name: DATE_EFFET_STN
+    type: DateType
+    nullable: true
+    description: Date effet Strate
+  - name: DATE_FIN_STN
+    type: DateType
+    nullable: true
+    description: Date fin Strate
+  - name: COD_INDIC_ACTIV
+    type: StringType
+    nullable: true
+    description: Code indicateur activité
+  - name: COD_INDIC_SS_ACTIV
+    type: StringType
+    nullable: true
+    description: Code indicateur sous activité
+  - name: DATE_EFFET_INDIC_ACTIV
+    type: DateType
+    nullable: true
+    description: Date effet indicateur activité
+  - name: DATE_FIN_INDIC_ACTIV
+    type: DateType
+    nullable: true
+    description: Date fin indicateur activité
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_TIERS
+  - rule: unique
+    columns:
+    - IDF_NUM_TIERS
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

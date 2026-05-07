@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datalake_lib"
+version = "0.1.0"
+description = "Framework standardisé pour pipelines médaillon Crédit-Garantie — BOA Entreprise"
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    {name = "Taha Kilani"}
+]
+
+dependencies = [
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+    "openpyxl>=3.1",
+]
+
+[project.optional-dependencies]
+spark = [
+    "pyspark>=3.5.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-spark>=0.6",
+    "black>=23.0",
+    "ruff>=0.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["datalake_lib*"]
+exclude = ["tests*", "dags*", "scripts*", "canevas*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

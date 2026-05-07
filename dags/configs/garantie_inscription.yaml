@@ -1,0 +1,75 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_GARWEB.xlsx
+  sheet_name: GARANTIE_INSCRIPTION
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: GARANTIE_INSCRIPTION
+domain: garweb
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des inscriptions GARWEB
+bronze:
+  table: bronze_sftp_garantie_inscription
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_garantie_inscription
+  primary_key:
+  - IDF_NUM_CTR_GARANTIE
+  - IDF_NUM_INSCRIPTION
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_CTR_GARANTIE
+    type: StringType
+    nullable: false
+    description: Numéro de contrat garantie
+  - name: IDF_NUM_INSCRIPTION
+    type: StringType
+    nullable: false
+    description: Numéro d'inscription
+  - name: COD_TYP_PUB
+    type: StringType
+    nullable: true
+    description: Type de publicité
+  - name: COD_TYP_INSCRIPTION
+    type: StringType
+    nullable: true
+    description: Type d'inscription
+  - name: DATE_INSCRIPTION
+    type: DateType
+    nullable: true
+    description: Date de l'inscription
+  - name: DATE_VALIDITE
+    type: DateType
+    nullable: true
+    description: Date de validité
+  - name: RANG_INSCRIPTION
+    type: StringType
+    nullable: true
+    description: Rang de l'inscription
+  - name: DATE_MAJ_OCCURENCE
+    type: DateType
+    nullable: true
+    description: Date de mise à jour de l'occurrence
+  - name: COD_TYP_LIEU_INSC
+    type: StringType
+    nullable: true
+    description: Type du lieu d'inscription
+  - name: LIEU_INSCRIPTION
+    type: StringType
+    nullable: true
+    description: Lieu d'inscription ( valeur par defaut inconnue lors de la reprise)
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_INSCRIPTION
+  - rule: unique
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_INSCRIPTION
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

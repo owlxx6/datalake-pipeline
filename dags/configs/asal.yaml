@@ -1,0 +1,76 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_ASAL.xlsx
+  sheet_name: ASAL
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: ASAL
+domain: asal
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des données du personnel (Matricule/CodeSAS)
+bronze:
+  table: bronze_sftp_asal
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_asal
+  primary_key:
+  - IDF_PERSONNEL
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_PERSONNEL
+    type: StringType
+    nullable: false
+    description: Identifiant Personnel
+  - name: COD_TITRE
+    type: StringType
+    nullable: true
+    description: Titre
+  - name: NOM_PERSONNEL
+    type: StringType
+    nullable: true
+    description: NOM
+  - name: PRN_PERSONNEL
+    type: StringType
+    nullable: true
+    description: PRENOM
+  - name: ADR_EMAIL
+    type: StringType
+    nullable: true
+    description: Adresse Email
+  - name: CODE_FEDERATION
+    type: StringType
+    nullable: true
+    description: Code Fédération
+  - name: NUM_GUICHET
+    type: StringType
+    nullable: true
+    description: Numéro Guichet
+  - name: NUM_BUREAU
+    type: StringType
+    nullable: true
+    description: Numéro Bureau
+  - name: CODE_RATTACHEMENT
+    type: StringType
+    nullable: true
+    description: Code rattachement
+  - name: MATRICULE
+    type: StringType
+    nullable: true
+    description: Matricule
+  - name: COD_MRH
+    type: StringType
+    nullable: true
+    description: Code Métier RH
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_PERSONNEL
+  - rule: unique
+    columns:
+    - IDF_PERSONNEL
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

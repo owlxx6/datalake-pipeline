@@ -1,0 +1,55 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_GARWEB.xlsx
+  sheet_name: GARANTIE_TIERS
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: GARANTIE_TIERS
+domain: garweb
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table de la correspondance entre les garanties et les tiers titulaires de la garantie
+bronze:
+  table: bronze_sftp_garantie_tiers
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_garantie_tiers
+  primary_key:
+  - IDF_NUM_CTR_GARANTIE
+  - IDF_NUM_TIERS
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_CTR_GARANTIE
+    type: StringType
+    nullable: false
+    description: Numéro de contrat garantie
+  - name: IDF_NUM_TIERS
+    type: DecimalType(13)
+    nullable: false
+    description: Le numéro du tiers
+  - name: COD_ROLE
+    type: StringType
+    nullable: true
+    description: Rôle principal, secondaire …
+  - name: POURCENTAGE_PARTICIP_GARANT
+    type: DecimalType(8,5)
+    nullable: true
+    description: Poucentage de participation
+  - name: DATE_MAJ_OCCURENCE
+    type: StringType
+    nullable: true
+    description: Date de mise à jour de l'enregistrement
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_TIERS
+  - rule: unique
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_TIERS
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

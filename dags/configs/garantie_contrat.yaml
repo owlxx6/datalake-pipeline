@@ -1,0 +1,67 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_GARWEB.xlsx
+  sheet_name: GARANTIE_CONTRAT
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: GARANTIE_CONTRAT
+domain: garweb
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des contrats des garanties
+bronze:
+  table: bronze_sftp_garantie_contrat
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_garantie_contrat
+  primary_key:
+  - IDF_REF_EXT_CREDIT
+  - IDF_NUM_CTR_GARANTIE
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_REF_EXT_CREDIT
+    type: StringType
+    nullable: false
+    description: Référence BTA
+  - name: IDF_NUM_CTR_GARANTIE
+    type: StringType
+    nullable: false
+    description: Le numéro du contrat
+  - name: NUM_CTR_CREDIT
+    type: StringType
+    nullable: true
+    description: Référence interne du crédit (Non exploitée)
+  - name: COD_FILIERE_GES_CREDIT
+    type: StringType
+    nullable: true
+    description: Filière gest. Du crédit
+  - name: COD_DEVISE_CREDIT
+    type: StringType
+    nullable: true
+    description: Devise du crédit
+  - name: CODE_POPS_CREDIT
+    type: StringType
+    nullable: true
+    description: Le code POPS concernant le crédit
+  - name: COD_ETAT_CREDIT
+    type: StringType
+    nullable: true
+    description: Etat du crédit (voir table de paramètrage garweb_ref_etat_credit)
+  - name: DATE_MAJ_OCCURENCE
+    type: StringType
+    nullable: true
+    description: date de mise à jour de l'occurrence
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_REF_EXT_CREDIT
+    - IDF_NUM_CTR_GARANTIE
+  - rule: unique
+    columns:
+    - IDF_REF_EXT_CREDIT
+    - IDF_NUM_CTR_GARANTIE
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

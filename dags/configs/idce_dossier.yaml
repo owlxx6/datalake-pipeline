@@ -1,0 +1,84 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IDCE.xlsx
+  sheet_name: IDCE_DOSSIER
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IDCE_DOSSIER
+domain: idce
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des dossiers IDCE
+bronze:
+  table: bronze_sftp_idce_dossier
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_idce_dossier
+  primary_key:
+  - IDF_NUM_DOSSIER
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_DOSSIER
+    type: StringType
+    nullable: false
+    description: Reference dossier dans IPR2
+  - name: DATE_OPC
+    type: DateType
+    nullable: true
+    description: Date de traitement OPC
+  - name: ENTITE_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: Entite gestionnaire du dossier (banque, guichet, bureau)
+  - name: NUM_SIREN
+    type: StringType
+    nullable: true
+    description: No de siren
+  - name: COD_ETAT_DOSSIER
+    type: StringType
+    nullable: true
+    description: Etat du dossier
+  - name: DATE_VALIDITE_ADMIN
+    type: DateType
+    nullable: true
+    description: Date de validité administrative du dossier
+  - name: COD_TYP_DOSSIER
+    type: StringType
+    nullable: true
+    description: Type de dossier crédit entreprise
+  - name: COD_SAS_RESPONSABLE
+    type: StringType
+    nullable: true
+    description: Matricule agent responsable
+  - name: CODE_SAS_CREATION
+    type: StringType
+    nullable: true
+    description: Code SAS de création du dossier
+  - name: DATE_CREATION
+    type: DateType
+    nullable: true
+    description: Timestamp de création
+  - name: CODE_SAS_DERN_MAJ
+    type: StringType
+    nullable: true
+    description: Code SAS de dernière MAJ du dossier
+  - name: DATE_DERN_MAJ
+    type: DateType
+    nullable: true
+    description: Timestamp de dernière MAJ du dossier
+  - name: FILLER
+    type: StringType
+    nullable: true
+    description: FILLER
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_DOSSIER
+  - rule: unique
+    columns:
+    - IDF_NUM_DOSSIER
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

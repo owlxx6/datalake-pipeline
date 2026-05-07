@@ -1,0 +1,63 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IDCE.xlsx
+  sheet_name: ICDE_TIERS_DOSSIER
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IDCE_TIERS_DOSSIER
+domain: idce
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des tiers des dossiers IDCE
+bronze:
+  table: bronze_sftp_idce_tiers_dossier
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_idce_tiers_dossier
+  primary_key:
+  - IDF_NUM_DOSSIER
+  - IDF_NUM_TIERS
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_DOSSIER
+    type: StringType
+    nullable: false
+    description: Référence dossier
+  - name: IDF_NUM_TIERS
+    type: StringType
+    nullable: false
+    description: Référence Tiers
+  - name: DATE_OPC
+    type: DateType
+    nullable: true
+    description: Date de traitement OPC
+  - name: ENETITE_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: entite gestionnaire (banque, guichet, bureau)
+  - name: DATE_CREATION
+    type: DateType
+    nullable: true
+    description: Date de creation
+  - name: DATE_DERN_MAJ
+    type: DateType
+    nullable: true
+    description: date de la derniere mise à jour
+  - name: FILLER
+    type: StringType
+    nullable: true
+    description: filler
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_DOSSIER
+    - IDF_NUM_TIERS
+  - rule: unique
+    columns:
+    - IDF_NUM_DOSSIER
+    - IDF_NUM_TIERS
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

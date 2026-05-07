@@ -1,0 +1,364 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_CREDIT.xlsx
+  sheet_name: CREDIT_AMORT
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: CREDIT_AMORT
+domain: credit
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des données de gestion des dossiers EVOLAN
+bronze:
+  table: bronze_sftp_credit_amort
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_credit_amort
+  primary_key:
+  - IDF_NUM_DOSS
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_DOSS
+    type: StringType
+    nullable: false
+    description: N° de dossier
+  - name: NUM_DOSS_CDL
+    type: StringType
+    nullable: true
+    description: N° de dossier CDL
+  - name: NUM_COMPTE_EMPRUNTEUR
+    type: StringType
+    nullable: true
+    description: Numéro de compte ( sur 24 positions)
+  - name: DATE_ACCORD
+    type: DateType
+    nullable: true
+    description: Date de demande de crédit
+  - name: DATE_REALISATION
+    type: DateType
+    nullable: true
+    description: Date de réalisation
+  - name: DATE_DR_DEBLOCAGE
+    type: DateType
+    nullable: true
+    description: Date du dernier déblocage
+  - name: DATE_FIN_DOSS_PREV
+    type: DateType
+    nullable: true
+    description: Date de fin de dossier prévisionnelle
+  - name: DATE_FIN_DOSS_REEL
+    type: DateType
+    nullable: true
+    description: Date de fin de dossier réelle
+  - name: DATE_PR_ECHEANCE
+    type: DateType
+    nullable: true
+    description: Date de la première échéance
+  - name: DATE_ECHEANCE
+    type: DateType
+    nullable: true
+    description: Date de l'échéance
+  - name: DATE_PROCH_ECHEANCE
+    type: DateType
+    nullable: true
+    description: Date de la prochaine échéance
+  - name: DATE_DR_MODIFICATION
+    type: DateType
+    nullable: true
+    description: Date de la dernière modification
+  - name: PERIOD_INVTX
+    type: StringType
+    nullable: true
+    description: Périodicité de révision du taux
+  - name: COD_PRODUIT
+    type: StringType
+    nullable: true
+    description: Code du produit
+  - name: OBJET_CREDIT
+    type: StringType
+    nullable: true
+    description: Objet Crédit
+  - name: CATG_PRET
+    type: StringType
+    nullable: true
+    description: Catégorie de prêt
+  - name: COD_STE
+    type: StringType
+    nullable: true
+    description: Code Société
+  - name: MNT_CREDIT
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant du crédit
+  - name: MNT_CAPITAL_REST_DU
+    type: DecimalType(18,3)
+    nullable: true
+    description: Capital restant dû
+  - name: MNT_SOMME_TOT_REST_DU
+    type: DecimalType(18,3)
+    nullable: true
+    description: Somme Totale restant dû
+  - name: MNT_TOT_DU
+    type: DecimalType(18,3)
+    nullable: true
+    description: Total dû
+  - name: COD_DEVISE
+    type: StringType
+    nullable: true
+    description: Code Devise
+  - name: COD_SIT_DOSS
+    type: StringType
+    nullable: true
+    description: Code de la situation du dossier
+  - name: COD_MOTIF_SOLDE_DOSS
+    type: StringType
+    nullable: true
+    description: Code motif solde du dossier
+  - name: COD_SIT_COMPTABLE
+    type: StringType
+    nullable: true
+    description: Code Situation Comptable du dossier
+  - name: DUREE
+    type: DecimalType(3)
+    nullable: true
+    description: Durée en mois
+  - name: NBR_ECHEANCE
+    type: DecimalType(3)
+    nullable: true
+    description: Nombre de traites
+  - name: NBR_TRAIT_REST
+    type: DecimalType(3)
+    nullable: true
+    description: Nombre de traites restantes
+  - name: DUREE_DIFFERE
+    type: DecimalType(3)
+    nullable: true
+    description: Durée de différé
+  - name: NBR_FRANCHISE
+    type: DecimalType(3)
+    nullable: true
+    description: Nombre de termes de franchises restantes
+  - name: NBR_IMPAYES
+    type: DecimalType(3)
+    nullable: true
+    description: Nombre des impayés
+  - name: NBR_IMP_NON_REG
+    type: DecimalType(3)
+    nullable: true
+    description: Nombre des impayés Non réglés
+  - name: NBR_RAP
+    type: DecimalType(3)
+    nullable: true
+    description: Nombre de RAP
+  - name: CODE_BAS_INDEX
+    type: StringType
+    nullable: true
+    description: Code Base d'indexation
+  - name: TX_CREDIT
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux du crédit
+  - name: COD_TYP_TX
+    type: StringType
+    nullable: true
+    description: Nature du taux
+  - name: MNT_DEBLOCAGE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant des déblocages
+  - name: TX_TVA
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux TVA
+  - name: MNT_ECHEANCE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant de la traite
+  - name: MNT_CAP_PROCH_ECHEANCE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Capital à amortir lors de la prochaine échéance
+  - name: MNT_INTER_A_PERCEVOIR
+    type: DecimalType(18,3)
+    nullable: true
+    description: Intérêts à percevoir
+  - name: MNT_ASPPECH_A_PERCEVOIR
+    type: DecimalType(18,3)
+    nullable: true
+    description: Assurances à percevoir
+  - name: MNT_ACCESS_A_PERCEVOIR
+    type: DecimalType(18,3)
+    nullable: true
+    description: Accessoires à percevoir
+  - name: MNT_CAPITALISE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant capitalisé
+  - name: PERIOD_INTERET
+    type: StringType
+    nullable: true
+    description: Périodicité des Intérêts
+  - name: COD_TYP_REMB
+    type: StringType
+    nullable: true
+    description: Type de remboursement
+  - name: COD_NAT_DIFF
+    type: StringType
+    nullable: true
+    description: Nature du diffère
+  - name: COD_PERIOD_CAP
+    type: StringType
+    nullable: true
+    description: Périodicité du capitale
+  - name: TOP_UTIL_FRANCHISE
+    type: StringType
+    nullable: true
+    description: Utilisation franchise
+  - name: COD_DOSS_FOGAR
+    type: StringType
+    nullable: true
+    description: Dossier adossé à un fond de garantie
+  - name: FOGAR
+    type: StringType
+    nullable: true
+    description: Fond de garantie
+  - name: TX_QUOTITE_FOGAR
+    type: DecimalType(8,5)
+    nullable: true
+    description: Quotité du fond de garantie
+  - name: COD_GAR_CTT
+    type: StringType
+    nullable: true
+    description: Garantie constituée
+  - name: RATIO_ENDETTEMENT
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux d'endettement
+  - name: COD_TYP_CPT
+    type: StringType
+    nullable: true
+    description: Type de compte
+  - name: COD_TYP_CREDIT
+    type: StringType
+    nullable: true
+    description: Type de crédit
+  - name: COD_TYP_AMOR
+    type: StringType
+    nullable: true
+    description: Type d'amortissement
+  - name: COD_JEXACT
+    type: StringType
+    nullable: true
+    description: Code base de calcul des intérêts
+  - name: TX_COMPLEMENT
+    type: DecimalType(8,5)
+    nullable: true
+    description: Complément de taux
+  - name: SIGN_COMPL_TX
+    type: StringType
+    nullable: true
+    description: Signe de complément de taux
+  - name: TX_ACCOR
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux initial
+  - name: TX_MAX
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux maximum
+  - name: TX_MIN
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux minimum
+  - name: MNT_PRIX_ACQUIS
+    type: DecimalType(18,3)
+    nullable: true
+    description: Valeur déclarée
+  - name: TX_MARCHE
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux de marché
+  - name: CODE_POSTAL
+    type: StringType
+    nullable: true
+    description: Code postale
+  - name: COD_TYP_BIEN
+    type: StringType
+    nullable: true
+    description: Type de bien
+  - name: COD_NAT_RESID
+    type: StringType
+    nullable: true
+    description: Nature de la résidence
+  - name: RANG_CREDIT
+    type: StringType
+    nullable: true
+    description: Rang du crédit
+  - name: MNT_GAR_INCENDIE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant de la garantie incendie
+  - name: MNT_GAR_VIE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant de la garantie vie
+  - name: NUM_CONSERVATION
+    type: StringType
+    nullable: true
+    description: Titre foncier
+  - name: MNT_RAP
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant du RAP
+  - name: MNT_RAT
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant du RAT
+  - name: CODE_CC
+    type: StringType
+    nullable: true
+    description: Code Chargé de clientele
+  - name: COD_FIN_SPEC
+    type: StringType
+    nullable: true
+    description: Financement spécialisé
+  - name: DATE_TRAITEMENT
+    type: DateType
+    nullable: true
+    description: Date du traitement = date génération du fichier
+  - name: MNT_RESTE_A_DEBLOQUER
+    type: DecimalType(18,3)
+    nullable: true
+  - name: TX_EFFECTIF_GLOBAL
+    type: DecimalType(8,5)
+    nullable: true
+  - name: COD_OBJET_FINANCEMENT
+    type: StringType
+    nullable: true
+  - name: PERIOD_NEUTRAL_TX
+    type: StringType
+    nullable: true
+  - name: DATE_DEB_PERIOD_NEUTRAL
+    type: DateType
+    nullable: true
+  - name: NUM_COMPTE_PAYEUR
+    type: StringType
+    nullable: true
+  - name: DATE_REALISATION_REELLE
+    type: DateType
+    nullable: true
+  - name: DUREE_INITIALE
+    type: StringType
+    nullable: true
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_DOSS
+  - rule: unique
+    columns:
+    - IDF_NUM_DOSS
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

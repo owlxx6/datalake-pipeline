@@ -1,0 +1,74 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_TIERS.xlsx
+  sheet_name: CONTACTS
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: CONTACTS
+domain: tiers
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des données télécom du tiers
+bronze:
+  table: bronze_sftp_contacts
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_contacts
+  primary_key:
+  - IDF_NUM_TIERS
+  - IDF_INDIC_LIGNE
+  - IDF_NUM_TEL
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_TIERS
+    type: DecimalType(13)
+    nullable: false
+    description: Référence tiers
+  - name: IDF_INDIC_LIGNE
+    type: StringType
+    nullable: false
+    description: Indicatif  de la ligne
+  - name: IDF_NUM_TEL
+    type: StringType
+    nullable: false
+    description: Numéro Téléphone
+  - name: IVN_LOG
+    type: StringType
+    nullable: true
+    description: Intervenant logique
+  - name: COD_MOD_MAJ
+    type: StringType
+    nullable: true
+    description: Mode de mise à Jour
+  - name: DATE_MODIF
+    type: StringType
+    nullable: true
+    description: Date de modification (mise en place) de l’enregistrement
+  - name: ADR_MAIL_SG_SOC
+    type: StringType
+    nullable: true
+    description: Adresse Mail Siège Sociale (site web)
+  - name: COD_USG_LIGNE
+    type: StringType
+    nullable: true
+    description: Usage de la ligne
+  - name: COD_TYP_MATERIEL
+    type: StringType
+    nullable: true
+    description: Type de matériel
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_TIERS
+    - IDF_INDIC_LIGNE
+    - IDF_NUM_TEL
+  - rule: unique
+    columns:
+    - IDF_NUM_TIERS
+    - IDF_INDIC_LIGNE
+    - IDF_NUM_TEL
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

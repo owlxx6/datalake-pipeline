@@ -1,0 +1,112 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_POPS.xlsx
+  sheet_name: POPS
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: POPS
+domain: pops
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table du catalogue produit
+bronze:
+  table: bronze_sftp_pops
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_pops
+  primary_key:
+  - IDF_CODE_PRODUIT
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_CODE_PRODUIT
+    type: StringType
+    nullable: false
+    description: Code activité
+  - name: COD_ACTIVITE
+    type: StringType
+    nullable: true
+    description: Libellé de l'activité
+  - name: LIB_ACTIVITE
+    type: StringType
+    nullable: true
+    description: Code sous activité
+  - name: COD_SS_ACTIVITE
+    type: StringType
+    nullable: true
+    description: Libellé de la sous-activité
+  - name: LIB_SS_ACTIVITE
+    type: StringType
+    nullable: true
+    description: Code famille
+  - name: COD_FAMILLE
+    type: StringType
+    nullable: true
+    description: Libellé de la famille
+  - name: LIB_FAMILLE
+    type: StringType
+    nullable: true
+    description: Produit commercial
+  - name: PROD_COMMERCIAL
+    type: StringType
+    nullable: true
+    description: Code du produit
+  - name: LIB_PRODUIT
+    type: StringType
+    nullable: true
+    description: Libellé du produit
+  - name: NOM_SOP
+    type: StringType
+    nullable: true
+    description: Nom du système opérant
+  - name: COD_SOP
+    type: StringType
+    nullable: true
+    description: Code du système opérant
+  - name: COD_USAGE
+    type: StringType
+    nullable: true
+    description: Usage
+  - name: COD_RIBABLE
+    type: StringType
+    nullable: true
+    description: Ribable
+  - name: LIB_COURT
+    type: StringType
+    nullable: true
+    description: Libelle produit court
+  - name: COD_EDITION_RIB
+    type: StringType
+    nullable: true
+    description: Edition du RIB autorisée (O/N)
+  - name: COD_TYP_PRODUIT
+    type: StringType
+    nullable: true
+    description: Type du produit
+  - name: COD_TRANSAC_GESTION
+    type: StringType
+    nullable: true
+    description: transaction de gestion
+  - name: COD_DECLARATIF_OSCAR
+    type: StringType
+    nullable: true
+    description: Déclaratif Oscar
+  - name: LIB_CLIENT_LONG
+    type: StringType
+    nullable: true
+    description: libellé du client long
+  - name: LIB_CLIENT_COURT
+    type: StringType
+    nullable: true
+    description: libellé du client court
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_CODE_PRODUIT
+  - rule: unique
+    columns:
+    - IDF_CODE_PRODUIT
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

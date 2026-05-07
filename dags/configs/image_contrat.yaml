@@ -1,0 +1,201 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IMAGE_CONTRAT.xlsx
+  sheet_name: IMAGE_CONTRAT
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IMAGE_CONTRAT
+domain: image_contrat
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des images contrat - tous les produits de la banque
+bronze:
+  table: bronze_sftp_image_contrat
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_image_contrat
+  primary_key:
+  - IDF_NUM_TIERS
+  - IDF_REF_EXT_CTR
+  - IDF_TYP_PRD
+  - IDF_REF_PRD
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_TIERS
+    type: StringType
+    nullable: false
+    description: Numéro de tiers
+  - name: IDF_REF_EXT_CTR
+    type: StringType
+    nullable: false
+    description: Référence externe du contrat
+  - name: REF_ADRESSE
+    type: StringType
+    nullable: true
+    description: Référene adresse du contrat
+  - name: ENTITE_GES
+    type: StringType
+    nullable: true
+    description: Entité gestionnaire du contrat (BANQUE+CAISSE+BUR)
+  - name: IDF_TYP_PRD
+    type: StringType
+    nullable: false
+    description: Type produit
+  - name: IDF_REF_PRD
+    type: StringType
+    nullable: false
+    description: Référence produit
+  - name: COD_DEV_PRD
+    type: StringType
+    nullable: true
+    description: Devise produit
+  - name: COD_NAT_JUR
+    type: StringType
+    nullable: true
+    description: Nature juridique du contrat
+  - name: COD_CYC_VIE
+    type: StringType
+    nullable: true
+    description: Cycle de vie du contrat
+  - name: DATE_CYC_VIE
+    type: DateType
+    nullable: true
+    description: Date du cycle de vie
+  - name: DATE_OUV_CTR
+    type: DateType
+    nullable: true
+    description: Date ouverture du contrat
+  - name: DATE_CREATION
+    type: DateType
+    nullable: true
+    description: Date de création
+  - name: DATE_MODIF
+    type: DateType
+    nullable: true
+    description: Date de modification
+  - name: COD_MOD_MODIF
+    type: StringType
+    nullable: true
+    description: Mode de modification
+  - name: CODE_IVN_LGE
+    type: StringType
+    nullable: true
+    description: CODE SAS de l'utilisateur qui a créé le contrat
+  - name: CODE_IVN_PHY
+    type: StringType
+    nullable: true
+    description: CODE SAS de l'utilisateur qui a créé le contrat
+  - name: CODE_UTILS_MODIF
+    type: StringType
+    nullable: true
+    description: CODE SAS de l'utilisateur qui a modifié le contrat
+  - name: COD_MTF_CYC_VIE
+    type: StringType
+    nullable: true
+    description: Motif cycle de vie
+  - name: COD_TYP_ADRESSE
+    type: StringType
+    nullable: true
+    description: Type d'adresse
+  - name: NUM_ADRESSE
+    type: StringType
+    nullable: true
+    description: Référence adresse contrat
+  - name: NUM_PTN_ICX
+    type: StringType
+    nullable: true
+    description: N° partition
+  - name: NUM_TIERS_ICX
+    type: StringType
+    nullable: true
+    description: <> nul tiers
+  - name: NUM_TEC_CLU
+    type: StringType
+    nullable: true
+    description: Référence technique (n° tiers)
+  - name: NUM_INTER_CTR
+    type: StringType
+    nullable: true
+    description: Numéro du  référence interne contrat
+  - name: NUM_PTN_LTC
+    type: StringType
+    nullable: true
+    description: N° partition
+  - name: NUM_TEC_CLU_LTC
+    type: StringType
+    nullable: true
+    description: Référence technique (n° tiers)
+  - name: NUM_INTER_CTR_LTC
+    type: StringType
+    nullable: true
+    description: Numéro du  référence interne contrat
+  - name: REF_CM_LTC
+    type: StringType
+    nullable: true
+    description: Référence ban du tiers
+  - name: COD_TYP_LTC
+    type: StringType
+    nullable: true
+    description: Type de lien tiers-contrat
+  - name: COD_STY_LTC
+    type: StringType
+    nullable: true
+    description: Sous-type de lien tiers-contrat
+  - name: COD_AGL_IMA_LTC
+    type: StringType
+    nullable: true
+    description: Aiguille IC
+  - name: DATE_LIEN_LTC
+    type: DateType
+    nullable: true
+    description: Date effet  tiers-contrat
+  - name: DATE_ANNUL_LIEN_LTC
+    type: DateType
+    nullable: true
+    description: Date annulation  tiers-contrat
+  - name: COD_ROLE_TIERS
+    type: StringType
+    nullable: true
+    description: Rôle du tiers
+  - name: CODE_PRC
+    type: StringType
+    nullable: true
+    description: '% application lien tiers-contrat'
+  - name: CODE_IVN_LGE_LTC
+    type: StringType
+    nullable: true
+    description: Intervenant logique (code sas)
+  - name: CODE_IVN_PHY_LTC
+    type: StringType
+    nullable: true
+    description: Intervenant physique (code sas)
+  - name: COD_MOD_MODIF_LTC
+    type: StringType
+    nullable: true
+    description: Mode de modification
+  - name: DATE_MODIF_LTC
+    type: DateType
+    nullable: true
+    description: Date de modification
+  - name: DATE_CREATION_LTC
+    type: DateType
+    nullable: true
+    description: Date de création
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_TIERS
+    - IDF_REF_EXT_CTR
+    - IDF_TYP_PRD
+    - IDF_REF_PRD
+  - rule: unique
+    columns:
+    - IDF_NUM_TIERS
+    - IDF_REF_EXT_CTR
+    - IDF_TYP_PRD
+    - IDF_REF_PRD
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

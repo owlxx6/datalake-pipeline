@@ -1,0 +1,104 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IDCE.xlsx
+  sheet_name: IDCE_LIEN_AUTO
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IDCE_LIENS_AUTO
+domain: idce
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des liens entre les autorisations IDCE
+bronze:
+  table: bronze_sftp_idce_liens_auto
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_idce_liens_auto
+  primary_key:
+  - IDF_REF_AUTO_SUJET
+  - IDF_REF_AUTO_OBJET
+  - IDF_COD_CYC_VIE
+  - IDF_DATE_DEB_LIEN
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_REF_AUTO_SUJET
+    type: StringType
+    nullable: false
+    description: "Référence autorisation sujet \n= autorisation fille pour le lien mère fille\n= autorisation origine pour\
+      \ les renouvellements auto"
+  - name: IDF_REF_AUTO_OBJET
+    type: StringType
+    nullable: false
+    description: |-
+      Référence Autorisation  objet
+      = autorisation mère pour le lien mère fille
+      = autorisation renouvelée pour le renouvellement auto
+  - name: DAT_OPC
+    type: DateType
+    nullable: true
+    description: Date de traitement OPC
+  - name: ENTITE_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: |-
+      Entite Gestionnaire  de l’autorisation (Banque, Guichet, Bureau)
+      = Entite Gestionnaire  de l’agent à l’origine de l’evenement
+      Obligatoire pour le dispatch sur les sites decisionnels
+  - name: COD_RENOUVLEE
+    type: StringType
+    nullable: true
+    description: |-
+      Code Autorisation renouvelée (O/N)
+      = ‘R’ si autorisation renouvelée
+      = ‘M’ si autorisation revisée
+  - name: IDF_COD_CYC_VIE
+    type: StringType
+    nullable: false
+    description: |-
+      Cycle de vie
+      C : En cours
+      T : Terminé
+  - name: DATE_CREATION
+    type: DateType
+    nullable: true
+    description: Date de creation du lien
+  - name: DATE_DERN_MAJ
+    type: DateType
+    nullable: true
+  - name: COD_TYP_LIEN
+    type: StringType
+    nullable: true
+    description: |-
+      Type de lien
+      "1" : Lien mère/fille
+      "3" : Ligne renouvelée/révisée
+  - name: IDF_DATE_DEB_LIEN
+    type: DateType
+    nullable: false
+    description: Date de début du lien
+  - name: DATE_FIN_LIEN
+    type: DateType
+    nullable: true
+    description: Date de fin du lien
+  - name: FILLER
+    type: StringType
+    nullable: true
+    description: FILLER
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_REF_AUTO_SUJET
+    - IDF_REF_AUTO_OBJET
+    - IDF_COD_CYC_VIE
+    - IDF_DATE_DEB_LIEN
+  - rule: unique
+    columns:
+    - IDF_REF_AUTO_SUJET
+    - IDF_REF_AUTO_OBJET
+    - IDF_COD_CYC_VIE
+    - IDF_DATE_DEB_LIEN
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

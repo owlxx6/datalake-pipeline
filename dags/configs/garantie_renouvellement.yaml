@@ -1,0 +1,58 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_GARWEB.xlsx
+  sheet_name: GARANTIE_RENOUVELLEMENT
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: GARANTIE_RENOUVELLEMENT
+domain: garweb
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des renouvellements GARWEB
+bronze:
+  table: bronze_sftp_garantie_renouvellement
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_garantie_renouvellement
+  primary_key:
+  - IDF_NUM_CTR_GARANTIE
+  - IDF_NUM_INSCRIPTION
+  - IDF_DATE_RENOUV
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_CTR_GARANTIE
+    type: StringType
+    nullable: false
+    description: Numéro de contrat garantie
+  - name: IDF_NUM_INSCRIPTION
+    type: StringType
+    nullable: false
+    description: Numéro inscription
+  - name: IDF_DATE_RENOUV
+    type: DateType
+    nullable: false
+    description: Date renouvellement
+  - name: DATE_VALIDITE
+    type: DateType
+    nullable: true
+    description: Date validité
+  - name: DATE_MAJ_OCCURENCE
+    type: DateType
+    nullable: true
+    description: Date maj
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_INSCRIPTION
+    - IDF_DATE_RENOUV
+  - rule: unique
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+    - IDF_NUM_INSCRIPTION
+    - IDF_DATE_RENOUV
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

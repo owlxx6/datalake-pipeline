@@ -1,0 +1,280 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_TIERS.xlsx
+  sheet_name: TIERS_EI
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: TIERS_EI
+domain: tiers
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table de la partie PM des tiers EI
+bronze:
+  table: bronze_sftp_tiers_ei
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_tiers_ei
+  primary_key:
+  - IDF_NUM_TIERS
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_TIERS
+    type: DecimalType(13)
+    nullable: false
+    description: N° de tiers
+  - name: COD_TYP_TIERS
+    type: StringType
+    nullable: true
+    description: Type du tiers (PP,PM)
+  - name: COD_CATG_JUR
+    type: StringType
+    nullable: true
+    description: Catégorie juridique du tiers
+  - name: COD_STATUT_TIERS
+    type: StringType
+    nullable: true
+    description: Statut tiers (prospect, client,ancien client)
+  - name: DATE_ANCIENNETE
+    type: DateType
+    nullable: true
+    description: statut tiers depuis ….
+  - name: RAISON_SOCIALE
+    type: StringType
+    nullable: true
+    description: Raison sociale
+  - name: DENOMINATION_CMC
+    type: StringType
+    nullable: true
+    description: 'Dénomination Commerciale : Enseigne pour nom+ prénom  ou blanc pour d''autre PM'
+  - name: COD_PAYS_NTN
+    type: StringType
+    nullable: true
+    description: Nationalité du tiers
+  - name: COD_RES_FISC
+    type: StringType
+    nullable: true
+    description: Code pays de résidence fiscale
+  - name: DATE_RES_FISC
+    type: DateType
+    nullable: true
+    description: Date début de validité du lieu de résidence fiscale
+  - name: COD_RES_TERR
+    type: StringType
+    nullable: true
+    description: Code du Pays de résidence territoriale
+  - name: TOP_MAILING
+    type: StringType
+    nullable: true
+    description: TOP_Mailing
+  - name: TOP_TELEVENTE
+    type: StringType
+    nullable: true
+    description: TOP_TELEVENTE
+  - name: TOP_EMAILING
+    type: StringType
+    nullable: true
+    description: TOP_Emailing
+  - name: TOP_SMS
+    type: StringType
+    nullable: true
+    description: TOP_SMS
+  - name: SIGLE_STE
+    type: StringType
+    nullable: true
+    description: Sigle commercial de la Sté
+  - name: DATE_CREATION_LEG
+    type: DateType
+    nullable: true
+    description: Date de création légale
+  - name: COD_ETABLISSEMENT
+    type: StringType
+    nullable: true
+    description: Code établissement
+  - name: COD_ACTIVITE
+    type: StringType
+    nullable: true
+    description: Code activité
+  - name: COD_SEC_ACTIVITE
+    type: StringType
+    nullable: true
+    description: Secteur d'activité
+  - name: COMPLEMENT_ACTIVITE
+    type: StringType
+    nullable: true
+    description: Données complémentaires liées à l’activité
+  - name: COD_AGT_ECONOMIQUE
+    type: StringType
+    nullable: true
+    description: Code agent économique
+  - name: DATE_FIN_ACTIVITE
+    type: DateType
+    nullable: true
+    description: Date de cessation d'activité
+  - name: DATE_CREATION_PM
+    type: DateType
+    nullable: true
+    description: Date de création PM
+  - name: COD_TRIBUNAL
+    type: StringType
+    nullable: true
+    description: Code tribunal ( ville du tribunal obligatoire pour les RC renseignés)
+  - name: REGISTRE_COMMERCE
+    type: StringType
+    nullable: true
+    description: Registre du commerce
+  - name: NUM_PATENTE
+    type: StringType
+    nullable: true
+    description: Patente
+  - name: COD_ETAT_PM
+    type: StringType
+    nullable: true
+    description: 'Etat de la personne morale ( F: en formation…)'
+  - name: DATE_ETAT_PM
+    type: DateType
+    nullable: true
+    description: Date de l'état de la personne morale
+  - name: MNT_CAPITAL_SOCIAL
+    type: StringType
+    nullable: true
+    description: Capital social
+  - name: COD_DEV_CAPITAL_SOCIAL
+    type: StringType
+    nullable: true
+    description: Devise du capital social (code ISO)
+  - name: COD_INDICATEUR_TVA
+    type: StringType
+    nullable: true
+    description: Indicateur assujettissement à la TVA ( O=Oui, N=Non, blanc si inconnu )
+  - name: MNT_CHIFFRE_AFFAIRE
+    type: DecimalType(15)
+    nullable: true
+    description: Chiffre D'affaire
+  - name: EFFECTIF
+    type: StringType
+    nullable: true
+    description: Effectif
+  - name: TYP_CLASSIFICATION
+    type: StringType
+    nullable: true
+    description: Type de classification
+  - name: LIB_CONVENTION
+    type: StringType
+    nullable: true
+    description: Libellé Convention ( classification)
+  - name: SS_TYP_CLASSIFICATION
+    type: StringType
+    nullable: true
+    description: Sous-type de classification
+  - name: VALEUR_CLASSIFICATION
+    type: StringType
+    nullable: true
+    description: Valeur de la classification
+  - name: DATE_VALEUR_CLASSIFICATION
+    type: DateType
+    nullable: true
+    description: Date de valeur
+  - name: DATE_FIN_VALIDITE_CLASSIF
+    type: DateType
+    nullable: true
+    description: Date de fin de validité
+  - name: COD_CYC_VIE_CLASSIF
+    type: StringType
+    nullable: true
+    description: Cycle de vie
+  - name: COD_MULTI_BQ
+    type: StringType
+    nullable: true
+    description: Multi bancarisation
+  - name: LISTE_BQ_CONCURRENTE
+    type: StringType
+    nullable: true
+    description: noms des banques concurrentes
+  - name: CODE_FEDERATION
+    type: StringType
+    nullable: true
+    description: Code fédération du client
+  - name: CODE_GUICHET
+    type: StringType
+    nullable: true
+    description: Code Guichet de création
+  - name: REF_ADRESSE
+    type: DecimalType(13)
+    nullable: true
+    description: Référence adresse
+  - name: DATE_DEB_ADRESSE
+    type: DateType
+    nullable: true
+    description: Date de début de validité de l’adresse
+  - name: DATE_FIN_ADRESSE
+    type: DateType
+    nullable: true
+    description: Date de fin de validité de l’adresse
+  - name: COD_TYP_ADR
+    type: StringType
+    nullable: true
+    description: 'Type d’adresse : LG :LG  autre;EX : Exploitation'
+  - name: ADR_LIG1
+    type: StringType
+    nullable: true
+    description: Ligne 1 du bloc destinataire
+  - name: ADR_LIG2
+    type: StringType
+    nullable: true
+    description: Ligne 2 du bloc destinataire
+  - name: ADR_LIG3
+    type: StringType
+    nullable: true
+    description: Complément de voie
+  - name: ADR_LIG4
+    type: StringType
+    nullable: true
+    description: Voie
+  - name: ADR_LIG5
+    type: StringType
+    nullable: true
+    description: Localité non distributrice ou lieu-dit
+  - name: ADR_LIG6
+    type: StringType
+    nullable: true
+    description: Ligne d’acheminement ( code postale + ville)
+  - name: COD_PAYS_ADR
+    type: StringType
+    nullable: true
+    description: Code pays (norme iso)
+  - name: COD_NPAI
+    type: StringType
+    nullable: true
+    description: Code NPAI  (O/N)
+  - name: DATE_ENTREE_RELA
+    type: DateType
+    nullable: true
+    description: Date d'entrée en relation
+  - name: MOTIF_ENTREE_RELA
+    type: StringType
+    nullable: true
+    description: Motif de l'entrée en relation
+  - name: DATE_FIN_RELA
+    type: DateType
+    nullable: true
+    description: Date de fin de relation
+  - name: MOTIF_FIN_RELA
+    type: StringType
+    nullable: true
+    description: Motif de fin de relation
+  - name: NUM_TIERS_PP
+    type: StringType
+    nullable: true
+    description: Numéro tiers partie physique
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_TIERS
+  - rule: unique
+    columns:
+    - IDF_NUM_TIERS
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

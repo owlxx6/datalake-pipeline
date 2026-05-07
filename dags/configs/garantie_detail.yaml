@@ -1,0 +1,184 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_GARWEB.xlsx
+  sheet_name: GARANTIE_DETAIL
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: GARANTIE_DETAIL
+domain: garweb
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table du détail des garanties
+bronze:
+  table: bronze_sftp_garantie_detail
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_garantie_detail
+  primary_key:
+  - IDF_NUM_CTR_GARANTIE
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_CTR_GARANTIE
+    type: StringType
+    nullable: false
+    description: Numéro de contrat garantie
+  - name: GUI_GEST_GARANTIE
+    type: StringType
+    nullable: true
+    description: Guichet gest. de la garantie
+  - name: COD_ORIGINE_GARANTIE
+    type: StringType
+    nullable: true
+    description: Origine de la garantie
+  - name: COD_NAT_GARANTIE
+    type: StringType
+    nullable: true
+    description: Nature de la garantie (GARNAG)
+  - name: LIB_COMPLEMENTAIRE
+    type: StringType
+    nullable: true
+    description: Libellé complémentaire
+  - name: COD_TYP_GARANT
+    type: StringType
+    nullable: true
+    description: Code Type du garant
+  - name: COD_OBJET_GARANTIE
+    type: StringType
+    nullable: true
+    description: Objet de la garantie
+  - name: PERIMETRE
+    type: StringType
+    nullable: true
+    description: Périmètre (Tous Engagements)
+  - name: RANG_GARANTIE
+    type: StringType
+    nullable: true
+    description: Garantie confidentielle ( le rang)
+  - name: COD_TYP_MNT
+    type: StringType
+    nullable: true
+    description: Type de montant
+  - name: MNT_INITIAL
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant initial
+  - name: MNT_ACTUALISE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant actualisé
+  - name: DATE_ACTUALISATION_MNT
+    type: DateType
+    nullable: true
+    description: Date de mise à jour
+  - name: COD_DEVISE_ISO_MNT
+    type: StringType
+    nullable: true
+    description: Devise iso des montants
+  - name: POURCENTAGE_GARANTIE
+    type: DecimalType(8,5)
+    nullable: true
+    description: Pourcentage de garantie
+  - name: COD_STATUT_GARANTIE
+    type: StringType
+    nullable: true
+    description: Statut de la garantie
+  - name: DATE_ACTUALISATION_GARANTIE
+    type: DateType
+    nullable: true
+    description: Date de mise à jour du statut
+  - name: COD_TYP_DUREE
+    type: StringType
+    nullable: true
+    description: Type de durée
+  - name: DATE_PRISE_EFFET
+    type: DateType
+    nullable: true
+    description: Date de prise d'effet
+  - name: DATE_REVISION
+    type: DateType
+    nullable: true
+    description: Date de révision admin.
+  - name: DATE_ECHEANCE
+    type: DateType
+    nullable: true
+    description: Date d'échéance
+  - name: DATE_TERMINAISON
+    type: DateType
+    nullable: true
+    description: Date réelle de  terminaison
+  - name: COD_MOTIF_TERMINAISON
+    type: StringType
+    nullable: true
+    description: Motif de terminaison
+  - name: COD_EXCEPTION_INFO_CAUTION
+    type: StringType
+    nullable: true
+    description: Exception Info des Cautions
+  - name: COD_FACTURATION_INFO_CAUTION
+    type: StringType
+    nullable: true
+    description: Facturation Info des Cautions
+  - name: RIB_PRELEV_CAUTION
+    type: StringType
+    nullable: true
+    description: RIB prélèvement commissions
+  - name: TOP_LOG_MISE_JEUX
+    type: StringType
+    nullable: true
+    description: Logique de mise en jeu (O/N)
+  - name: DATE_MISE_JEUX
+    type: StringType
+    nullable: true
+    description: Date de mise en jeu (saisie)
+  - name: TX_COM_SOFARIS
+    type: DecimalType(8,5)
+    nullable: true
+    description: Taux de commission SOFARIS
+  - name: ORG_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: Organisme gestionnaire
+  - name: SERVICE_RESP_SUIVI
+    type: StringType
+    nullable: true
+    description: Service responsable du suivi
+  - name: POURCENTAGE_BQE
+    type: DecimalType(3, 2)
+    nullable: true
+    description: Pourcentage de la banque
+  - name: MNT_TOTAL_GARANTIE
+    type: DecimalType(18,3)
+    nullable: true
+    description: Montant total garantie
+  - name: DATE_PASSAGE_CONTENTIEUX
+    type: DateType
+    nullable: true
+    description: Date de passage en contentieux
+  - name: RESPONSABLE_CONTENTIEUX
+    type: StringType
+    nullable: true
+    description: Responsable du contentieux
+  - name: DATE_MAJ_OCCURENCE
+    type: DateType
+    nullable: true
+    description: Date mise à jour de l'occurrence
+  - name: TOP_IRREVOCABLE
+    type: StringType
+    nullable: true
+    description: Top Garantie irrévocable
+  - name: TOP_INCONDITIONNELLE
+    type: StringType
+    nullable: true
+    description: Top Garantie inconditionnelle
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+  - rule: unique
+    columns:
+    - IDF_NUM_CTR_GARANTIE
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

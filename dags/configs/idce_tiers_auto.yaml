@@ -1,0 +1,89 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IDCE.xlsx
+  sheet_name: IDCE_TIERS_AUTO
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IDCE_TIERS_AUTO
+domain: idce
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des tiers des autorisations IDCE
+bronze:
+  table: bronze_sftp_idce_tiers_auto
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_idce_tiers_auto
+  primary_key:
+  - IDF_REF_AUTORISATION
+  - IDF_NUM_TIERS
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_REF_AUTORISATION
+    type: StringType
+    nullable: false
+    description: Référence auto contrat
+  - name: IDF_NUM_TIERS
+    type: StringType
+    nullable: false
+    description: Date de traitement OPC
+  - name: DATE_OPC
+    type: DateType
+    nullable: true
+    description: Date de traitement OPC
+  - name: COD_RENOUVLEE
+    type: StringType
+    nullable: true
+    description: |-
+      Code Autorisation renouvelée (O/N)
+      = ‘R’ si autorisation renouvelée
+      = ‘M’ si autorisation revisée
+  - name: ENTITE_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: |-
+      Entite Gestionnaire  de l’autorisation (Banque, Guichet, Bureau)
+      = Entite Gestionnaire  de l’agent à l’origine de l’evenement
+      Obligatoire pour le dispatch sur les sites decisionnels
+  - name: COD_SAS_CREATION
+    type: StringType
+    nullable: true
+    description: Code SAS de création
+  - name: DATE_CREATION
+    type: DateType
+    nullable: true
+    description: Date de creation
+  - name: COD_SAS_DERN_MAJ
+    type: StringType
+    nullable: true
+    description: Code SAS de dernière Mise a jour
+  - name: DATE_SAS_DERN_MAJ
+    type: DateType
+    nullable: true
+    description: Date de dernière Mise a jour
+  - name: MNT_AUTORISATION
+    type: DecimalType(19)
+    nullable: true
+    description: Montant autorisation pour le Tiers
+  - name: COD_DEVISE
+    type: StringType
+    nullable: true
+    description: Devise de l'autorisation
+  - name: FILLER
+    type: StringType
+    nullable: true
+    description: FILLER
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_REF_AUTORISATION
+    - IDF_NUM_TIERS
+  - rule: unique
+    columns:
+    - IDF_REF_AUTORISATION
+    - IDF_NUM_TIERS
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

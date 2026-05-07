@@ -1,0 +1,95 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IDCE.xlsx
+  sheet_name: IDCE_EVENT_AUTO
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IDCE_EVENT_AUTO
+domain: idce
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des évenements des autorisations IDCE
+bronze:
+  table: bronze_sftp_idce_event_auto
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_idce_event_auto
+  primary_key:
+  - IDF_REF_AUTORISATION
+  - IDF_DATE_EVENEMENT
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_REF_AUTORISATION
+    type: StringType
+    nullable: false
+    description: Référence auto contrat
+  - name: DATE_OPC
+    type: DateType
+    nullable: true
+    description: Date de traitement OPC
+  - name: IDF_DATE_EVENEMENT
+    type: DateType
+    nullable: false
+    description: Timestamp
+  - name: ENTITE_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: Entité gestionnaire de l'autorisation
+  - name: TOP_RENOUVELEE
+    type: StringType
+    nullable: true
+    description: Code d autorisation renouvlée
+  - name: COD_EVENEMENT
+    type: StringType
+    nullable: true
+    description: Code évènement
+  - name: COD_ETAT_POSTEVENT
+    type: StringType
+    nullable: true
+    description: Code état après évènement
+  - name: COD_MOTIF
+    type: StringType
+    nullable: true
+    description: Motif
+  - name: CODE_SAS_COMITE
+    type: StringType
+    nullable: true
+    description: Code SAS de la personne ayant validé pour le compte d’un ‘comité ou pour le compte de’
+  - name: CODE_SAS_CREATION
+    type: StringType
+    nullable: true
+    description: Code SAS de création de l’évènement
+  - name: DATE_CREATION
+    type: DateType
+    nullable: true
+    description: Timestamp de création de l’évènement
+  - name: COD_TYP_MODEL_DONNEE
+    type: StringType
+    nullable: true
+    description: Modèle de donnée
+  - name: TOP_FORCAGE
+    type: StringType
+    nullable: true
+    description: Top forçage
+  - name: MNT_AUTORISATION
+    type: DecimalType(19)
+    nullable: true
+    description: Montant pour historisation de l’information
+  - name: FILLER
+    type: StringType
+    nullable: true
+    description: FILLER
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_REF_AUTORISATION
+    - IDF_DATE_EVENEMENT
+  - rule: unique
+    columns:
+    - IDF_REF_AUTORISATION
+    - IDF_DATE_EVENEMENT
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

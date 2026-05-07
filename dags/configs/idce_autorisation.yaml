@@ -1,0 +1,172 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IDCE.xlsx
+  sheet_name: IDCE_AUTORISATION
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IDCE_AUTORISATION
+domain: idce
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des autorisations IDCE
+bronze:
+  table: bronze_sftp_idce_autorisation
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_idce_autorisation
+  primary_key:
+  - IDF_REF_AUTORISATION
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_REF_AUTORISATION
+    type: StringType
+    nullable: false
+    description: Reference autorisation contrat
+  - name: DATE_OPC
+    type: DateType
+    nullable: true
+    description: Date de traitement opc
+  - name: ENTITE_GESTIONNAIRE
+    type: StringType
+    nullable: true
+    description: Entité gestionnaire de l'autorisation
+  - name: COD_RENOUVELEE
+    type: StringType
+    nullable: true
+    description: Code d autorisation renouvlée
+  - name: REFERENCE_INTERNE
+    type: StringType
+    nullable: true
+    description: Référence interne contrat dans la filière
+  - name: CODE_PRODUIT
+    type: StringType
+    nullable: true
+    description: code produit
+  - name: NUM_TIERS
+    type: StringType
+    nullable: true
+    description: numero de tiers
+  - name: NUM_TIERS_EI
+    type: StringType
+    nullable: true
+    description: numero de tiers EI
+  - name: COD_TYPE_AUTO
+    type: StringType
+    nullable: true
+    description: type d'autorisation
+  - name: FILIERE_GESTION
+    type: StringType
+    nullable: true
+    description: filiére de gestion
+  - name: SOUS_FILIERE_GESTION
+    type: StringType
+    nullable: true
+    description: sous filiere de gestion
+  - name: TOP_MULTI_DEBIT
+    type: StringType
+    nullable: true
+    description: Indicateur ligne multi-débitrice (O/N)
+  - name: MNT_AUTORISATION
+    type: DecimalType(19)
+    nullable: true
+    description: Montant de l’autorisation
+  - name: COD_DEVISE
+    type: StringType
+    nullable: true
+    description: Devise de l'autorisation
+  - name: DATE_EFFET
+    type: DateType
+    nullable: true
+    description: Date effet de l’autorisation
+  - name: DATE_FIN
+    type: DateType
+    nullable: true
+    description: Date de dernière échéance de l’autorisation = Date de fin de l’autorisation
+  - name: COD_ETAT
+    type: StringType
+    nullable: true
+    description: Code état Cycle de Vie de l’autorisation
+  - name: DATE_DERN_ETAT
+    type: DateType
+    nullable: true
+    description: Date de dernier changement d’état de l’autorisation
+  - name: CODE_SAS_CREATION_AUTO
+    type: StringType
+    nullable: true
+    description: Code SAS de création de l’autorisation
+  - name: DATE_CREATION_AUTO
+    type: DateType
+    nullable: true
+    description: Timestamp de création de l’autorisation
+  - name: CODE_SAS_DERN_MAJ
+    type: StringType
+    nullable: true
+    description: Code SAS de dernière mise a jour
+  - name: DATE_DERN_MAJ
+    type: DateType
+    nullable: true
+    description: Timestamp de dernière MAJ de l’autorisation
+  - name: DATE_SIGNATURE
+    type: DateType
+    nullable: true
+    description: Date de signature du contrat
+  - name: COD_SAS_SIGNATURE
+    type: StringType
+    nullable: true
+    description: User de saisie de la date de signature du contrat
+  - name: REFERENCE_FILIIERE
+    type: StringType
+    nullable: true
+    description: Référence filière
+  - name: REFERENCE_SECONDAIRE
+    type: StringType
+    nullable: true
+    description: Référence secondaire
+  - name: MNT_PONDERE
+    type: DecimalType(19)
+    nullable: true
+    description: Montant pondéré
+  - name: COD_LIGNE_OUVERTE
+    type: StringType
+    nullable: true
+    description: Indicateur ligne ouverte/fermée
+  - name: COD_EPS_MEDIA
+    type: StringType
+    nullable: true
+    description: types de média permettant l’émission de lignes EPSD, et gérées par l’application de gestion EPSDW
+  - name: CODE_PROMO
+    type: StringType
+    nullable: true
+    description: Code promotion
+  - name: IDENTIFIANT_PRO_COM
+    type: StringType
+    nullable: true
+    description: Identifiant PROCOM
+  - name: COD_OBJ_FINANCEMENT
+    type: StringType
+    nullable: true
+    description: Code objet financement
+  - name: NUM_DOSSIER
+    type: StringType
+    nullable: true
+    description: NUM dossier
+  - name: COD_TOP_DOSSIER
+    type: StringType
+    nullable: true
+    description: Flag dossier
+  - name: FILLER
+    type: StringType
+    nullable: true
+    description: FILLER
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_REF_AUTORISATION
+  - rule: unique
+    columns:
+    - IDF_REF_AUTORISATION
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

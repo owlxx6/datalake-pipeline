@@ -1,0 +1,47 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_TIERS.xlsx
+  sheet_name: REPRESENTANT_LEG
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: REPRESENTANT_LEG
+domain: tiers
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des représentants légaux
+bronze:
+  table: bronze_sftp_representant_leg
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_representant_leg
+  primary_key:
+  - IDF_NUM_REP_LEG
+  - IDF_NUM_TIERS
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_REP_LEG
+    type: DecimalType(13)
+    nullable: false
+    description: Numéro du représentant légal
+  - name: IDF_NUM_TIERS
+    type: DecimalType(13)
+    nullable: false
+    description: Numéro tiers
+  - name: COD_TYP_REP_LEG
+    type: StringType
+    nullable: true
+    description: Type du représentant légal
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_REP_LEG
+    - IDF_NUM_TIERS
+  - rule: unique
+    columns:
+    - IDF_NUM_REP_LEG
+    - IDF_NUM_TIERS
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

@@ -1,0 +1,20 @@
+# Configuration runtime du job silver_credit_encours.
+# Format : datalake_lib.read.models.JobConfig
+# Chargée par SilverCreditEncours._load_config().
+
+domain: credit
+table: credit_encours
+layer: silver
+source_system: evolan
+
+# Pas de section `source` : ce job lit la table Hive Bronze, pas un CSV landing.
+
+# Seuil DQ bloquant (utilisé par le job, pas par JobConfig).
+dq:
+  blocking_threshold: 0.10  # 10%
+
+# Liste des valeurs autorisées pour la standardisation CODE_STATUT.
+business_rules:
+  allowed_statuts: ["ACTIF", "SOLDE", "CONTENTIEUX", "ECHU"]
+  default_statut: "INCONNU"
+  date_format: "dd/MM/yyyy"

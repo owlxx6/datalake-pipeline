@@ -1,0 +1,194 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_ORG.xlsx
+  sheet_name: ORG
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: ORG
+domain: org
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table ORG - guichet
+bronze:
+  table: bronze_sftp_org
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_org
+  primary_key:
+  - IDF_NUM_GUI
+  - IDF_NUM_BUR
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: COD_FED
+    type: StringType
+    nullable: true
+    description: Code Féderation
+  - name: COD_SEC_BUR
+    type: StringType
+    nullable: true
+    description: Code Section bureau
+  - name: IDF_NUM_GUI
+    type: StringType
+    nullable: false
+    description: Numéro du guichet
+  - name: IDF_NUM_BUR
+    type: StringType
+    nullable: false
+    description: Numéro bureau
+  - name: LIB_FED_COURT
+    type: StringType
+    nullable: true
+    description: Libellé court féderation
+  - name: LIB_FED_LONG
+    type: StringType
+    nullable: true
+    description: Libelle long féderation
+  - name: COD_BQE
+    type: StringType
+    nullable: true
+    description: code banque
+  - name: LIB_BQE
+    type: StringType
+    nullable: true
+    description: libellé banque
+  - name: COD_SEC_DIR
+    type: StringType
+    nullable: true
+    description: code section direction
+  - name: LIB_TYP_DIR
+    type: StringType
+    nullable: true
+    description: libellé type direction
+  - name: NUM_DIR
+    type: StringType
+    nullable: true
+    description: numéro direction
+  - name: LIB_DIR_COURT
+    type: StringType
+    nullable: true
+    description: libellé court direction
+  - name: LIB_DIR_LONG
+    type: StringType
+    nullable: true
+    description: libellé long direction
+  - name: COD_SEC_GRP
+    type: StringType
+    nullable: true
+    description: code section groupe
+  - name: LIB_TYP_GRP
+    type: StringType
+    nullable: true
+    description: libelle type groupe
+  - name: NUM_GRP
+    type: StringType
+    nullable: true
+    description: numéro de groupe
+  - name: LIB_GRP_COURT
+    type: StringType
+    nullable: true
+    description: libelle court groupe
+  - name: LIB_GRP_LONG
+    type: StringType
+    nullable: true
+    description: libelle long groupe
+  - name: LIB_COURT_GUI
+    type: StringType
+    nullable: true
+    description: libelle court guichet
+  - name: LIB_LONG_GUI
+    type: StringType
+    nullable: true
+    description: libelle long guichet
+  - name: LIB_BUR
+    type: StringType
+    nullable: true
+    description: libelle bureau
+  - name: TYP_BUR
+    type: StringType
+    nullable: true
+    description: type bureau
+  - name: DATE_OUV_BUR
+    type: StringType
+    nullable: true
+    description: Date ouverture bureau
+  - name: DATE_CLO_BUR
+    type: StringType
+    nullable: true
+    description: date cloture bureau
+  - name: COD_ECV_BUR
+    type: StringType
+    nullable: true
+    description: Statut bureau
+  - name: DATE_ECV_BUR
+    type: StringType
+    nullable: true
+    description: Date fin validité bureau
+  - name: ADR1_BUR
+    type: StringType
+    nullable: true
+    description: Adresse bureau
+  - name: ADR2_BUR
+    type: StringType
+    nullable: true
+    description: complément adresse bureau
+  - name: CODE_POST_BUR
+    type: StringType
+    nullable: true
+    description: code postale bureau
+  - name: NOM_VIL_BUR
+    type: StringType
+    nullable: true
+    description: nom ville bureau
+  - name: NUM_TEL_BUR
+    type: StringType
+    nullable: true
+    description: numéro télephone bureau
+  - name: NUM_FAX
+    type: StringType
+    nullable: true
+    description: numéro fax bureau
+  - name: COD_INCIDENT
+    type: StringType
+    nullable: true
+    description: code incident
+  - name: CODE_REG_ECO
+    type: StringType
+    nullable: true
+    description: code région économique
+  - name: CODE_COC
+    type: StringType
+    nullable: true
+    description: code office de change
+  - name: ADRESSE_IP
+    type: StringType
+    nullable: true
+    description: adresse IP de l'agence
+  - name: NUM_PORT
+    type: DecimalType(5)
+    nullable: true
+    description: N° Port de la Tâche d'écoute
+  - name: TIME_OUT
+    type: DecimalType(5)
+    nullable: true
+    description: Time out de la tâche d'écoute
+  - name: NBR_TENTATIVE
+    type: DecimalType(5)
+    nullable: true
+    description: Nombre de tentative conexion tâche d'écoute
+  - name: SEUIL_INACT
+    type: StringType
+    nullable: true
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_GUI
+    - IDF_NUM_BUR
+  - rule: unique
+    columns:
+    - IDF_NUM_GUI
+    - IDF_NUM_BUR
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

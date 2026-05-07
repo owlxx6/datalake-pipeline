@@ -1,0 +1,33 @@
+table_name: depassement
+domain: depassement
+version: '1.0'
+primary_key: []
+rules:
+- rule_id: RUL_001
+  rule_type: not_null
+  columns:
+  - NUM_COMPTE
+  - DATE_ENTREE
+  - COMPTE_GENERAL
+  - MNT_DEPASSEMENT
+  severity: blocking
+  description: Champs obligatoires non nullables
+
+# ─────────────────────────────────────────────
+# TODO Métier DQ — compléter les règles ci-dessous
+# ─────────────────────────────────────────────
+# Exemples :
+#   - rule_id: RUL_XXX
+#     rule_type: referential
+#     column: MON_CHAMP_FK
+#     reference_table: silver_table_parent
+#     reference_column: IDF_CLE_PARENT
+#     severity: warning
+#     description: "..."
+#
+#   - rule_id: RUL_XXX
+#     rule_type: range
+#     column: MNT_MONTANT
+#     min_value: 0
+#     severity: blocking
+#     description: "..."

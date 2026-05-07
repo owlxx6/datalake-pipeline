@@ -1,0 +1,84 @@
+# Référentiel des jointures validées par le diagramme métier.
+# Source : docs/diagram jointure.jpeg
+# Statut : confirmed = validation directe par le diagramme.
+#          confirmed_with_caveat = validé mais avec note d'ambiguïté.
+# Mise à jour : 2026-04-25
+
+joins_validated:
+  - left_table: CREDIT_AMORT
+    left_column: IDF_NUM_DOSS
+    right_table: IMPAYES_CDL
+    right_column: IDF_NUM_DOSS
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: CREDIT_AMORT
+    left_column: NUM_COMPTE_EMPRUNTEUR
+    right_table: IMAGE_CONTRAT
+    right_column: IDF_REF_EXT_CTR
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: CREDIT_AMORT
+    left_column: COD_PRODUIT
+    right_table: POPS
+    right_column: IDF_CODE_PRODUIT
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: DEPASSEMENT
+    left_column: NUM_COMPTE
+    right_table: IMAGE_CONTRAT
+    right_column: IDF_REF_EXT_CTR
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: IMAGE_CONTRAT
+    left_column: IDF_NUM_TIERS
+    right_table: TIERS
+    right_column: IDF_NUM_TIERS
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: IMAGE_CONTRAT
+    left_column: IDF_REF_EXT_CTR
+    right_table: GARANTIE_CONTRAT
+    right_column: IDF_REF_EXT_CREDIT
+    status: confirmed_with_caveat
+    source: diagram_jointure.jpeg
+    note: "Pourrait aussi être CREDIT_AMORT.IDF_NUM_DOSS - à confirmer"
+
+  - left_table: GARANTIE_CONTRAT
+    left_column: IDF_NUM_CTR_GARANTIE
+    right_table: GARANTIE_DETAIL
+    right_column: IDF_NUM_CTR_GARANTIE
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: TIERS
+    left_column: IDF_NUM_TIERS
+    right_table: GARANTIE_TIERS
+    right_column: IDF_NUM_TIERS
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: TIERS
+    left_column: IDF_NUM_TIERS
+    right_table: TYPOLOGIE
+    right_column: IDF_NUM_TIERS
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: PORTEFEUILLE
+    left_column: IDF_NUM_GUI
+    right_table: ORG
+    right_column: IDF_NUM_GUI
+    status: confirmed
+    source: diagram_jointure.jpeg
+
+  - left_table: AUTORISATIONS
+    left_column: IDF_REF_AUTO
+    right_table: IMAGE_CONTRAT
+    right_column: IDF_REF_EXT_CTR
+    status: confirmed
+    source: diagram_jointure.jpeg

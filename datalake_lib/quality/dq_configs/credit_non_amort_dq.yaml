@@ -1,0 +1,37 @@
+table_name: credit_non_amort
+domain: autorisations
+version: '1.0'
+primary_key:
+- IDF_REF_AUTO
+rules:
+- rule_id: RUL_001
+  rule_type: not_null
+  columns:
+  - IDF_REF_AUTO
+  severity: blocking
+  description: PK ne doit pas être nulle
+- rule_id: RUL_002
+  rule_type: unique
+  columns:
+  - IDF_REF_AUTO
+  severity: blocking
+  description: PK doit être unique
+
+# ─────────────────────────────────────────────
+# TODO Métier DQ — compléter les règles ci-dessous
+# ─────────────────────────────────────────────
+# Exemples :
+#   - rule_id: RUL_XXX
+#     rule_type: referential
+#     column: MON_CHAMP_FK
+#     reference_table: silver_table_parent
+#     reference_column: IDF_CLE_PARENT
+#     severity: warning
+#     description: "..."
+#
+#   - rule_id: RUL_XXX
+#     rule_type: range
+#     column: MNT_MONTANT
+#     min_value: 0
+#     severity: blocking
+#     description: "..."

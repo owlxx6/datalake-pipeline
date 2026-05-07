@@ -1,0 +1,179 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_IMPAYES_CDL.xlsx
+  sheet_name: IMPAYES_CDL
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: IMPAYES_CDL
+domain: impayes_cdl
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des impayes CDL
+bronze:
+  table: bronze_sftp_impayes_cdl
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_impayes_cdl
+  primary_key:
+  - IDF_NUM_DOSSIER
+  - IDF_NUM_CREANCE
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDF_NUM_DOSSIER
+    type: StringType
+    nullable: false
+    description: Numéro de dossier
+  - name: IDF_NUM_CREANCE
+    type: StringType
+    nullable: false
+    description: Reference de créance
+  - name: COD_NAT_ENGAGEMENT
+    type: StringType
+    nullable: true
+    description: Code de la nature d'engagement
+  - name: COD_TYP_DOSSIER
+    type: StringType
+    nullable: true
+    description: Code de type du dossier
+  - name: NUM_COMPTE
+    type: StringType
+    nullable: true
+    description: Numéro du compte
+  - name: MNT_IMPAYES_CDL
+    type: DecimalType(18.3)
+    nullable: true
+    description: Montant
+  - name: DATE_CREANCE
+    type: DateType
+    nullable: true
+    description: Date de créance
+  - name: REF_VALEUR
+    type: StringType
+    nullable: true
+    description: Reference valeur
+  - name: REF_LIAISON
+    type: StringType
+    nullable: true
+    description: Reference liaison
+  - name: DATE_REMISE
+    type: StringType
+    nullable: true
+    description: Date remise
+  - name: COD_BANQUE
+    type: StringType
+    nullable: true
+    description: Code de l'etablissement bancaire
+  - name: COD_STATUT_INCIDENT
+    type: StringType
+    nullable: true
+    description: Code statut
+  - name: DATE_STATUT
+    type: StringType
+    nullable: true
+    description: Date de la statut
+  - name: NAT_DECLASSEMENT
+    type: StringType
+    nullable: true
+    description: Nature de déclassement
+  - name: DATE_ECHEANCE
+    type: StringType
+    nullable: true
+    description: Date d'échéance
+  - name: CENTRE_DE_FRAIS
+    type: StringType
+    nullable: true
+    description: Centre de frais de compte
+  - name: RACINE
+    type: StringType
+    nullable: true
+    description: Racine de compte
+  - name: CATEGORIE
+    type: StringType
+    nullable: true
+    description: Catégorie
+  - name: ANNEXE
+    type: StringType
+    nullable: true
+    description: Annexe
+  - name: COD_DEVISE
+    type: StringType
+    nullable: true
+    description: Devise
+  - name: NUM_GUICHET
+    type: StringType
+    nullable: true
+    description: Code guichet bancaire
+  - name: DATE_MISE_IMPAYE
+    type: StringType
+    nullable: true
+    description: Date mise impayé
+  - name: MNT_CREANCE
+    type: DecimalType(18.3)
+    nullable: true
+    description: Montant de la créance
+  - name: MNT_INTERET_RETARD
+    type: DecimalType(18.3)
+    nullable: true
+    description: Montant interet du retard
+  - name: MNT_TVA_INTERET_RETARD
+    type: DecimalType(18.3)
+    nullable: true
+    description: TVA interet du retard
+  - name: MNT_PENALITE_RETARD
+    type: DecimalType(18.3)
+    nullable: true
+    description: Pénalités de retard
+  - name: MNT_TVA_PENALITE_RETARD
+    type: DecimalType(18.3)
+    nullable: true
+    description: TVA pénalités de retard
+  - name: COD_CONDITION_EXTERNE
+    type: StringType
+    nullable: true
+    description: Code condition externe
+  - name: DATE_EFFET
+    type: StringType
+    nullable: true
+    description: Date effet
+  - name: MNT_AMORTISS
+    type: DecimalType(18.3)
+    nullable: true
+    description: Montant amortiss
+  - name: MNT_INTERET_NORMAL
+    type: DecimalType(18.3)
+    nullable: true
+    description: Montant interet normal
+  - name: NUM_COMPTE_PAYEUR
+    type: StringType
+    nullable: true
+    description: Numéro compte payeur
+  - name: PRIORITE_STATUT
+    type: StringType
+    nullable: true
+    description: Priorité statut
+  - name: NUM_DOSSIER_COMPLET
+    type: StringType
+    nullable: true
+    description: Numero dossier complet
+  - name: NUM_SOUS_LIGNE
+    type: StringType
+    nullable: true
+    description: Numero sous ligne
+  - name: NUM_TIRAGE
+    type: StringType
+    nullable: true
+    description: Numero tirage
+  quality_rules:
+  - rule: not_null
+    columns:
+    - IDF_NUM_DOSSIER
+    - IDF_NUM_CREANCE
+  - rule: unique
+    columns:
+    - IDF_NUM_DOSSIER
+    - IDF_NUM_CREANCE
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 * * *
+owner: data-team  # TODO: à confirmer
+frequency: Quotidien
+storage_type: STOCK

@@ -1,0 +1,103 @@
+metadata:
+  generated_from: canevas/EDD_MODEL_CREDIT.xlsx
+  sheet_name: NEVOLAN_TA
+  generated_at: '2026-04-28T16:52:55.055222+00:00'
+table_name: NEVOLAN_TA
+domain: credit
+source: sftp  # TODO: à confirmer — défaut SFTP car Fichiers PLATS
+description: Table des tableaus d'amortissement des dossiers Non Evolan
+bronze:
+  table: bronze_sftp_nevolan_ta
+  partition_by: date_arrete
+  mode: append
+silver:
+  table: silver_nevolan_ta
+  primary_key: []  # WARNING: aucune PK détectée
+  write_mode: merge
+  partition_by: date_arrete
+  schema:
+  - name: IDENTIFIANT_CONTRAT
+    type: StringType
+    nullable: true
+  - name: DESCRIPTION
+    type: StringType
+    nullable: true
+  - name: ROLE_BMCE
+    type: StringType
+    nullable: true
+  - name: COD_DEVISE
+    type: StringType
+    nullable: true
+  - name: MNT_NOMINAL
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_DEBLOQUE
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_PART_BMCE
+    type: DecimalType(18,3)
+    nullable: true
+  - name: TX_INTERET
+    type: DecimalType(8,5)
+    nullable: true
+  - name: NATURE_TAUX
+    type: StringType
+    nullable: true
+  - name: DATE_REVISION
+    type: DateType
+    nullable: true
+  - name: DATE_DEBLOCAGE
+    type: DateType
+    nullable: true
+  - name: DATE_PREMIERE_ECHEANCE
+    type: DateType
+    nullable: true
+  - name: DATE_DERNIERE_ECHEANCE
+    type: DateType
+    nullable: true
+  - name: NUMERO_COMPTE
+    type: StringType
+    nullable: true
+  - name: TX_POURCENTAGE_BMCE
+    type: DecimalType(8,5)
+    nullable: true
+  - name: SEMESTRE
+    type: StringType
+    nullable: true
+  - name: DATE_EVENEMENT
+    type: DateType
+    nullable: true
+  - name: NBR_JOURS
+    type: DecimalType(10)
+    nullable: true
+  - name: MNT_INTERETS_TTC_GLOBAL
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_INTERETS_TTC_BMCE
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_PRINCIPAL_GLOBAL
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_PRINCIPAL_BMCE
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_ECHEANCE_GLOBAL
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_ECHEANCE_BMCE
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_CAPITAL_RESTANT_DU_GLOBAL
+    type: DecimalType(18,3)
+    nullable: true
+  - name: MNT_CAPITAL_RESTANT_DU_BMCE
+    type: DecimalType(18,3)
+    nullable: true
+  quality_rules: []
+gold:
+  feeds: []  # TODO: à définir (modèle en étoile)
+schedule: 0 6 1 * *
+owner: data-team  # TODO: à confirmer
+frequency: Mensuel (non mis en prod)
+storage_type: STOCK
