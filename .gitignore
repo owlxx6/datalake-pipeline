@@ -35,3 +35,9 @@ dags/__pycache__/
 *.env
 credentials.json
 *_secret*
+
+# Artefacts générés
+datalake_lib.zip
+
+# Claude Code internals
+.claude/

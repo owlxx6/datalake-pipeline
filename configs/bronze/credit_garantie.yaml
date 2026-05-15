@@ -1,0 +1,464 @@
+# ==============================================================================
+# bronze_credit_garantie.yaml — Domaine CREDIT_GARANTIE — toutes les tables
+# Pour ajouter une table : ajouter une entrée dans la liste `tables:`
+# Pour lancer toutes les tables :
+#   spark-submit engine.py --config configs/bronze/credit_garantie.yaml --date-arrete 2026-05-04
+# Pour une table spécifique :
+#   spark-submit engine.py --config configs/bronze/credit_garantie.yaml --date-arrete 2026-05-04 --table TIERS
+#
+# Convention de nommage Silver (applicable à tous les use cases) :
+#   silver_write.database  →  silver_{domaine}        ex: silver_credit_garantie
+#   silver_write.table     →  {entité}                ex: tiers  (pas de préfixe de couche)
+#   output.database        →  silver_{domaine}        même base pour les tables Iceberg DQ
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 0. GLOBALS  (partagés par toutes les tables)
+# ------------------------------------------------------------------------------
+globals:
+  layer_abbrev: "BR"
+  severity_weights:
+    CRITICAL: 1
+    HIGH: 2
+    MEDIUM: 3
+    LOW: 4
+
+# ------------------------------------------------------------------------------
+# 1. PROJET
+# ------------------------------------------------------------------------------
+project:
+  layer: "BRONZE"
+  domain: "CREDIT_GARANTIE"
+  environment: "DEV"
+  execution_id_template: "{layer_abbrev}_{domain}_{table_name}_{timestamp}"
+
+# ------------------------------------------------------------------------------
+# 2. SPARK  (configuré une seule fois)
+# ------------------------------------------------------------------------------
+spark:
+  configs:
+    - key: "spark.sql.extensions"
+      value: "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    - key: "spark.sql.catalog.spark_catalog"
+      value: "org.apache.iceberg.spark.SparkSessionCatalog"
+    - key: "spark.sql.catalog.spark_catalog.type"
+      value: "hive"
+    - key: "spark.sql.catalog.spark_catalog.uri"
+      value: "thrift://ubuntu3:9083"
+    - key: "spark.sql.parquet.datetimeRebaseModeInWrite"
+      value: "CORRECTED"
+    - key: "spark.sql.parquet.int96RebaseModeInWrite"
+      value: "CORRECTED"
+
+# ------------------------------------------------------------------------------
+# 3. OUTPUT  (tables Iceberg partagées pour tout le domaine)
+# ------------------------------------------------------------------------------
+output:
+  # Les résultats DQ (rejects, quality_results, log_pipeline) sont stockés
+  # dans la couche Silver (Hive/Iceberg). Les données brutes, elles, restent
+  # en Bronze HDFS (Parquet via write.path_template de chaque table).
+  database: "silver_credit_garantie"
+
+  quality_results:
+    name_template: "{layer_abbrev}_{domain}_QUALITY_RESULTS"
+    format: "iceberg"
+    mode: "append"
+    partition_by: ["environment", "date_situation"]
+
+  logs_rejected:
+    enabled: true
+    name_template: "{layer_abbrev}_{domain}_LOGS_REJECTED"
+    format: "iceberg"
+    mode: "append"
+    partition_by: ["environment", "date_situation"]
+
+  log_pipeline:
+    name_template: "{layer_abbrev}_{domain}_LOG_PIPELINE"
+    format: "iceberg"
+    mode: "append"
+    partition_by: ["environment"]
+
+# ------------------------------------------------------------------------------
+# 4. PERFORMANCE  (partagée)
+# ------------------------------------------------------------------------------
+performance:
+  cache_source_data: true
+  repartition:
+    enabled: false
+    num_partitions: 8
+
+# ------------------------------------------------------------------------------
+# 5. RETRY  (partagé)
+# ------------------------------------------------------------------------------
+retry:
+  max_retries: 3
+  backoff_seconds: 2
+  retryable_exceptions:
+    - "java.io.IOException"
+    - "org.apache.spark.SparkException"
+    - "java.net.ConnectException"
+
+# ------------------------------------------------------------------------------
+# 6. EXÉCUTION  (partagée)
+# ------------------------------------------------------------------------------
+execution:
+  dry_run: false
+  date_situation:
+    source: "today"
+    format: "yyyy-MM-dd"
+
+# ==============================================================================
+# 7. TABLES  (une entrée par table — seule section à modifier pour ajouter une table)
+# ==============================================================================
+tables:
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # TABLE : TIERS
+  # ────────────────────────────────────────────────────────────────────────────
+  - name: "TIERS"
+    domain: "tiers"
+    primary_key:
+      - "IDF_NUM_TIERS"
+    is_partitioned: false
+
+    source:
+      path_template: "hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}"
+      format: "parquet"
+      loading:
+        mode: "FULL"
+
+    schema:
+      on_cast_error: "reject"
+      fields:
+        - name: "IDF_NUM_TIERS"
+          spark_type: "DecimalType(13,0)"
+          nullable: false
+          description: "N° de tiers (PK)"
+        - name: "COD_TYP_TIERS"
+          spark_type: "StringType"
+          nullable: true
+          description: "Type du tiers (PP, PM, PO)"
+        - name: "NOM_USG_TIERS"
+          spark_type: "StringType"
+          nullable: true
+          description: "Nom d'usage"
+        - name: "PRENOM_TIERS"
+          spark_type: "StringType"
+          nullable: true
+          description: "Prénom"
+        - name: "RAISON_SOCIALE"
+          spark_type: "StringType"
+          nullable: true
+          description: "Raison sociale"
+        - name: "DATE_NAISSANCE"
+          spark_type: "DateType"
+          nullable: true
+          description: "Date de naissance"
+        - name: "COD_NAT_TIERS"
+          spark_type: "StringType"
+          nullable: true
+          description: "Nature du tiers"
+        - name: "COD_STATUT_TIERS"
+          spark_type: "StringType"
+          nullable: true
+          description: "Statut tiers"
+        - name: "DATE_ENTREE_RELA"
+          spark_type: "DateType"
+          nullable: true
+          description: "Date d'entrée en relation"
+        - name: "MNT_REVENU"
+          spark_type: "DecimalType(15,2)"
+          nullable: true
+          description: "Revenu du tiers"
+
+    write:                             # Bronze HDFS — données brutes (Parquet)
+      format: "parquet"
+      path_template: "hdfs://ubuntu3:9000/data/bronze/{domain}/{table_name}/date_arrete={date_arrete}"
+      mode: "overwrite"
+      partition_by: ["date_arrete"]
+      compression: "snappy"
+      coalesce: 4
+
+    silver_write:                      # Silver Hive — données clean post-DQ
+      database: "silver_credit_garantie"
+      table: "tiers"
+      mode: "overwrite"
+      partition_by: ["date_arrete"]
+
+    quality_rules:
+      - field: "IDF_NUM_TIERS"
+        source_column: "IDF_NUM_TIERS"
+        data_type: "DecimalType"
+        description: "PK — non null et unique"
+        checks:
+          - type: "not_null"
+            severity: "CRITICAL"
+            alert_threshold: 0.0
+            control_type: "BASIC"
+          - type: "unique"
+            severity: "CRITICAL"
+            alert_threshold: 0.0
+            control_type: "BASIC"
+
+      - field: "COD_TYP_TIERS"
+        source_column: "COD_TYP_TIERS"
+        data_type: "StringType"
+        description: "Type tiers : PP, PM ou PO"
+        checks:
+          - type: "not_null"
+            severity: "HIGH"
+            alert_threshold: 5.0
+            control_type: "BASIC"
+          - type: "in_list"
+            severity: "HIGH"
+            allowed_values: ["PP", "PM", "PO"]
+            alert_threshold: 1.0
+            control_type: "BASIC"
+
+      - field: "DATE_NAISSANCE"
+        source_column: "DATE_NAISSANCE"
+        data_type: "DateType"
+        description: "Date de naissance valide pour PP"
+        filter_condition: "COD_TYP_TIERS = 'PP'"
+        checks:
+          - type: "date_valid"
+            severity: "MEDIUM"
+            alert_threshold: 2.0
+            control_type: "BASIC"
+
+      - field: "NOM_USG_TIERS"
+        source_column: "NOM_USG_TIERS"
+        data_type: "StringType"
+        description: "Nom obligatoire pour PP"
+        filter_condition: "COD_TYP_TIERS = 'PP'"
+        checks:
+          - type: "not_null"
+            severity: "HIGH"
+            alert_threshold: 0.5
+            control_type: "BASIC"
+
+      - field: "RAISON_SOCIALE"
+        source_column: "RAISON_SOCIALE"
+        data_type: "StringType"
+        description: "Raison sociale obligatoire pour PM"
+        filter_condition: "COD_TYP_TIERS = 'PM'"
+        checks:
+          - type: "not_null"
+            severity: "HIGH"
+            alert_threshold: 0.5
+            control_type: "BASIC"
+          - type: "max_length"
+            severity: "MEDIUM"
+            max_length: 64
+            alert_threshold: 1.0
+            control_type: "BASIC"
+
+    consistency_rules:
+      - name: "PP_identite_requise"
+        description: "PP doit avoir nom ou prénom"
+        condition: "COD_TYP_TIERS = 'PP'"
+        required_fields: ["NOM_USG_TIERS", "PRENOM_TIERS"]
+        severity: "HIGH"
+        alert_threshold: 5.0
+        control_type: "ADVANCED"
+
+      - name: "PM_raison_sociale_requise"
+        description: "PM doit avoir une raison sociale"
+        condition: "COD_TYP_TIERS = 'PM'"
+        required_fields: ["RAISON_SOCIALE"]
+        severity: "HIGH"
+        alert_threshold: 5.0
+        control_type: "ADVANCED"
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # TABLE : IMAGE_CONTRAT
+  # ────────────────────────────────────────────────────────────────────────────
+  - name: "IMAGE_CONTRAT"
+    domain: "image_contrat"
+    primary_key:
+      - "IDF_NUM_TIERS"
+      - "IDF_REF_EXT_CTR"
+      - "IDF_TYP_PRD"
+      - "IDF_REF_PRD"
+    is_partitioned: false
+
+    source:
+      path_template: "hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}"
+      format: "parquet"
+      loading:
+        mode: "FULL"
+
+    schema:
+      on_cast_error: "reject"
+      fields:
+        - name: "IDF_NUM_TIERS"
+          spark_type: "StringType"
+          nullable: false
+          description: "Numéro de tiers (FK → TIERS)"
+        - name: "IDF_REF_EXT_CTR"
+          spark_type: "StringType"
+          nullable: false
+          description: "Référence externe du contrat"
+        - name: "IDF_TYP_PRD"
+          spark_type: "StringType"
+          nullable: false
+          description: "Type produit (I, C, G)"
+        - name: "IDF_REF_PRD"
+          spark_type: "StringType"
+          nullable: false
+          description: "Référence produit"
+        - name: "ENTITE_GES"
+          spark_type: "StringType"
+          nullable: true
+          description: "Entité gestionnaire"
+        - name: "REF_ADRESSE"
+          spark_type: "StringType"
+          nullable: true
+          description: "Référence adresse"
+        - name: "COD_DEV_PRD"
+          spark_type: "StringType"
+          nullable: true
+          description: "Code devise produit"
+        - name: "COD_NAT_JUR"
+          spark_type: "StringType"
+          nullable: true
+          description: "Nature juridique (1=PP, 2=PM)"
+        - name: "COD_CYC_VIE"
+          spark_type: "StringType"
+          nullable: true
+          description: "Cycle de vie (T, A, S, R, E)"
+        - name: "DATE_OUV_CTR"
+          spark_type: "TimestampType"
+          nullable: true
+          description: "Date d'ouverture du contrat"
+        - name: "DATE_CYC_VIE"
+          spark_type: "TimestampType"
+          nullable: true
+          description: "Date cycle de vie"
+
+    write:                             # Bronze HDFS — données brutes (Parquet)
+      format: "parquet"
+      path_template: "hdfs://ubuntu3:9000/data/bronze/{domain}/{table_name}/date_arrete={date_arrete}"
+      mode: "overwrite"
+      partition_by: ["date_arrete"]
+      compression: "snappy"
+      coalesce: 4
+
+    silver_write:                      # Silver Hive — données clean post-DQ
+      database: "silver_credit_garantie"
+      table: "image_contrat"
+      mode: "overwrite"
+      partition_by: ["date_arrete"]
+
+    quality_rules:
+      - field: "IDF_NUM_TIERS"
+        source_column: "IDF_NUM_TIERS"
+        data_type: "StringType"
+        description: "FK tiers — non null, format numérique"
+        checks:
+          - type: "not_null"
+            severity: "CRITICAL"
+            alert_threshold: 0.0
+            control_type: "BASIC"
+          - type: "regex"
+            severity: "HIGH"
+            pattern: "^[0-9]{1,13}$"
+            alert_threshold: 0.5
+            control_type: "BASIC"
+
+      - field: "IDF_REF_EXT_CTR"
+        source_column: "IDF_REF_EXT_CTR"
+        data_type: "StringType"
+        description: "Référence contrat — non null"
+        checks:
+          - type: "not_null"
+            severity: "CRITICAL"
+            alert_threshold: 0.0
+            control_type: "BASIC"
+          - type: "max_length"
+            severity: "MEDIUM"
+            max_length: 20
+            alert_threshold: 1.0
+            control_type: "BASIC"
+
+      - field: "IDF_TYP_PRD"
+        source_column: "IDF_TYP_PRD"
+        data_type: "StringType"
+        description: "Type produit : I, C ou G"
+        checks:
+          - type: "not_null"
+            severity: "CRITICAL"
+            alert_threshold: 0.0
+            control_type: "BASIC"
+          - type: "in_list"
+            severity: "HIGH"
+            allowed_values: ["I", "C", "G", "I ", "C ", "G "]
+            alert_threshold: 0.5
+            control_type: "BASIC"
+
+      - field: "IDF_REF_PRD"
+        source_column: "IDF_REF_PRD"
+        data_type: "StringType"
+        description: "Référence produit — non null"
+        checks:
+          - type: "not_null"
+            severity: "CRITICAL"
+            alert_threshold: 0.0
+            control_type: "BASIC"
+
+      - field: "COD_CYC_VIE"
+        source_column: "COD_CYC_VIE"
+        data_type: "StringType"
+        description: "Cycle de vie valide"
+        checks:
+          - type: "not_null"
+            severity: "HIGH"
+            alert_threshold: 0.1
+            control_type: "BASIC"
+          - type: "in_list"
+            severity: "HIGH"
+            allowed_values: ["T", "A", "S", "R", "E"]
+            alert_threshold: 1.0
+            control_type: "BASIC"
+
+      - field: "COD_DEV_PRD"
+        source_column: "COD_DEV_PRD"
+        data_type: "StringType"
+        description: "Devise valide"
+        checks:
+          - type: "not_null"
+            severity: "HIGH"
+            alert_threshold: 0.1
+            control_type: "BASIC"
+          - type: "in_list"
+            severity: "MEDIUM"
+            allowed_values: ["MAD", "EUR", "USD", "GBP"]
+            alert_threshold: 5.0
+            control_type: "BASIC"
+
+      - field: "DATE_OUV_CTR"
+        source_column: "DATE_OUV_CTR"
+        data_type: "TimestampType"
+        description: "Date ouverture valide"
+        checks:
+          - type: "date_valid"
+            severity: "HIGH"
+            alert_threshold: 1.0
+            control_type: "BASIC"
+
+    consistency_rules:
+      - name: "pk_composite_complete"
+        description: "Les 4 colonnes de la PK composite doivent être non nulles"
+        condition: "1=1"
+        required_fields: ["IDF_NUM_TIERS", "IDF_REF_EXT_CTR", "IDF_TYP_PRD", "IDF_REF_PRD"]
+        severity: "CRITICAL"
+        alert_threshold: 0.0
+        control_type: "BASIC"
+
+      - name: "contrat_actif_produit_complet"
+        description: "Contrat actif doit avoir type produit, référence et devise"
+        condition: "COD_CYC_VIE = 'A'"
+        required_fields: ["IDF_TYP_PRD", "IDF_REF_PRD", "COD_DEV_PRD"]
+        severity: "HIGH"
+        alert_threshold: 0.5
+        control_type: "ADVANCED"
