@@ -4200,8 +4200,12 @@ tables:
   - field: COD_TYP_ADRESSE
     source_column: COD_TYP_ADRESSE
     data_type: StringType
-    description: COD_TYP_ADRESSE — codification EDD
+    description: COD_TYP_ADRESSE — codification EDD (empty à discuter avec métier)
     checks:
+    - type: not_null
+      severity: MEDIUM
+      alert_threshold: 1.0
+      control_type: BASIC
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4258,12 +4262,15 @@ tables:
   - field: COD_MTF_CYC_VIE
     source_column: COD_MTF_CYC_VIE
     data_type: StringType
-    description: COD_MTF_CYC_VIE — codification EDD
+    description: COD_MTF_CYC_VIE — 99% empty dans la donnée, à discuter avec métier
     checks:
+    - type: not_null
+      severity: MEDIUM
+      alert_threshold: 50.0
+      control_type: BASIC
     - type: in_list
       severity: HIGH
       allowed_values:
-      - ''' '''
       - '0'
       - E
       - C
