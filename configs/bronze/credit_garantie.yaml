@@ -4270,6 +4270,26 @@ tables:
       - V
       alert_threshold: 1.0
       control_type: BASIC
+  # ── Règles hand-tuned (réintégrées 2026-05-23) ──────────────────────────
+  - field: IDF_REF_EXT_CTR
+    source_column: IDF_REF_EXT_CTR
+    data_type: StringType
+    description: Référence externe contrat — bornée à 20 caractères
+    checks:
+    - type: max_length
+      severity: MEDIUM
+      max_length: 20
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: DATE_OUV_CTR
+    source_column: DATE_OUV_CTR
+    data_type: TimestampType
+    description: Date d'ouverture du contrat — doit être une date valide
+    checks:
+    - type: date_valid
+      severity: HIGH
+      alert_threshold: 1.0
+      control_type: BASIC
   consistency_rules:
   - name: pk_composite_complete
     description: PK composite (4 colonnes) toutes non-nulles
@@ -4278,6 +4298,17 @@ tables:
     severity: CRITICAL
     alert_threshold: 0.0
     control_type: BASIC
+  - name: contrat_actif_produit_complet
+    description: Un contrat ACTIF (COD_CYC_VIE=C) doit avoir type produit, référence
+      et devise
+    condition: "COD_CYC_VIE = 'C'"
+    required_fields:
+    - IDF_TYP_PRD
+    - IDF_REF_PRD
+    - COD_DEV_PRD
+    severity: HIGH
+    alert_threshold: 0.5
+    control_type: ADVANCED
 - name: IMPAYES_CDL
   domain: impayes_cdl
   primary_key: &id014
@@ -7195,7 +7226,60 @@ tables:
       - C35
       alert_threshold: 1.0
       control_type: BASIC
-  consistency_rules: []
+  # ── Règles hand-tuned (réintégrées 2026-05-23) ──────────────────────────
+  - field: NOM_USG_TIERS
+    source_column: NOM_USG_TIERS
+    data_type: StringType
+    description: Nom usage obligatoire pour Personne Physique
+    filter_condition: "COD_TYP_TIERS = 'PP'"
+    checks:
+    - type: not_null
+      severity: HIGH
+      alert_threshold: 0.5
+      control_type: BASIC
+  - field: RAISON_SOCIALE
+    source_column: RAISON_SOCIALE
+    data_type: StringType
+    description: Raison sociale obligatoire pour Personne Morale, ≤ 64 caractères
+    filter_condition: "COD_TYP_TIERS = 'PM'"
+    checks:
+    - type: not_null
+      severity: HIGH
+      alert_threshold: 0.5
+      control_type: BASIC
+    - type: max_length
+      severity: MEDIUM
+      max_length: 64
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: DATE_NAISSANCE
+    source_column: DATE_NAISSANCE
+    data_type: DateType
+    description: Date de naissance valide pour Personne Physique
+    filter_condition: "COD_TYP_TIERS = 'PP'"
+    checks:
+    - type: date_valid
+      severity: MEDIUM
+      alert_threshold: 2.0
+      control_type: BASIC
+  consistency_rules:
+  - name: PP_identite_requise
+    description: Une Personne Physique doit avoir au moins un nom ou un prénom
+    condition: "COD_TYP_TIERS = 'PP'"
+    required_fields:
+    - NOM_USG_TIERS
+    - PRENOM_TIERS
+    severity: HIGH
+    alert_threshold: 5.0
+    control_type: ADVANCED
+  - name: PM_raison_sociale_requise
+    description: Une Personne Morale doit avoir une raison sociale
+    condition: "COD_TYP_TIERS = 'PM'"
+    required_fields:
+    - RAISON_SOCIALE
+    severity: HIGH
+    alert_threshold: 5.0
+    control_type: ADVANCED
 - name: CONTACTS
   domain: contacts
   primary_key: &id017
