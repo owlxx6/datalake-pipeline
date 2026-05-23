@@ -217,7 +217,10 @@ def _check_condition(col_name: str, check: DQCheck):
     col = F.col(col_name)
 
     if check.type == "not_null":
-        return col.isNull()
+        # Une chaîne vide (ou whitespace) est sémantiquement "non renseigné" — on la
+        # traite comme NULL. Permet de flagger les valeurs manquantes par not_null,
+        # indépendamment de la forme (NULL strict vs '' vs '   ').
+        return col.isNull() | (F.trim(col.cast(StringType())) == "")
     elif check.type == "unique":
         w = Window.partitionBy(col_name)
         return (F.count(col_name).over(w) > 1) & col.isNotNull()

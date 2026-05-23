@@ -7182,14 +7182,13 @@ tables:
   - field: TOP_REP_LEGAL
     source_column: TOP_REP_LEGAL
     data_type: StringType
-    description: TOP_REP_LEGAL — codification corrigée d'après donnée réelle 2026-05-23
+    description: TOP_REP_LEGAL — codification EDD (valeur '2' à discuter avec métier)
     checks:
     - type: in_list
       severity: HIGH
       allowed_values:
       - '0'
       - '1'
-      - '2'
       alert_threshold: 1.0
       control_type: BASIC
   - field: TOP_SMS
