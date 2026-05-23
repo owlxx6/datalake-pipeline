@@ -11,6 +11,14 @@ Usage:
         --config configs/bronze/credit_garantie.yaml \\
         --date-arrete 2026-05-04 \\
         --table TIERS
+
+Architecture des sorties (post 2026-05-21) :
+  - Bronze HDFS  : miroir typé (Parquet), toutes les lignes, sans flag DQ.
+  - Silver Hive  : toutes les lignes + 4 colonnes flag DQ. Aucune ligne n'est
+                   filtrée — on flagge, on n'enlève pas.
+  - Silver Iceberg (append-only) : 2 tables d'audit
+      * QUALITY_RESULTS — 1 ligne par règle par exécution
+      * LOG_PIPELINE    — 1 ligne par exécution
 """
 from __future__ import annotations
 
@@ -19,7 +27,6 @@ import re
 import time
 import traceback
 from datetime import datetime
-from typing import Optional
 
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
@@ -30,9 +37,12 @@ from pyspark.sql.types import (
 from pyspark.sql.window import Window
 
 from jobs.bronze.config_loader import (
-    load_config, BronzeConfig, TableEntry, DQCheck, QualityRule, ConsistencyRule,
-    SilverWriteConfig,
+    load_config, BronzeConfig, TableEntry, DQCheck, CsvOptions,
 )
+
+
+# Mapping sévérité → poids (1 = plus sévère)
+SEVERITY_WEIGHT = {"CRITICAL": 1, "HIGH": 2, "MEDIUM": 3, "LOW": 4}
 
 
 # ── Type resolver ─────────────────────────────────────────────────────────────
@@ -52,80 +62,149 @@ def _spark_type(type_str: str):
     }.get(type_str, StringType())
 
 
-# ── Reject metadata ───────────────────────────────────────────────────────────
+# ── Smart cast (normalisation formats fournisseurs) ──────────────────────────
 
-def _add_reject_meta(
-    df: DataFrame, rule_id: str, rule_type: str, field_name: str,
-    severity: str, stage: str, message: str,
-    execution_id: str, date_situation: str, table_name: str,
-) -> DataFrame:
-    actual = (
-        F.col(field_name).cast(StringType())
-        if field_name in df.columns
-        else F.lit(None).cast(StringType())
-    )
-    return (
-        df
-        .withColumn("_rule_id", F.lit(rule_id))
-        .withColumn("_rule_type", F.lit(rule_type))
-        .withColumn("_field_name", F.lit(field_name))
-        .withColumn("_severity", F.lit(severity))
-        .withColumn("_actual_value", actual)
-        .withColumn("_error_message", F.lit(message))
-        .withColumn("_reject_stage", F.lit(stage))
-        .withColumn("_execution_id", F.lit(execution_id))
-        .withColumn("_date_situation", F.lit(date_situation))
-        .withColumn("_table_name", F.lit(table_name))
-        .withColumn("_layer", F.lit("BRONZE"))
-        .withColumn("_ingestion_ts", F.lit(datetime.now().isoformat()))
-    )
+# Patterns de dates rencontrés dans les extracts (CSV/Parquet) :
+#   - yyyy-MM-dd HH:mm:ss.SSSSSS  (la plupart des CSV : tiers, garantie, idce…)
+#   - yyyy-MM-dd HH:mm:ss
+#   - yyyy-MM-dd
+#   - dd/MM/yyyy HH:mm:ss          (DATE_CHARGEMENT, DATE_FICHIER : asal, pops, image_contrat)
+#   - dd/MM/yyyy
+_DATE_PATTERNS = [
+    "yyyy-MM-dd HH:mm:ss.SSSSSS",
+    "yyyy-MM-dd HH:mm:ss",
+    "yyyy-MM-dd",
+    "dd/MM/yyyy HH:mm:ss",
+    "dd/MM/yyyy",
+]
+
+
+def _smart_cast(col_expr, target_type):
+    """Cast tolérant aux formats fournisseurs (décimal européen, dates multi-format).
+
+    - DecimalType / FloatType / DoubleType : nettoie le format européen
+      ``+000000000700000,000`` → ``700000.000`` avant le cast.
+    - DateType / TimestampType : essaie plusieurs patterns ; ``0001-01-01`` est
+      traité comme NULL (sentinelle source pour "date absente").
+      ``9999-12-31`` est conservé tel quel (sentinelle "date ouverte").
+    - Autres types : cast standard.
+    """
+    if isinstance(target_type, (DecimalType, FloatType, DoubleType)):
+        s = col_expr.cast(StringType())
+        s = F.regexp_replace(s, r"^\s*\+", "")   # +123 → 123
+        s = F.regexp_replace(s, r"\s", "")       # retire espaces
+        s = F.regexp_replace(s, r",", ".")       # virgule décimale → point
+        return s.cast(target_type)
+
+    if isinstance(target_type, (DateType, TimestampType)):
+        s = col_expr.cast(StringType())
+        # Sentinelle "0001-01-01..." (souvent suivie d'une heure) → NULL logique
+        s = F.when(s.startswith("0001-01-01"), F.lit(None).cast(StringType())).otherwise(s)
+        parsed = F.coalesce(*[F.to_timestamp(s, p) for p in _DATE_PATTERNS])
+        return F.to_date(parsed) if isinstance(target_type, DateType) else parsed
+
+    return col_expr.cast(target_type)
 
 
 # ── Schema Enforcer ───────────────────────────────────────────────────────────
 
-def enforce_schema(
-    df: DataFrame, table: TableEntry,
-    execution_id: str, date_situation: str, spark: SparkSession,
-) -> tuple[DataFrame, DataFrame]:
-    df_typed = df
-    reject_dfs: list[DataFrame] = []
+def enforce_schema(df: DataFrame, table: TableEntry) -> DataFrame:
+    """Cast chaque colonne vers son type déclaré dans le YAML.
 
+    Utilise ``_smart_cast`` pour absorber les formats fournisseurs (décimal européen,
+    dates multi-format). Aucune ligne n'est filtrée — un cast en échec produit NULL,
+    qui sera flaggé ensuite par les règles DQ (not_null sur les champs critiques).
+    """
+    df_typed = df
     for field in table.schema.fields:
         if field.name not in df.columns:
             continue
-
         target_type = _spark_type(field.spark_type)
-        casted = F.col(field.name).cast(target_type)
-        cast_failed = F.col(field.name).isNotNull() & casted.isNull()
+        df_typed = df_typed.withColumn(field.name, _smart_cast(F.col(field.name), target_type))
+    return df_typed
 
-        if table.schema.on_cast_error == "reject" and not field.nullable:
-            rejects = _add_reject_meta(
-                df_typed.filter(cast_failed),
-                rule_id=f"SCHEMA_CAST_{field.name}",
-                rule_type="cast", field_name=field.name,
-                severity="CRITICAL", stage="CAST",
-                message=f"Cast vers {field.spark_type} échoué",
-                execution_id=execution_id, date_situation=date_situation,
-                table_name=table.name,
-            )
-            reject_dfs.append(rejects)
-            df_typed = df_typed.filter(~cast_failed)
 
-        df_typed = df_typed.withColumn(field.name, casted)
+# ── Reader (Parquet / CSV avec encodage) ──────────────────────────────────────
 
-    if reject_dfs:
-        df_cast_rejects = reject_dfs[0]
-        for r in reject_dfs[1:]:
-            df_cast_rejects = df_cast_rejects.unionByName(r, allowMissingColumns=True)
-    else:
-        df_cast_rejects = spark.createDataFrame([], df_typed.schema)
+def read_source(spark: SparkSession, table: TableEntry, source_path: str) -> DataFrame:
+    """Lit la source Landing selon le format déclaré.
 
-    return df_typed, df_cast_rejects
+    CSV : applique encoding, délimiteur, quote, escape depuis ``csv_options``.
+    Parquet : lecture standard.
+    """
+    fmt = table.source.format.lower()
+    if fmt == "csv":
+        opts = table.source.csv_options or CsvOptions()
+        return (
+            spark.read
+            .option("header", str(opts.header).lower())
+            .option("delimiter", opts.delimiter)
+            .option("encoding", opts.encoding)
+            .option("quote", opts.quote)
+            .option("escape", opts.escape)
+            .option("multiLine", str(opts.multiline).lower())
+            .csv(source_path)
+        )
+    return spark.read.parquet(source_path)
+
+
+# ── Traçabilité d'ingestion (colonnes ajoutées sur chaque ligne) ─────────────
+
+def add_ingestion_metadata(
+    df: DataFrame, source_path: str, execution_id: str,
+) -> DataFrame:
+    """Ajoute 3 colonnes de traçabilité technique sur chaque ligne :
+      - execution_id  : identifiant unique du run (lien vers LOG_PIPELINE)
+      - source_file   : chemin HDFS du fichier source
+      - ingestion_ts  : timestamp Spark au moment du traitement
+
+    Appliquées en amont de write_bronze : Bronze et Silver portent ces colonnes,
+    indépendamment du fait que la source les fournisse (cf. inconsistance entre
+    asal/pops/image_contrat qui ont COD_ENTITE/DATE_CHARGEMENT et tiers/credit_amort
+    qui ne les ont pas).
+    """
+    return (
+        df
+        .withColumn("execution_id", F.lit(execution_id))
+        .withColumn("source_file", F.lit(source_path))
+        .withColumn("ingestion_ts", F.current_timestamp())
+    )
+
+
+# ── Résolution date_arrete depuis la donnée ──────────────────────────────────
+
+def resolve_date_arrete(df_raw: DataFrame, table: TableEntry, cli_date_arrete: str) -> str:
+    """Si ``source.date_arrete_column`` est configurée, lit la date dans la donnée.
+
+    Permet de dériver la partition ``date_arrete`` de ``DATE_FICHIER`` (entête du
+    fichier porté sur chaque ligne) plutôt que de la passer en CLI. Fallback sur
+    l'argument CLI si la colonne est absente / vide / non parseable.
+    """
+    col = table.source.date_arrete_column
+    if not col or col not in df_raw.columns:
+        return cli_date_arrete
+
+    row = df_raw.select(col).limit(1).collect()
+    if not row or row[0][0] is None:
+        return cli_date_arrete
+
+    raw = str(row[0][0]).strip()
+    date_part = raw.split(" ")[0]  # ignore la partie heure si présente
+
+    for in_fmt in ("%Y-%m-%d", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(date_part, in_fmt).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+
+    print(f"  [WARN] {col}='{raw}' non parseable, fallback CLI date_arrete={cli_date_arrete}")
+    return cli_date_arrete
 
 
 # ── DQ check condition ────────────────────────────────────────────────────────
 
 def _check_condition(col_name: str, check: DQCheck):
+    """Retourne une expression Column qui vaut TRUE si le check est en échec."""
     col = F.col(col_name)
 
     if check.type == "not_null":
@@ -156,13 +235,18 @@ def _check_condition(col_name: str, check: DQCheck):
     return None
 
 
-# ── DQ Runner ─────────────────────────────────────────────────────────────────
+# ── DQ statistiques par règle (pour QUALITY_RESULTS) ─────────────────────────
 
 def run_dq(
     df: DataFrame, table: TableEntry, config: BronzeConfig,
-    execution_id: str, date_situation: str, spark: SparkSession,
-) -> tuple[DataFrame, list[dict]]:
-    reject_dfs: list[DataFrame] = []
+    execution_id: str, date_situation: str,
+) -> list[dict]:
+    """Calcule les agrégats DQ par règle (records_failed, taux, statut).
+
+    Ne filtre AUCUNE ligne. Retourne uniquement la liste des résultats pour
+    QUALITY_RESULTS. Les flags ligne par ligne sont calculés séparément par
+    compute_dq_flags.
+    """
     results: list[dict] = []
 
     # quality_rules
@@ -179,36 +263,24 @@ def run_dq(
 
             if check.type == "unique":
                 _tmp = "__dup_count__"
-                df_failing = (
+                failed = (
                     df_scope
                     .withColumn(_tmp, F.count(col_name).over(Window.partitionBy(col_name)))
                     .filter(F.col(_tmp) > 1)
-                    .drop(_tmp)
+                    .count()
                 )
             else:
                 condition = _check_condition(col_name, check)
                 if condition is None:
                     continue
-                df_failing = df_scope.filter(condition)
+                failed = df_scope.filter(condition).count()
 
-            df_rej = _add_reject_meta(
-                df_failing,
-                rule_id=rule_id, rule_type=check.type, field_name=col_name,
-                severity=check.severity, stage="DQ",
-                message=f"{check.type} failed on {col_name}",
-                execution_id=execution_id, date_situation=date_situation,
-                table_name=table.name,
-            )
-            failed = df_rej.count()
             rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
-
             results.append(_qr_row(
                 execution_id, date_situation, rule_id, check.type,
                 col_name, check.severity, scope_count, failed, rate,
                 check.alert_threshold, check.control_type, config, table,
             ))
-            if failed > 0:
-                reject_dfs.append(df_rej)
 
     # consistency_rules
     for rule in table.consistency_rules:
@@ -225,15 +297,7 @@ def run_dq(
             condition = condition | c
 
         fields_str = ", ".join(rule.required_fields)
-        df_rej = _add_reject_meta(
-            df_scope.filter(condition),
-            rule_id=rule_id, rule_type="consistency", field_name=fields_str,
-            severity=rule.severity, stage="CONSISTENCY",
-            message=rule.description,
-            execution_id=execution_id, date_situation=date_situation,
-            table_name=table.name,
-        )
-        failed = df_rej.count()
+        failed = df_scope.filter(condition).count()
         rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
 
         results.append(_qr_row(
@@ -241,17 +305,8 @@ def run_dq(
             fields_str, rule.severity, scope_count, failed, rate,
             rule.alert_threshold, rule.control_type, config, table,
         ))
-        if failed > 0:
-            reject_dfs.append(df_rej)
 
-    if reject_dfs:
-        df_rejects = reject_dfs[0]
-        for r in reject_dfs[1:]:
-            df_rejects = df_rejects.unionByName(r, allowMissingColumns=True)
-    else:
-        df_rejects = spark.createDataFrame([], df.schema)
-
-    return df_rejects, results
+    return results
 
 
 def _qr_row(
@@ -279,35 +334,107 @@ def _qr_row(
     }
 
 
-# ── Clean DF (Silver input) ───────────────────────────────────────────────────
+# ── Flag DQ par ligne (pour Silver) ───────────────────────────────────────────
 
-def get_clean_df(
-    df_typed: DataFrame, df_dq_rejects: DataFrame, table: TableEntry,
+def compute_dq_flags(
+    df_typed: DataFrame, table: TableEntry, execution_id: str,
 ) -> DataFrame:
-    """Soustrait les lignes rejetées par le DQ de df_typed (anti-join sur PK).
+    """Ajoute 4 colonnes flag DQ à chaque ligne de df_typed.
 
-    Bronze HDFS garde TOUTES les lignes (brut = fidèle à la source).
-    Silver Hive ne reçoit que les lignes ayant passé toutes les règles DQ.
+      - dq_failed_checks  : array<string> des règles échouées (ex. ["COD_CYC_VIE:in_list"])
+      - dq_status         : "PASSED" si aucune règle échouée, sinon "FAILED"
+      - dq_severity_max   : sévérité max parmi les règles échouées (NULL si PASSED)
+      - dq_execution_id   : lien vers LOG_PIPELINE
     """
-    if df_dq_rejects.count() == 0:
-        return df_typed
+    fail_exprs: list = []
+    weight_exprs: list = []
 
-    pk_cols = table.primary_key
-    # On ne sélectionne que les PK depuis les rejects (évite les colonnes audit)
-    available_pks = [c for c in pk_cols if c in df_dq_rejects.columns]
-    if not available_pks:
-        return df_typed
+    # quality_rules
+    for rule in table.quality_rules:
+        col_name = rule.source_column
+        if col_name not in df_typed.columns:
+            continue
+        scope_expr = F.expr(rule.filter_condition) if rule.filter_condition else F.lit(True)
+        for check in rule.checks:
+            check_id = f"{rule.field}:{check.type}"
+            if check.type == "unique":
+                cond = (F.count(col_name).over(Window.partitionBy(col_name)) > 1) & F.col(col_name).isNotNull()
+            else:
+                cond = _check_condition(col_name, check)
+                if cond is None:
+                    continue
+            failed = cond & scope_expr
+            fail_exprs.append(F.when(failed, F.lit(check_id)))
+            weight_exprs.append(F.when(failed, F.lit(SEVERITY_WEIGHT.get(check.severity, 4))))
 
-    df_reject_pks = df_dq_rejects.select(available_pks).distinct()
-    return df_typed.join(df_reject_pks, on=available_pks, how="left_anti")
+    # consistency_rules
+    for rule in table.consistency_rules:
+        scope_expr = F.expr(rule.condition)
+        null_conds = [F.col(f).isNull() for f in rule.required_fields if f in df_typed.columns]
+        if not null_conds:
+            continue
+        any_null = null_conds[0]
+        for c in null_conds[1:]:
+            any_null = any_null | c
+        check_id = f"CONSISTENCY:{rule.name}"
+        failed = any_null & scope_expr
+        fail_exprs.append(F.when(failed, F.lit(check_id)))
+        weight_exprs.append(F.when(failed, F.lit(SEVERITY_WEIGHT.get(rule.severity, 4))))
+
+    # Aucune règle DQ — flags neutres
+    if not fail_exprs:
+        return (
+            df_typed
+            .withColumn("dq_failed_checks", F.array().cast("array<string>"))
+            .withColumn("dq_status", F.lit("PASSED"))
+            .withColumn("dq_severity_max", F.lit(None).cast(StringType()))
+            .withColumn("dq_execution_id", F.lit(execution_id))
+        )
+
+    # Construire les arrays bruts (avec NULL pour les checks non-échoués), puis filtrer
+    df_out = (
+        df_typed
+        .withColumn("__dq_failed_raw", F.array(*fail_exprs))
+        .withColumn("__dq_weights_raw", F.array(*weight_exprs))
+    )
+    df_out = (
+        df_out
+        .withColumn("dq_failed_checks", F.expr("filter(__dq_failed_raw, x -> x is not null)"))
+        .withColumn("__dq_weights", F.expr("filter(__dq_weights_raw, x -> x is not null)"))
+        .drop("__dq_failed_raw", "__dq_weights_raw")
+    )
+    df_out = (
+        df_out
+        .withColumn(
+            "dq_status",
+            F.when(F.size("dq_failed_checks") > 0, F.lit("FAILED")).otherwise(F.lit("PASSED"))
+        )
+        .withColumn("__dq_min_weight", F.array_min("__dq_weights"))
+        .withColumn(
+            "dq_severity_max",
+            F.when(F.col("__dq_min_weight") == 1, F.lit("CRITICAL"))
+             .when(F.col("__dq_min_weight") == 2, F.lit("HIGH"))
+             .when(F.col("__dq_min_weight") == 3, F.lit("MEDIUM"))
+             .when(F.col("__dq_min_weight") == 4, F.lit("LOW"))
+             .otherwise(F.lit(None).cast(StringType()))
+        )
+        .withColumn("dq_execution_id", F.lit(execution_id))
+        .drop("__dq_weights", "__dq_min_weight")
+    )
+    return df_out
 
 
-# ── Layer Router ──────────────────────────────────────────────────────────────
+# ── Writers ───────────────────────────────────────────────────────────────────
 
 def write_bronze(
     df: DataFrame, table: TableEntry, config: BronzeConfig,
     date_arrete: str,
 ) -> int:
+    """Bronze HDFS — miroir typé (Parquet), aucune colonne flag.
+
+    Écriture path-based : chaque date_arrete a son propre répertoire,
+    donc `mode=overwrite` n'efface que la partition du jour.
+    """
     path = config.resolve(
         table.write.path_template,
         table_name=table.name,
@@ -317,7 +444,7 @@ def write_bronze(
 
     if config.execution.dry_run:
         count = df.count()
-        print(f"  [DRY RUN] → {path} ({count} lignes)")
+        print(f"  [DRY RUN] Bronze → {path} ({count} lignes)")
         return count
 
     (
@@ -330,18 +457,20 @@ def write_bronze(
         .save(path)
     )
     count = df.count()
-    print(f"  [WRITE] ✓ {count} lignes → {path}")
+    print(f"  [BRONZE] ✓ {count} lignes → {path}")
     return count
 
 
 def write_silver(
-    df_clean: DataFrame, table: TableEntry, config: BronzeConfig,
-    date_arrete: str,
+    df_flagged: DataFrame, table: TableEntry, config: BronzeConfig,
+    spark: SparkSession, date_arrete: str,
 ) -> int:
-    """Écrit les lignes propres dans la table Hive Silver (format ORC via Hive).
+    """Silver Hive — toutes les lignes + 4 colonnes flag DQ.
 
-    N'est appelé que si `silver_write` est défini dans la config de la table.
-    Mode overwrite par défaut — rejouer le job remplace la partition du jour.
+    - Si la table existe : `insertInto(overwrite=True)`. Combiné avec
+      `spark.sql.sources.partitionOverwriteMode=DYNAMIC`, n'écrase que la
+      partition `date_arrete` du jour (les autres dates restent intactes).
+    - Sinon : création initiale via saveAsTable.
     """
     sw = table.silver_write
     if sw is None:
@@ -350,62 +479,57 @@ def write_silver(
     full_table = f"{sw.database}.{sw.table}"
 
     if config.execution.dry_run:
-        count = df_clean.count()
+        count = df_flagged.count()
         print(f"  [DRY RUN] Silver → {full_table} ({count} lignes)")
         return count
 
-    (
-        df_clean
-        .withColumn("date_arrete", F.lit(date_arrete))
-        .write
-        .mode(sw.mode)
-        .partitionBy(*sw.partition_by)
-        .saveAsTable(full_table)          # Hive géré table — format ORC par défaut
-    )
-    count = df_clean.count()
-    print(f"  [SILVER] ✓ {count} lignes propres → {full_table}")
+    df_to_write = df_flagged.withColumn("date_arrete", F.lit(date_arrete))
+
+    if spark.catalog.tableExists(full_table):
+        df_to_write.write.insertInto(full_table, overwrite=True)
+    else:
+        (
+            df_to_write.write
+            .mode(sw.mode)
+            .partitionBy(*sw.partition_by)
+            .saveAsTable(full_table)
+        )
+
+    count = df_flagged.count()
+    print(f"  [SILVER] ✓ {count} lignes (avec flags DQ) → {full_table}")
     return count
 
 
-# ── Sink Writer ───────────────────────────────────────────────────────────────
-
 def write_logs(
-    spark: SparkSession, df_rejects: DataFrame,
-    quality_results: list[dict], config: BronzeConfig,
+    spark: SparkSession, quality_results: list[dict], config: BronzeConfig,
     execution_id: str, date_situation: str,
     job_status: str, rows_read: int, rows_written: int,
     duration_seconds: float, table_name: str,
+    source_file: str = "", cli_date_arrete: str = "",
+    rows_flagged_failed: int = 0,
 ) -> None:
+    """Écrit QUALITY_RESULTS + LOG_PIPELINE en Iceberg (append-only).
+
+    LOGS_REJECTED supprimée (2026-05-21) — l'info ligne par ligne vit
+    dans Silver via les colonnes dq_*.
+    """
     db = config.output.database
     env = config.project.environment
 
-    # LOGS_REJECTED
-    if config.output.logs_rejected.enabled and df_rejects.count() > 0:
-        table = f"{db}.{config.resolve(config.output.logs_rejected.name_template, table_name=table_name)}"
-        (
-            df_rejects
-            .withColumn("environment", F.lit(env))
-            .withColumn("date_situation", F.lit(date_situation))
-            .write.format("iceberg").mode("append")
-            .partitionBy("environment", "date_situation")
-            .saveAsTable(table)
-        )
-        print(f"  [SINK] {df_rejects.count()} rejects → {table}")
-
     # QUALITY_RESULTS
     if quality_results:
-        table = f"{db}.{config.resolve(config.output.quality_results.name_template, table_name=table_name)}"
+        qr_table = f"{db}.{config.resolve(config.output.quality_results.name_template, table_name=table_name)}"
         (
             spark.createDataFrame(quality_results)
             .withColumn("environment", F.lit(env))
             .write.format("iceberg").mode("append")
             .partitionBy("environment", "date_situation")
-            .saveAsTable(table)
+            .saveAsTable(qr_table)
         )
-        print(f"  [SINK] {len(quality_results)} résultats DQ → {table}")
+        print(f"  [SINK] {len(quality_results)} résultats DQ → {qr_table}")
 
     # LOG_PIPELINE
-    table = f"{db}.{config.resolve(config.output.log_pipeline.name_template, table_name=table_name)}"
+    lp_table = f"{db}.{config.resolve(config.output.log_pipeline.name_template, table_name=table_name)}"
     (
         spark.createDataFrame([{
             "execution_id": execution_id,
@@ -414,22 +538,24 @@ def write_logs(
             "domain": config.project.domain,
             "environment": env,
             "date_situation": date_situation,
+            "cli_date_arrete": cli_date_arrete,
+            "source_file": source_file,
             "job_status": job_status,
             "rows_read": rows_read,
             "rows_written": rows_written,
-            "rows_rejected": rows_read - rows_written,
+            "rows_flagged_failed": rows_flagged_failed,
             "duration_seconds": round(duration_seconds, 2),
             "execution_ts": datetime.now().isoformat(),
         }])
         .withColumn("environment", F.lit(env))
         .write.format("iceberg").mode("append")
         .partitionBy("environment")
-        .saveAsTable(table)
+        .saveAsTable(lp_table)
     )
-    print(f"  [SINK] Pipeline log → {table}")
+    print(f"  [SINK] Pipeline log → {lp_table}")
 
 
-# ── DQ Report ─────────────────────────────────────────────────────────────────
+# ── DQ Report (stdout) ────────────────────────────────────────────────────────
 
 def print_report(results: list[dict], table_name: str) -> None:
     print(f"\n  {'─' * 60}")
@@ -453,68 +579,81 @@ def run_table(
     table: TableEntry, config: BronzeConfig,
     date_arrete: str, spark: SparkSession,
 ) -> dict:
-    """Exécute le pipeline Bronze complet pour une table."""
+    """Exécute le pipeline Bronze pour une table.
+
+    Flux (post 2026-05-21) :
+      1. Lecture Landing (Parquet ou CSV avec encodage)
+      1bis. Résolution date_arrete depuis la donnée (DATE_FICHIER) si configurée
+      2. enforce_schema     (cast tolérant : échecs → NULL, aucune ligne perdue)
+      3. run_dq             → stats par règle pour QUALITY_RESULTS
+      4. compute_dq_flags   → 4 colonnes flag par ligne
+      5. write_bronze       (df typé, sans flag)
+      6. write_silver       (df flaggé, toutes les lignes)
+      7. write_logs         (QUALITY_RESULTS + LOG_PIPELINE)
+    """
     start = time.monotonic()
+    cli_date_arrete = date_arrete   # mémorisé pour le chemin source + fallback
     execution_id = config.resolve(
         config.project.execution_id_template,
         table_name=table.name,
-        date_arrete=date_arrete.replace("-", ""),
+        date_arrete=cli_date_arrete.replace("-", ""),
     )
-    date_situation = date_arrete
 
     print(f"\n{'─' * 65}")
     print(f"  TABLE : {table.name}  |  {execution_id}")
     print(f"{'─' * 65}")
 
     job_status = "FAILED"
-    rows_read = rows_written = 0
-    df_rejects = spark.createDataFrame([], spark.range(0).schema)
+    rows_read = rows_written = rows_silver = rows_flagged_failed = 0
     quality_results: list[dict] = []
+    date_situation = cli_date_arrete
 
     try:
-        # 1. Lecture
+        # 1. Lecture (Parquet par défaut, CSV avec encodage si configuré)
         source_path = config.resolve(
             table.source.path_template,
             table_name=table.name,
-            date_arrete=date_arrete.replace("-", ""),
+            date_arrete=cli_date_arrete.replace("-", ""),
         )
-        print(f"  [SOURCE] {source_path}")
-        df_raw = spark.read.parquet(source_path)
+        print(f"  [SOURCE] {source_path}  (format={table.source.format})")
+        df_raw = read_source(spark, table, source_path)
         rows_read = df_raw.count()
         print(f"  [SOURCE] {rows_read} lignes lues")
 
         if config.performance.cache_source_data:
             df_raw.cache()
 
-        # 2. Schema enforcement
-        df_typed, df_cast_rejects = enforce_schema(
-            df_raw, table, execution_id, date_situation, spark
-        )
-        cast_count = df_cast_rejects.count()
-        if cast_count:
-            print(f"  [SCHEMA] {cast_count} lignes rejetées (cast errors)")
-            df_rejects = df_cast_rejects
+        # 1bis. date_arrete dérivée de la donnée si une colonne business est configurée
+        date_arrete = resolve_date_arrete(df_raw, table, cli_date_arrete)
+        date_situation = date_arrete
+        if date_arrete != cli_date_arrete:
+            print(f"  [DATE] {table.source.date_arrete_column} → date_arrete={date_arrete} "
+                  f"(CLI={cli_date_arrete})")
 
-        # 3. DQ checks
-        df_dq_rejects, quality_results = run_dq(
-            df_typed, table, config, execution_id, date_situation, spark
+        # 2. Schema enforcement (cast tolérant — aucune ligne perdue)
+        df_typed = enforce_schema(df_raw, table)
+
+        # 2bis. Traçabilité d'ingestion (3 colonnes ajoutées avant Bronze)
+        df_typed = add_ingestion_metadata(df_typed, source_path, execution_id)
+
+        # 3. DQ aggregates (QUALITY_RESULTS)
+        quality_results = run_dq(
+            df_typed, table, config, execution_id, date_situation,
         )
         print_report(quality_results, table.name)
 
-        if df_dq_rejects.count() > 0:
-            df_rejects = (
-                df_rejects.unionByName(df_dq_rejects, allowMissingColumns=True)
-                if df_rejects.count() > 0 else df_dq_rejects
-            )
+        # 4. Per-row DQ flags
+        df_flagged = compute_dq_flags(df_typed, table, execution_id)
 
-        # 4. Écriture Bronze Parquet (toutes les lignes typées — fidèle à la source)
+        # 5. Bronze (typed, sans flag)
         rows_written = write_bronze(df_typed, table, config, date_arrete)
 
-        # 5. Écriture Silver Hive (lignes propres — DQ passé uniquement)
-        df_clean = get_clean_df(df_typed, df_dq_rejects, table)
-        rows_silver = write_silver(df_clean, table, config, date_arrete)
-        if rows_silver:
-            print(f"  [SILVER] {rows_silver} lignes propres / {rows_written} lues")
+        # 6. Silver (toutes les lignes + flags)
+        rows_silver = write_silver(df_flagged, table, config, spark, date_arrete)
+
+        # Compte des lignes flaggées FAILED (pour le résumé final)
+        rows_flagged_failed = df_flagged.filter(F.col("dq_status") == "FAILED").count()
+        print(f"  [INFO] {rows_flagged_failed} lignes flaggées FAILED / {rows_silver} en Silver")
 
         job_status = "SUCCESS"
 
@@ -526,12 +665,14 @@ def run_table(
         duration = time.monotonic() - start
         try:
             write_logs(
-                spark=spark, df_rejects=df_rejects,
-                quality_results=quality_results, config=config,
+                spark=spark, quality_results=quality_results, config=config,
                 execution_id=execution_id, date_situation=date_situation,
                 job_status=job_status, rows_read=rows_read,
                 rows_written=rows_written, duration_seconds=duration,
                 table_name=table.name,
+                source_file=source_path if "source_path" in dir() else "",
+                cli_date_arrete=cli_date_arrete,
+                rows_flagged_failed=rows_flagged_failed,
             )
         except Exception as e:
             print(f"  [WARN] Erreur logs : {e}")
@@ -541,7 +682,7 @@ def run_table(
     return {
         "table": table.name, "status": job_status,
         "rows_read": rows_read, "rows_written": rows_written,
-        "rows_silver": rows_silver if "rows_silver" in dir() else 0,
+        "rows_silver": rows_silver, "rows_flagged_failed": rows_flagged_failed,
     }
 
 
@@ -588,7 +729,7 @@ def main() -> None:
     spark = builder.enableHiveSupport().getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
 
-    # Exécution — une table après l'autre
+    # Exécution
     global_start = time.monotonic()
     summary = []
     try:
@@ -605,12 +746,11 @@ def main() -> None:
     print(f"{'─' * 65}")
     for r in summary:
         icon = "✓" if r["status"] == "SUCCESS" else "✗"
-        rejected = r["rows_read"] - r["rows_written"]
         print(f"  [{icon}] {r['table']:<25} "
               f"lu={r['rows_read']:>8}  "
               f"bronze={r['rows_written']:>8}  "
               f"silver={r.get('rows_silver', 0):>8}  "
-              f"rejeté={rejected:>6}")
+              f"flagFAILED={r.get('rows_flagged_failed', 0):>6}")
     print(f"{'─' * 65}")
     print(f"  Durée totale : {total:.1f}s")
     print(f"{'=' * 65}\n")

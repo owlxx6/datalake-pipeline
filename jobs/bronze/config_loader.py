@@ -56,8 +56,8 @@ class OutputTable(BaseModel):
 class OutputConfig(BaseModel):
     database: str
     quality_results: OutputTable
-    logs_rejected: OutputTable
     log_pipeline: OutputTable
+    logs_rejected: Optional[OutputTable] = None   # déprécié 2026-05-21 — peut être omis
 
 
 # ── Performance / Retry / Execution ──────────────────────────────────────────
@@ -98,10 +98,24 @@ class LoadingConfig(BaseModel):
     watermark_delay: Optional[str] = None
 
 
+class CsvOptions(BaseModel):
+    """Options pour lire un CSV (formats fournisseurs marocains/européens)."""
+    delimiter: str = ";"
+    encoding: str = "ISO-8859-1"   # défaut adapté aux extracts BMCE (CSV non-UTF8)
+    header: bool = True
+    quote: str = '"'
+    escape: str = '"'
+    multiline: bool = False
+
+
 class TableSourceConfig(BaseModel):
     path_template: str
     format: str = "parquet"
     loading: LoadingConfig = LoadingConfig()
+    csv_options: Optional[CsvOptions] = None
+    # Colonne qui porte la date métier (DATE_FICHIER, DATE_CHARGEMENT, etc.).
+    # Si renseignée, la valeur lue dans la donnée prime sur l'argument CLI --date-arrete.
+    date_arrete_column: Optional[str] = None
 
 
 class SchemaField(BaseModel):
