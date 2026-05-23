@@ -4274,11 +4274,11 @@ tables:
   - field: IDF_REF_EXT_CTR
     source_column: IDF_REF_EXT_CTR
     data_type: StringType
-    description: Référence externe contrat — bornée à 20 caractères
+    description: Référence externe contrat — VARCHAR2(50) selon EDD officiel
     checks:
     - type: max_length
       severity: MEDIUM
-      max_length: 20
+      max_length: 50
       alert_threshold: 1.0
       control_type: BASIC
   - field: DATE_OUV_CTR
