@@ -517,6 +517,10 @@ def write_logs(
     source_file: str = "", cli_date_arrete: str = "",
     rows_flagged_failed: int = 0,
 ) -> None:
+    if config.execution.dry_run:
+        print(f"  [DRY RUN] write_logs skipped ({len(quality_results)} résultats DQ + 1 entrée LOG_PIPELINE)")
+        return
+
     """Écrit QUALITY_RESULTS + LOG_PIPELINE en Iceberg (append-only).
 
     LOGS_REJECTED supprimée (2026-05-21) — l'info ligne par ligne vit
