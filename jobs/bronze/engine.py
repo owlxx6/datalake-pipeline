@@ -696,10 +696,15 @@ def main() -> None:
                         help="Nom d'une table spécifique (optionnel)")
     parser.add_argument("--env", default="dev",
                         choices=["dev", "preprod", "prod"])
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Mode dry-run : exécute lecture + DQ mais n'écrit rien")
     args = parser.parse_args()
 
     config = load_config(args.config)
     config.project.environment = args.env.upper()
+    if args.dry_run:
+        config.execution.dry_run = True
+        print("  [MODE] DRY-RUN activé — aucune écriture HDFS / Hive / Iceberg")
 
     print(f"\n{'=' * 65}")
     print(f"  BRONZE ENGINE  |  {config.project.domain}")
