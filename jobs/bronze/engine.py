@@ -24,9 +24,18 @@ from __future__ import annotations
 
 import argparse
 import re
+import sys
 import time
 import traceback
 from datetime import datetime
+from pathlib import Path
+
+# Permet de lancer le script directement via spark-submit sans configurer PYTHONPATH.
+# Ajoute la racine du projet (parent de `jobs/`) au sys.path pour que l'import
+# `from jobs.bronze.config_loader` fonctionne.
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
 from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql import functions as F
