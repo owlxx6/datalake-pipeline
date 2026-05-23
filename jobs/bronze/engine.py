@@ -223,7 +223,13 @@ def _check_condition(col_name: str, check: DQCheck):
         return (F.count(col_name).over(w) > 1) & col.isNotNull()
     elif check.type == "in_list" and check.allowed_values:
         stripped = [v.strip() for v in check.allowed_values]
-        return ~F.trim(col).isin(stripped) & col.isNotNull()
+        # Les chaînes vides sont sémantiquement "non renseigné" (équivalent NULL).
+        # On les exclut du check in_list — c'est le rôle de not_null de les flagger.
+        return (
+            ~F.trim(col).isin(stripped)
+            & col.isNotNull()
+            & (F.trim(col) != "")
+        )
     elif check.type == "max_length" and check.max_length:
         return F.length(col.cast(StringType())) > check.max_length
     elif check.type == "regex" and check.pattern:
