@@ -152,6 +152,11 @@ class DQCheck(BaseModel):
     severity: str = "MEDIUM"
     alert_threshold: float = 0.0
     control_type: str = "BASIC"
+    # informational=True : le check est mesuré et écrit dans QUALITY_RESULTS (audit),
+    # mais EXCLU du statut de la ligne (dq_status). Sert aux contrôles systématiques
+    # (complétude sur colonne optionnelle, référentiel EDD périmé) qui touchent ~100%
+    # des lignes et ne discriminent donc rien au niveau ligne.
+    informational: bool = False
     allowed_values: Optional[list[str]] = None
     pattern: Optional[str] = None
     max_length: Optional[int] = None
@@ -214,6 +219,7 @@ class BronzeConfig(BaseModel):
             "layer_abbrev": self.globals.layer_abbrev,
             "domain": self.project.domain.upper(),
             "table_name": table_name,
+            "table_name_lower": table_name.lower(),  # Landing NiFi = dossiers minuscules
             "timestamp": datetime.now().strftime("%Y%m%d%H%M%S"),
             **extra,
         }

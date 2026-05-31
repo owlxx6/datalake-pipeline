@@ -65,7 +65,7 @@ tables:
   - IDF_PERSONNEL
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -166,7 +166,7 @@ tables:
   - IDF_REF_AUTO
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -614,7 +614,7 @@ tables:
   - IDF_NUM_DOSS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -986,6 +986,11 @@ tables:
     data_type: StringType
     description: CATG_PRET — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1053,6 +1058,11 @@ tables:
     data_type: StringType
     description: COD_DOSS_FOGAR — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1065,6 +1075,11 @@ tables:
     data_type: StringType
     description: CODE_BAS_INDEX — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1099,6 +1114,8 @@ tables:
       - TPM
       - TVL
       - TVM
+      - TDB   # ajouté d'après données réelles (inspect 2026-05-31)
+      - BS1   # ajouté d'après données réelles (inspect 2026-05-31)
       alert_threshold: 1.0
       control_type: BASIC
   - field: COD_FIN_SPEC
@@ -1106,6 +1123,11 @@ tables:
     data_type: StringType
     description: COD_FIN_SPEC — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1115,6 +1137,7 @@ tables:
       - '3'
       - '4'
       - '5'
+      - '6'   # ajouté d'après données réelles (inspect 2026-05-31)
       alert_threshold: 1.0
       control_type: BASIC
   - field: COD_GAR_CTT
@@ -1122,6 +1145,11 @@ tables:
     data_type: StringType
     description: COD_GAR_CTT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1134,6 +1162,11 @@ tables:
     data_type: StringType
     description: COD_JEXACT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1151,6 +1184,11 @@ tables:
     data_type: StringType
     description: COD_MOTIF_SOLDE_DOSS — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1166,6 +1204,11 @@ tables:
     data_type: StringType
     description: COD_NAT_DIFF — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1179,6 +1222,11 @@ tables:
     data_type: StringType
     description: COD_OBJET_FINANCEMENT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1193,6 +1241,11 @@ tables:
     data_type: StringType
     description: COD_SIT_COMPTABLE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1206,6 +1259,11 @@ tables:
     data_type: StringType
     description: COD_SIT_DOSS — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1221,8 +1279,14 @@ tables:
     data_type: StringType
     description: COD_TYP_AMOR — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
+      informational: true   # référentiel EDD périmé → hors statut ligne (audit QUALITY_RESULTS conservé)
       allowed_values:
       - L
       - P
@@ -1233,6 +1297,11 @@ tables:
     data_type: StringType
     description: COD_TYP_BIEN — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1245,12 +1314,18 @@ tables:
     data_type: StringType
     description: COD_TYP_REMB — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
       - C
       - I
       - S
+      - K   # ajouté d'après données réelles (inspect 2026-05-31)
       alert_threshold: 1.0
       control_type: BASIC
   - field: COD_TYP_TX
@@ -1258,6 +1333,11 @@ tables:
     data_type: StringType
     description: COD_TYP_TX — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1272,6 +1352,11 @@ tables:
     data_type: StringType
     description: FOGAR — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1294,6 +1379,11 @@ tables:
     data_type: StringType
     description: OBJET_CREDIT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1353,6 +1443,14 @@ tables:
       - STNFI
       - USAID
       - VIMOB
+      - CIMPS   # ajoutés d'après données réelles (inspect 2026-05-31)
+      - OXYGN
+      - BPPR
+      - OXYCO
+      - ESSOR
+      - POSEF
+      - BPBAN
+      - STTPE
       alert_threshold: 1.0
       control_type: BASIC
   - field: PERIOD_INTERET
@@ -1360,8 +1458,14 @@ tables:
     data_type: StringType
     description: PERIOD_INTERET — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
+      informational: true   # référentiel EDD périmé → hors statut ligne (audit QUALITY_RESULTS conservé)
       allowed_values:
       - A
       - M
@@ -1375,6 +1479,11 @@ tables:
     data_type: StringType
     description: TOP_UTIL_FRANCHISE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1390,7 +1499,7 @@ tables:
   - DATE_ECHEANCE
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -1498,7 +1607,7 @@ tables:
   - IDF_REFERENCE_CONTRAT
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -1632,7 +1741,7 @@ tables:
   primary_key: []
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -1740,7 +1849,7 @@ tables:
   - IDF_NUMERO_SOUS_LIGNE
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -1865,7 +1974,7 @@ tables:
   primary_key: []
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -1914,7 +2023,7 @@ tables:
   - IDF_NUM_CTR_GARANTIE
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -2344,7 +2453,7 @@ tables:
   - IDF_NUM_TIERS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -2431,7 +2540,7 @@ tables:
   - IDF_NUM_CTR_GARANTIE
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -2544,7 +2653,7 @@ tables:
   - IDF_NUM_INSCRIPTION
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -2682,7 +2791,7 @@ tables:
   - IDF_NUM_BIEN
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -2898,7 +3007,7 @@ tables:
   - IDF_DATE_RENOUV
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -2981,7 +3090,7 @@ tables:
   - IDF_NUM_DOSSIER
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -3075,7 +3184,7 @@ tables:
   - IDF_REF_AUTORISATION
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -3312,7 +3421,7 @@ tables:
   - IDF_NUM_TIERS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -3395,7 +3504,7 @@ tables:
   - IDF_DATE_EVENEMENT
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -3536,7 +3645,7 @@ tables:
   - IDF_DATE_EVENEMENT
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -3651,7 +3760,7 @@ tables:
   - IDF_NUM_TIERS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -3774,7 +3883,7 @@ tables:
   - IDF_DATE_DEB_LIEN
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -3938,7 +4047,7 @@ tables:
   - IDF_REF_PRD
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -4323,7 +4432,7 @@ tables:
   - IDF_NUM_CREANCE
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -4616,7 +4725,7 @@ tables:
   - IDF_NUM_BUR
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -4841,7 +4950,7 @@ tables:
   - IDF_CODE_PRODUIT
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -5017,7 +5126,7 @@ tables:
   - IDF_CODE_CC
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -5112,7 +5221,7 @@ tables:
   - IDF_NUM_TIERS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -7295,7 +7404,7 @@ tables:
   - IDF_NUM_TEL
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -7441,7 +7550,7 @@ tables:
   - IDF_NUM_TIERS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -7533,7 +7642,7 @@ tables:
   - IDF_NUM_TIERS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -8837,7 +8946,7 @@ tables:
   - IDF_NUM_TIERS
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name}/date_arrete={date_arrete}
+    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL

@@ -135,16 +135,35 @@ def enforce_schema(df: DataFrame, table: TableEntry) -> DataFrame:
 
 # ── Reader (Parquet / CSV avec encodage) ──────────────────────────────────────
 
+def _normalize_columns(df: DataFrame) -> DataFrame:
+    """Aligne les noms de colonnes source sur la convention du YAML.
+
+    - Supprime les colonnes techniques internes NiFi (préfixe ``_`` :
+      ``_source_file``, ``_ingestion_ts``, ``_date_arrete``). La traçabilité est
+      reconstruite côté engine par ``add_ingestion_metadata``.
+    - Met tous les noms restants en MAJUSCULES : NiFi écrit le Parquet en
+      minuscules (``idf_num_doss``) alors que le YAML (schema, DQ, PK,
+      consistency) référence les champs en MAJUSCULES (``IDF_NUM_DOSS``).
+      Normaliser ici aligne tout le pipeline en un seul point.
+    """
+    keep = [c for c in df.columns if not c.startswith("_")]
+    df = df.select(*keep)
+    return df.toDF(*[c.upper() for c in df.columns])
+
+
 def read_source(spark: SparkSession, table: TableEntry, source_path: str) -> DataFrame:
     """Lit la source Landing selon le format déclaré.
 
     CSV : applique encoding, délimiteur, quote, escape depuis ``csv_options``.
     Parquet : lecture standard.
+
+    Dans les deux cas, les noms de colonnes sont normalisés en MAJUSCULES et les
+    colonnes techniques NiFi (préfixe ``_``) sont retirées (cf. ``_normalize_columns``).
     """
     fmt = table.source.format.lower()
     if fmt == "csv":
         opts = table.source.csv_options or CsvOptions()
-        return (
+        df = (
             spark.read
             .option("header", str(opts.header).lower())
             .option("delimiter", opts.delimiter)
@@ -154,7 +173,9 @@ def read_source(spark: SparkSession, table: TableEntry, source_path: str) -> Dat
             .option("multiLine", str(opts.multiline).lower())
             .csv(source_path)
         )
-    return spark.read.parquet(source_path)
+    else:
+        df = spark.read.parquet(source_path)
+    return _normalize_columns(df)
 
 
 # ── Traçabilité d'ingestion (colonnes ajoutées sur chaque ligne) ─────────────
@@ -360,7 +381,9 @@ def compute_dq_flags(
     """Ajoute 4 colonnes flag DQ à chaque ligne de df_typed.
 
       - dq_failed_checks  : array<string> des règles échouées (ex. ["COD_CYC_VIE:in_list"])
-      - dq_status         : "PASSED" si aucune règle échouée, sinon "FAILED"
+      - dq_status         : "PASSED" (aucun défaut) / "WARNING" (défaut HIGH/MEDIUM/LOW,
+                            ligne utilisable) / "REJECTED" (défaut CRITICAL sur PK, ligne
+                            inutilisable). Piloté par la gravité, pas la présence d'un défaut.
       - dq_severity_max   : sévérité max parmi les règles échouées (NULL si PASSED)
       - dq_execution_id   : lien vers LOG_PIPELINE
     """
@@ -374,6 +397,10 @@ def compute_dq_flags(
             continue
         scope_expr = F.expr(rule.filter_condition) if rule.filter_condition else F.lit(True)
         for check in rule.checks:
+            # Les checks informational sont mesurés dans QUALITY_RESULTS (run_dq) mais
+            # n'influencent PAS le statut de la ligne — on les saute ici.
+            if check.informational:
+                continue
             check_id = f"{rule.field}:{check.type}"
             if check.type == "unique":
                 cond = (F.count(col_name).over(Window.partitionBy(col_name)) > 1) & F.col(col_name).isNotNull()
@@ -423,11 +450,17 @@ def compute_dq_flags(
     )
     df_out = (
         df_out
+        .withColumn("__dq_min_weight", F.array_min("__dq_weights"))
+        # dq_status piloté par la GRAVITÉ, pas par la simple présence d'un défaut :
+        #   - aucun défaut             → PASSED   (ligne parfaite)
+        #   - défaut CRITICAL (PK)     → REJECTED (ligne inutilisable : PK nulle/dupliquée)
+        #   - défaut HIGH/MEDIUM/LOW   → WARNING  (ligne utilisable, défauts qualité tracés)
         .withColumn(
             "dq_status",
-            F.when(F.size("dq_failed_checks") > 0, F.lit("FAILED")).otherwise(F.lit("PASSED"))
+            F.when(F.size("dq_failed_checks") == 0, F.lit("PASSED"))
+             .when(F.col("__dq_min_weight") == 1, F.lit("REJECTED"))
+             .otherwise(F.lit("WARNING"))
         )
-        .withColumn("__dq_min_weight", F.array_min("__dq_weights"))
         .withColumn(
             "dq_severity_max",
             F.when(F.col("__dq_min_weight") == 1, F.lit("CRITICAL"))
@@ -673,9 +706,16 @@ def run_table(
         # 6. Silver (toutes les lignes + flags)
         rows_silver = write_silver(df_flagged, table, config, spark, date_arrete)
 
-        # Compte des lignes flaggées FAILED (pour le résumé final)
-        rows_flagged_failed = df_flagged.filter(F.col("dq_status") == "FAILED").count()
-        print(f"  [INFO] {rows_flagged_failed} lignes flaggées FAILED / {rows_silver} en Silver")
+        # Répartition des lignes par statut DQ (PASSED / WARNING / REJECTED)
+        status_counts = {
+            r["dq_status"]: r["n"]
+            for r in df_flagged.groupBy("dq_status").agg(F.count("*").alias("n")).collect()
+        }
+        rows_passed = status_counts.get("PASSED", 0)
+        rows_warning = status_counts.get("WARNING", 0)
+        rows_flagged_failed = status_counts.get("REJECTED", 0)  # REJECTED = ligne inutilisable (PK)
+        print(f"  [INFO] DQ lignes : PASSED={rows_passed}  WARNING={rows_warning}  "
+              f"REJECTED={rows_flagged_failed}  / {rows_silver} en Silver")
 
         job_status = "SUCCESS"
 
@@ -777,7 +817,7 @@ def main() -> None:
               f"lu={r['rows_read']:>8}  "
               f"bronze={r['rows_written']:>8}  "
               f"silver={r.get('rows_silver', 0):>8}  "
-              f"flagFAILED={r.get('rows_flagged_failed', 0):>6}")
+              f"rejected={r.get('rows_flagged_failed', 0):>6}")
     print(f"{'─' * 65}")
     print(f"  Durée totale : {total:.1f}s")
     print(f"{'=' * 65}\n")

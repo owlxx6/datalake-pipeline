@@ -66,6 +66,11 @@ def main():
     spark.sparkContext.setLogLevel("WARN")
 
     df = spark.read.parquet(source_path)
+    # Aligne sur la convention YAML : NiFi écrit le Parquet en minuscules, le YAML
+    # référence les champs en MAJUSCULES. On retire aussi les colonnes techniques
+    # NiFi (préfixe "_").
+    df = df.select(*[c for c in df.columns if not c.startswith("_")])
+    df = df.toDF(*[c.upper() for c in df.columns])
     total = df.count()
     print(f"\n{'=' * 70}")
     print(f"  INSPECTION {args.table}  |  {source_path}")
