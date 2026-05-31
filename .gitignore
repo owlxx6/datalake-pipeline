@@ -35,6 +35,8 @@ dags/__pycache__/
 *.env
 credentials.json
 *_secret*
+# Extraits de données bancaires (potentiellement client/PII)
+echantillon/
 
 # Artefacts générés
 datalake_lib.zip
