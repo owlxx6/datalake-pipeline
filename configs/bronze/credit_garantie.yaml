@@ -4621,6 +4621,11 @@ tables:
     data_type: StringType
     description: COD_NAT_ENGAGEMENT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4637,6 +4642,11 @@ tables:
     data_type: StringType
     description: COD_STATUT_INCIDENT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4654,6 +4664,11 @@ tables:
     data_type: StringType
     description: COD_TYP_DOSSIER — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4703,6 +4718,11 @@ tables:
     data_type: StringType
     description: COD_CONDITION_EXTERNE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
