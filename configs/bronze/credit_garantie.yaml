@@ -130,6 +130,7 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
   - field: IDF_PERSONNEL
     source_column: IDF_PERSONNEL
@@ -149,6 +150,11 @@ tables:
     data_type: StringType
     description: COD_TITRE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -1115,8 +1121,6 @@ tables:
       - TPM
       - TVL
       - TVM
-      - TDB   # ajouté d'après données réelles (inspect 2026-05-31)
-      - BS1   # ajouté d'après données réelles (inspect 2026-05-31)
       alert_threshold: 1.0
       control_type: BASIC
   - field: COD_FIN_SPEC
@@ -1138,7 +1142,6 @@ tables:
       - '3'
       - '4'
       - '5'
-      - '6'   # ajouté d'après données réelles (inspect 2026-05-31)
       alert_threshold: 1.0
       control_type: BASIC
   - field: COD_GAR_CTT
@@ -1326,7 +1329,6 @@ tables:
       - C
       - I
       - S
-      - K   # ajouté d'après données réelles (inspect 2026-05-31)
       alert_threshold: 1.0
       control_type: BASIC
   - field: COD_TYP_TX
@@ -1444,14 +1446,6 @@ tables:
       - STNFI
       - USAID
       - VIMOB
-      - CIMPS   # ajoutés d'après données réelles (inspect 2026-05-31)
-      - OXYGN
-      - BPPR
-      - OXYCO
-      - ESSOR
-      - POSEF
-      - BPBAN
-      - STTPE
       alert_threshold: 1.0
       control_type: BASIC
   - field: PERIOD_INTERET
@@ -1972,7 +1966,11 @@ tables:
     control_type: BASIC
 - name: DEPASSEMENT
   domain: depassement
-  primary_key: []
+  primary_key: &id_depassement
+  - NUM_COMPTE
+  - DATE_ENTREE
+  - COMPTE_GENERAL
+  - MNT_DEPASSEMENT
   is_partitioned: false
   source:
     path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
@@ -2016,8 +2014,52 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
-  quality_rules: []
-  consistency_rules: []
+    deduplicate: true
+  quality_rules:
+  - field: NUM_COMPTE
+    source_column: NUM_COMPTE
+    data_type: StringType
+    description: PK NUM_COMPTE — clé primaire composite
+    checks:
+    - type: not_null
+      severity: CRITICAL
+      alert_threshold: 0.0
+      control_type: BASIC
+  - field: DATE_ENTREE
+    source_column: DATE_ENTREE
+    data_type: StringType
+    description: PK DATE_ENTREE — clé primaire composite
+    checks:
+    - type: not_null
+      severity: CRITICAL
+      alert_threshold: 0.0
+      control_type: BASIC
+  - field: COMPTE_GENERAL
+    source_column: COMPTE_GENERAL
+    data_type: StringType
+    description: PK COMPTE_GENERAL — clé primaire composite
+    checks:
+    - type: not_null
+      severity: CRITICAL
+      alert_threshold: 0.0
+      control_type: BASIC
+  - field: MNT_DEPASSEMENT
+    source_column: MNT_DEPASSEMENT
+    data_type: StringType
+    description: PK MNT_DEPASSEMENT — clé primaire composite
+    checks:
+    - type: not_null
+      severity: CRITICAL
+      alert_threshold: 0.0
+      control_type: BASIC
+  consistency_rules:
+  - name: pk_composite_complete
+    description: PK composite (4 colonnes) toutes non-nulles
+    condition: 1=1
+    required_fields: *id_depassement
+    severity: CRITICAL
+    alert_threshold: 0.0
+    control_type: BASIC
 - name: GARANTIE_DETAIL
   domain: garantie_detail
   primary_key:
