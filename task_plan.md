@@ -24,7 +24,51 @@ Aucun SCD manuel. Détection de variation à Gold, jamais d'écriture dans la so
 
 Total par domaine : 30 tables Silver + 2 tables DQ = **32 tables**.
 
-## Phases
+## Historisation — cible & techniques (planifié 2026-06-02)
+
+Fondé sur la classification EDD `Type stockage = STOCK` (full snapshot quotidien).
+La technique de base est donc **snapshot + append-only**, PAS de delta/SCD imposé à la source.
+
+| Technique | Couche | Rôle | Statut |
+|---|---|---|---|
+| **Snapshot full (STOCK)** | Bronze + Silver, partition `date_arrete` | chaque arrêté = état figé, conservé | ✅ fait (12 tables) |
+| **Append-only** | partitions `date_arrete` cumulées + audit Iceberg | rien n'est écrasé entre arrêtés | ✅ fait |
+| **Bi-temporel** | `date_arrete` (métier) + `ingestion_ts` (technique) par ligne | distinguer « vrai le » vs « connu le » | ⏳ colonnes présentes, à formaliser valid_from/valid_to |
+| **Time-travel** | Iceberg `AS OF` | rejouer une table à un snapshot passé | ⚠️ seulement audit ; **Silver = Hive → migrer Iceberg** |
+| **CDC par comparaison** | Gold | diff entre 2 arrêtés (ce qui a changé) | ⏳ Phase 4 |
+| **SCD2 complet (dérivé)** | Silver dimensions | garder TOUTES les versions (valid_from/valid_to/is_current) | ⏳ **REQUIS** (décision 2026-06-02) |
+| **Data Vault** | — | hors scope (source STOCK, pas delta) | ❌ |
+
+### Résultats attendus
+- Reconstituer l'état exact de n'importe quel arrêté (Bâle III) — déjà possible via partitions.
+- Time-travel SQL (`AS OF`) — après migration Silver→Iceberg.
+- Détecter ce qui change entre 2 arrêtés (nouveaux crédits, impayés en hausse, garanties tombées).
+- Vue as-of d'une dimension (segment client à une date passée).
+- Gérer corrections tardives (bi-temporel).
+
+### Phase H1 — Migration Silver → Iceberg
+- [ ] `write_silver` : format Iceberg (au lieu de saveAsTable Hive parquet)
+- [ ] partitionnement `date_arrete`, propriétés table (snapshot retention)
+- [ ] valider time-travel `AS OF` sur 1 table
+- [ ] re-migrer les 12 tables Silver
+
+### Phase H2 — Bi-temporel formalisé
+- [ ] colonnes `valid_from` (date_arrete) / `valid_to` / `is_current` sur Silver dimensions
+- [ ] `load_ts` technique (= ingestion_ts)
+
+### Phase H3 — SCD2 complet sur dimensions Silver (REQUIS)
+Décision 2026-06-02 : garder TOUT l'historique (toutes les versions), pas seulement actuelle+précédente.
+- [ ] colonnes SCD2 : `valid_from` / `valid_to` / `is_current` / `version`
+- [ ] logique MERGE Iceberg : comparer nouveau snapshot vs `is_current=true`
+      → clôturer ligne changée (valid_to, is_current=false) + insérer nouvelle version
+      → nouvelle clé = insertion ; clé disparue = clôture (soft delete)
+- [ ] appliquer aux dimensions : TIERS, POPS, TYPOLOGIE, GRC_PORTEFEUILLE, ASAL, IMAGE_CONTRAT
+- [ ] faits (credit/impayes/garantie/depassement) : restent snapshot par date_arrete (pas de SCD2)
+
+### Phase H4 — Gold : détection de variation inter-arrêtés
+- [ ] diff snapshot N vs N-1 (créé / modifié / disparu) pour les KPIs de variation
+
+## Phases (Bronze/Silver — historique)
 
 ### Phase 0 — Corrections bloquantes + refactor Silver ✅
 - [x] Bug Silver `partitionOverwriteMode` → `DYNAMIC` ajouté au YAML + `insertInto(overwrite=True)` dans `write_silver`
@@ -68,10 +112,26 @@ Phase 0 → 1 → 3 séquentielles. Phases 2 et 4 parallélisables après la Pha
 - 2026-05-18 — Périmètre : 30 tables, toutes dans le use case credit_garantie.
 - 2026-05-18 — Règle projet : append-only sur les tables Iceberg DQ, jamais de suppression.
 - 2026-05-21 — **Silver garde toutes les lignes**, anomalies flaggées (pas filtrées). `LOGS_REJECTED` supprimée. 2 tables DQ au lieu de 3.
+- 2026-06-02 — **Dédup Silver opt-in** (deduplicate: true) + unicité audit-only sous dédup. 12 tables industrialisées.
+- 2026-06-02 — **Politique EDD stricte** : flaguer tout hors-EDD (CREDIT_AMORT harmonisé). Outil `audit_edd_vs_yaml.py`.
+- 2026-06-02 — **Historisation = snapshot STOCK (Bronze/Silver) + SCD2 COMPLET dérivé sur dimensions Silver**.
+  Révise la décision 2026-05-18 « aucun SCD » : on garde toutes les versions des attributs de dimensions.
+  Prérequis = migration Silver→Iceberg (MERGE). Faits restent snapshot.
 
 ## Statut
-Phase courante : **Étendre à d'autres tables** (CREDIT_AMORT, IMPAYES_CDL, GARANTIE_DETAIL…).
-Phases 0/1/2/3 terminées + validation end-to-end TIERS + IMAGE_CONTRAT le 2026-05-23.
+**2026-06-02 — Bronze/Silver TERMINÉ : 12 tables Landing industrialisées** sur le moteur
+DQ 3-états (PASSED/WARNING/REJECTED) + dédup Silver opt-in + audit EDD.
+Prochaine session : **Phase H1 — migration Silver → Iceberg** (prérequis SCD2 + time-travel),
+puis H2/H3/H4. Cible stockage confirmée : Iceberg sur HDFS, métadonnées Hive Metastore.
+
+### 12 tables Silver validées (run réel 2026-05-31)
+credit_amort (200k, WARN 23719), impayes_cdl (1.7M, REJ 103526), garantie_contrat (258k),
+garantie_detail (258k→253900, 4328 dédup), image_contrat (158k, 1 REJ), tiers (154k, WARN 14069),
+typologie (154k, WARN 1068), grc_portefeuille (151k), pops (1226), asal (4464),
+depassement (521k→75870, 445130 dédup), idce_autorisation (370k→368567, schéma reconstruit).
+
+### Phase courante (ancienne, terminée)
+Phases 0/1/2/3 + extension 12 tables : DONE.
 
 ## État validé (run réel 2026-05-23)
 - TIERS : 1000 lignes lues → Bronze + Silver + Iceberg ✓ — 46 lignes flaggées FAILED

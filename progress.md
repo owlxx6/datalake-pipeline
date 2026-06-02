@@ -1,5 +1,36 @@
 # Progress Log
 
+## 2026-06-02 — Marathon industrialisation 12 tables + cadrage historisation
+**Tables industrialisées (moteur 3-états + dédup)** : CREDIT_AMORT, IMPAYES_CDL, GARANTIE_CONTRAT,
+GARANTIE_DETAIL, IMAGE_CONTRAT, TIERS, TYPOLOGIE, GRC_PORTEFEUILLE, POPS, ASAL, DEPASSEMENT,
+IDCE_AUTORISATION. Toutes en Silver, SUCCESS, vérifiées spark-sql.
+
+**Features moteur livrées** :
+- Statut DQ 3-états : PASSED / WARNING (HIGH/MEDIUM) / REJECTED (CRITICAL/PK). Piloté par sévérité.
+- Checks `informational` : mesurés en audit (QUALITY_RESULTS) mais hors statut ligne (complétude, EDD cassés).
+- **Dédup Silver opt-in** (`deduplicate: true`) : 1 ligne/PK, survie = meilleur dq_status puis récence.
+  Bronze garde les doublons. PK incomplète jamais fusionnée. DEPASSEMENT : 445130 doublons retirés !
+- **Unicité audit-only sous dédup** : le check unique ne marque plus REJECTED le survivant (sinon exclu du Gold).
+- Normalisation colonnes à la lecture (drop `_*` NiFi, uppercase).
+
+**Décisions actées** :
+- Politique codifs = **EDD strict** : flaguer tout hors-EDD (CREDIT_AMORT harmonisé : WARN 100→23719).
+- DEPASSEMENT : PK composite 4-col posée (était vide) d'après diagramme jointures.
+- IDCE_AUTORISATION : schéma **reconstruit** (le YAML était faux ; vraie donnée = canevas AUTORISATIONS/CREDIT_NON_AMORT).
+- Outil `scripts/audit_edd_vs_yaml.py` créé (gouvernance EDD↔YAML, réutilisable).
+- Runbook enrichi (--driver-memory 4g, troubleshooting HDFS).
+
+**Historisation cadrée (plan H1-H4 dans task_plan.md)** :
+- Source = STOCK → snapshot par date_arrete (déjà fait Bronze/Silver) + append-only.
+- **SCD2 COMPLET requis** sur dimensions (garder TOUTES les versions) — révise la décision « aucun SCD ».
+- Cible stockage : **Iceberg sur HDFS, métadonnées Hive Metastore**, pour Silver ET Gold.
+- H1 (Silver→Iceberg) = prochain chantier, prérequis du MERGE/SCD2 + time-travel.
+
+**Backlog** : checks référentiels (devise/pays/produit), IDCE grain (IDF_REF_AUTO+NUM_DOSS?),
+anomalies source à remonter métier, canevas EDD corrompus (110, NPAI, noms onglets).
+
+**~18 commits.** Prochaine session = H1 migration Iceberg.
+
 ## 2026-05-18 — Cadrage
 - Lecture des 13 EDD (canevas) + 12 CSV + 2 xlsx (échantillons).
 - Confirmé : les 30 tables sont `Type stockage = STOCK` → méthode Full Snapshot validée.
