@@ -2024,7 +2024,9 @@ tables:
   - IDF_NUM_CTR_GARANTIE
   is_partitioned: false
   source:
-    path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
+    # NiFi ingère ce flux dans le dossier 'garantie_details' (pluriel) — divergence
+    # avec table_name_lower='garantie_detail'. On surcharge donc le chemin Landing.
+    path_template: hdfs://ubuntu3:9000/data/landing/garantie_details/date_arrete={date_arrete}
     format: parquet
     loading:
       mode: FULL
@@ -2197,6 +2199,7 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
   - field: IDF_NUM_CTR_GARANTIE
     source_column: IDF_NUM_CTR_GARANTIE
@@ -2216,6 +2219,11 @@ tables:
     data_type: StringType
     description: COD_EXCEPTION_INFO_CAUTION — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2228,6 +2236,11 @@ tables:
     data_type: StringType
     description: COD_FACTURATION_INFO_CAUTION — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2240,7 +2253,13 @@ tables:
     data_type: StringType
     description: COD_MOTIF_TERMINAISON — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
+      informational: true   # EDD cassé (zéro-padding source) → hors statut ligne
       severity: HIGH
       allowed_values:
       - '0'
@@ -2255,7 +2274,13 @@ tables:
     data_type: StringType
     description: COD_NAT_GARANTIE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
+      informational: true   # EDD cassé (zéro-padding source) → hors statut ligne
       severity: HIGH
       allowed_values:
       - '1'
@@ -2296,6 +2321,11 @@ tables:
     data_type: StringType
     description: COD_OBJET_GARANTIE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2310,6 +2340,11 @@ tables:
     data_type: StringType
     description: COD_ORIGINE_GARANTIE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2327,6 +2362,11 @@ tables:
     data_type: StringType
     description: COD_STATUT_GARANTIE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2342,6 +2382,11 @@ tables:
     data_type: StringType
     description: COD_TYP_DUREE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2354,7 +2399,13 @@ tables:
     data_type: StringType
     description: COD_TYP_GARANT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
+      informational: true   # EDD cassé (zéro-padding source) → hors statut ligne
       severity: HIGH
       allowed_values:
       - M1
@@ -2386,6 +2437,11 @@ tables:
     data_type: StringType
     description: COD_TYP_MNT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2401,6 +2457,11 @@ tables:
     data_type: StringType
     description: PERIMETRE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2415,6 +2476,11 @@ tables:
     data_type: StringType
     description: TOP_INCONDITIONNELLE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2427,6 +2493,11 @@ tables:
     data_type: StringType
     description: TOP_IRREVOCABLE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -2439,6 +2510,11 @@ tables:
     data_type: StringType
     description: TOP_LOG_MISE_JEUX — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:

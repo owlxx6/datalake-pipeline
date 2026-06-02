@@ -390,6 +390,12 @@ def compute_dq_flags(
     fail_exprs: list = []
     weight_exprs: list = []
 
+    # Dédup Silver active → l'unicité PK est garantie par la suppression physique
+    # des doublons (deduplicate_silver). Le check unique ne doit donc PAS marquer
+    # REJECTED le survivant (sinon il serait exclu du Gold). Il reste mesuré en
+    # audit (run_dq → QUALITY_RESULTS) mais hors statut ligne.
+    dedup_on = bool(table.silver_write and table.silver_write.deduplicate)
+
     # quality_rules
     for rule in table.quality_rules:
         col_name = rule.source_column
@@ -400,6 +406,9 @@ def compute_dq_flags(
             # Les checks informational sont mesurés dans QUALITY_RESULTS (run_dq) mais
             # n'influencent PAS le statut de la ligne — on les saute ici.
             if check.informational:
+                continue
+            # Unicité résolue par la dédup → audit-only (cf. dedup_on ci-dessus).
+            if check.type == "unique" and dedup_on:
                 continue
             check_id = f"{rule.field}:{check.type}"
             if check.type == "unique":
