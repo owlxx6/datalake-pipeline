@@ -512,6 +512,53 @@ def write_bronze(
     return count
 
 
+def deduplicate_silver(df_flagged: DataFrame, table: TableEntry) -> tuple[DataFrame, int]:
+    """Dédup Silver par PK (opt-in via silver_write.deduplicate).
+
+    Principe médaillon : Silver ne garde qu'une ligne par PK. Les doublons restent
+    dans Bronze (historisation). Règle de survie : meilleur dq_status
+    (PASSED > WARNING > REJECTED), puis ligne la plus récente (dedup_order_by, défaut
+    ingestion_ts).
+
+    Les lignes à PK **incomplète** (au moins une colonne PK nulle) ne sont PAS des
+    doublons entre elles → passées intactes, jamais fusionnées.
+
+    Retourne (df_dédupliqué, nb_doublons_retirés).
+    """
+    sw = table.silver_write
+    pk = table.primary_key
+    if sw is None or not sw.deduplicate or not pk:
+        return df_flagged, 0
+
+    # Séparer PK complète / incomplète
+    pk_complete = F.lit(True)
+    for col in pk:
+        pk_complete = pk_complete & F.col(col).isNotNull()
+    df_keyed = df_flagged.filter(pk_complete)
+    df_nullkey = df_flagged.filter(~pk_complete)
+
+    # Ordre de survie : meilleur statut DQ puis récence
+    status_rank = (
+        F.when(F.col("dq_status") == "PASSED", F.lit(0))
+         .when(F.col("dq_status") == "WARNING", F.lit(1))
+         .otherwise(F.lit(2))
+    )
+    order = [status_rank.asc()]
+    recency = sw.dedup_order_by or "ingestion_ts"
+    if recency in df_flagged.columns:
+        order.append(F.col(recency).desc_nulls_last())
+
+    w = Window.partitionBy(*pk).orderBy(*order)
+    df_dedup = (
+        df_keyed.withColumn("__rn", F.row_number().over(w))
+                .filter(F.col("__rn") == 1)
+                .drop("__rn")
+    )
+
+    removed = df_keyed.count() - df_dedup.count()
+    return df_dedup.unionByName(df_nullkey), removed
+
+
 def write_silver(
     df_flagged: DataFrame, table: TableEntry, config: BronzeConfig,
     spark: SparkSession, date_arrete: str,
@@ -700,16 +747,23 @@ def run_table(
         # 4. Per-row DQ flags
         df_flagged = compute_dq_flags(df_typed, table, execution_id)
 
-        # 5. Bronze (typed, sans flag)
+        # 4bis. Dédup Silver (opt-in) — Bronze garde tout (historisation)
+        df_silver, rows_deduped = deduplicate_silver(df_flagged, table)
+        if rows_deduped:
+            print(f"  [DEDUP] {rows_deduped} doublon(s) PK écarté(s) du Silver "
+                  f"(conservés en Bronze)")
+
+        # 5. Bronze (typed, sans flag) — toutes les lignes, doublons inclus
         rows_written = write_bronze(df_typed, table, config, date_arrete)
 
-        # 6. Silver (toutes les lignes + flags)
-        rows_silver = write_silver(df_flagged, table, config, spark, date_arrete)
+        # 6. Silver (dédupliqué si activé + flags)
+        rows_silver = write_silver(df_silver, table, config, spark, date_arrete)
 
         # Répartition des lignes par statut DQ (PASSED / WARNING / REJECTED)
+        # — calculée sur le df réellement écrit en Silver (post-dédup)
         status_counts = {
             r["dq_status"]: r["n"]
-            for r in df_flagged.groupBy("dq_status").agg(F.count("*").alias("n")).collect()
+            for r in df_silver.groupBy("dq_status").agg(F.count("*").alias("n")).collect()
         }
         rows_passed = status_counts.get("PASSED", 0)
         rows_warning = status_counts.get("WARNING", 0)

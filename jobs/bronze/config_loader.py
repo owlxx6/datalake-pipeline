@@ -145,6 +145,12 @@ class SilverWriteConfig(BaseModel):
     table: str
     mode: str = "overwrite"
     partition_by: list[str] = ["date_arrete"]
+    # deduplicate=True : Silver ne garde qu'une ligne par PK (principe médaillon).
+    # Les doublons restent dans Bronze (historisation). Les lignes à PK incomplète
+    # ne sont jamais dédupliquées entre elles. Survie : meilleur dq_status puis récence.
+    deduplicate: bool = False
+    # Colonne de récence pour départager les doublons (défaut : ingestion_ts).
+    dedup_order_by: Optional[str] = None
 
 
 class DQCheck(BaseModel):

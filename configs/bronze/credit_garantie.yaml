@@ -967,6 +967,7 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
   - field: IDF_NUM_DOSS
     source_column: IDF_NUM_DOSS
@@ -4597,6 +4598,7 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
   - field: IDF_NUM_DOSSIER
     source_column: IDF_NUM_DOSSIER
@@ -5706,6 +5708,7 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
   - field: IDF_NUM_TIERS
     source_column: IDF_NUM_TIERS
@@ -5725,6 +5728,11 @@ tables:
     data_type: StringType
     description: COD_AGT_ECONOMIQUE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -5823,6 +5831,11 @@ tables:
     data_type: StringType
     description: COD_CYC_VIE_CLASSIF — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -5835,6 +5848,11 @@ tables:
     data_type: StringType
     description: COD_ETABLISSEMENT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -5847,6 +5865,11 @@ tables:
     data_type: StringType
     description: COD_ETAT_PROF — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -5862,6 +5885,11 @@ tables:
     data_type: StringType
     description: COD_INDICATEUR_TVA — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -5874,6 +5902,11 @@ tables:
     data_type: StringType
     description: COD_NAT_TIERS — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -5888,6 +5921,11 @@ tables:
     data_type: StringType
     description: COD_NPAI — codification corrigée d'après donnée réelle 2026-05-23
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -5899,6 +5937,11 @@ tables:
     data_type: StringType
     description: COD_PCS — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -6396,6 +6439,11 @@ tables:
     data_type: StringType
     description: COD_RELA_ENTITE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -6410,6 +6458,11 @@ tables:
     data_type: StringType
     description: COD_SEC_ACTIVITE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -6643,6 +6696,11 @@ tables:
     data_type: StringType
     description: COD_SEX — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -6655,6 +6713,11 @@ tables:
     data_type: StringType
     description: COD_SIT_FAM — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -6669,6 +6732,11 @@ tables:
     data_type: StringType
     description: COD_STATUT_TIERS — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -6684,6 +6752,11 @@ tables:
     data_type: StringType
     description: COD_TITRE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -6697,6 +6770,11 @@ tables:
     data_type: StringType
     description: COD_TRIBUNAL — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -7271,6 +7349,11 @@ tables:
     data_type: StringType
     description: TOP_ASSOCIATION — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -7283,6 +7366,11 @@ tables:
     data_type: StringType
     description: TOP_EI — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -7296,7 +7384,13 @@ tables:
     data_type: StringType
     description: TOP_EMAILING — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
+      informational: true   # EDD cassé (réel 1/2/3/4 ≠ N/O) → hors statut ligne
       severity: HIGH
       allowed_values:
       - N
@@ -7308,6 +7402,11 @@ tables:
     data_type: StringType
     description: TOP_MAILING — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -7320,6 +7419,11 @@ tables:
     data_type: StringType
     description: TOP_REP_LEGAL — codification EDD (valeur '2' à discuter avec métier)
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -7332,6 +7436,11 @@ tables:
     data_type: StringType
     description: TOP_SMS — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -7344,6 +7453,11 @@ tables:
     data_type: StringType
     description: TOP_VIP — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -7356,6 +7470,11 @@ tables:
     data_type: StringType
     description: TYP_CLASSIFICATION — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
