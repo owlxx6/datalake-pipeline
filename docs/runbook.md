@@ -194,11 +194,19 @@ tail -200 $NIFI_HOME/logs/nifi-app.log | grep -E "ERROR|WARN"
 
 ## 4. Bronze DQ Engine
 
+> **Mémoire driver** — pour les tables volumineuses (> 1 M lignes, ex. IMPAYES_CDL
+> ≈ 1,7 M), ajouter `--driver-memory 4g` au `spark-submit`. Sans ça, l'écriture
+> Silver (tri partitionné) tombe en `OutOfMemoryError: Java heap space` car le
+> driver est à 1 Go par défaut. `spark.driver.memory` ne se règle PAS dans le YAML
+> (la JVM driver est déjà lancée) — uniquement en CLI ou `spark-defaults.conf`.
+> En cas de doute, mettre `--driver-memory 4g` par défaut (VM = 9,5 Go).
+
 ### 3.1 Toutes les tables d'un domaine
 
 ```bash
 spark-submit \
   --master spark://ubuntu3:7077 \
+  --driver-memory 4g \
   $PROJECT/jobs/bronze/engine.py \
   --config $PROJECT/configs/bronze/credit_garantie.yaml \
   --date-arrete 2026-05-15
@@ -351,7 +359,9 @@ hdfs dfs -ls "hdfs://ubuntu3:9000/data/bronze/tiers/TIERS/date_arrete=2026-05-15
 
 | Symptôme | Cause | Commande |
 |----------|-------|----------|
-| `SafeModeException: Name node is in safe mode` | HDFS démarre en safe mode | `hdfs dfsadmin -safemode leave` |
+| `SafeModeException: Name node is in safe mode` | HDFS démarre en safe mode (attend le report des blocs) | Attendre ~30 s puis `hdfs dfsadmin -safemode leave` (vérifier `jps` : NameNode + DataNode présents) |
+| `ConnectException: ... to ubuntu3:9000 ... Connection refused` | HDFS pas démarré (NameNode down) | Respecter l'ordre §1 : `start-dfs.sh` AVANT Spark/engine |
+| `OutOfMemoryError: Java heap space` à l'écriture Silver | Driver Spark à 1 Go par défaut, tri partitionné sur gros volume | Relancer avec `--driver-memory 4g` (cf. §4) |
 | `Connection refused` sur port 9083 | Hive Metastore pas démarré | `nohup hive --service metastore > ~/logs/metastore.log 2>&1 &` |
 | `AnalysisException: Table not found` | Base Silver pas créée | Lancer le engine une première fois, il crée les tables Iceberg automatiquement |
 | `SparkUpgradeException: WRITE_ANCIENT_DATETIME` | Dates antérieures à 1582 | Vérifier `datetimeRebaseModeInWrite: CORRECTED` dans le YAML |
