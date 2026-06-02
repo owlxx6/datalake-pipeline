@@ -9304,6 +9304,7 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
   - field: IDF_NUM_TIERS
     source_column: IDF_NUM_TIERS
@@ -9323,6 +9324,11 @@ tables:
     data_type: StringType
     description: COD_INDIC_ACTIV — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -9341,6 +9347,11 @@ tables:
     data_type: StringType
     description: COD_MARCHE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -9360,6 +9371,11 @@ tables:
     data_type: StringType
     description: COD_STN — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
