@@ -3311,7 +3311,7 @@ tables:
 - name: IDCE_AUTORISATION
   domain: idce_autorisation
   primary_key:
-  - IDF_REF_AUTORISATION
+  - IDF_REF_AUTO
   is_partitioned: false
   source:
     path_template: hdfs://ubuntu3:9000/data/landing/{table_name_lower}/date_arrete={date_arrete}
@@ -3321,146 +3321,158 @@ tables:
   schema:
     on_cast_error: reject
     fields:
-    - name: IDF_REF_AUTORISATION
+    - name: IDF_REF_AUTO
       spark_type: StringType
       nullable: false
-      description: Reference autorisation contrat
-    - name: DATE_OPC
-      spark_type: TimestampType
-      nullable: true
-      description: Date de traitement opc
-    - name: ENTITE_GESTIONNAIRE
+      description: IDF_REF_AUTO
+    - name: NUM_COMPTE
       spark_type: StringType
       nullable: true
-      description: Entité gestionnaire de l'autorisation
-    - name: COD_RENOUVELEE
+      description: NUM_COMPTE
+    - name: COD_NAT_AUTO
       spark_type: StringType
       nullable: true
-      description: Code d autorisation renouvlée
-    - name: REFERENCE_INTERNE
+      description: COD_NAT_AUTO
+    - name: REF_PRODUIT
       spark_type: StringType
       nullable: true
-      description: Référence interne contrat dans la filière
-    - name: CODE_PRODUIT
+      description: REF_PRODUIT
+    - name: COD_ETAT_AUTO
       spark_type: StringType
       nullable: true
-      description: code produit
+      description: COD_ETAT_AUTO
+    - name: COD_TYP_AUTO
+      spark_type: StringType
+      nullable: true
+      description: COD_TYP_AUTO
+    - name: NUM_DOSS
+      spark_type: StringType
+      nullable: true
+      description: NUM_DOSS
+    - name: COD_SRC_DOSS
+      spark_type: StringType
+      nullable: true
+      description: COD_SRC_DOSS
+    - name: COD_DEV_AUTO
+      spark_type: StringType
+      nullable: true
+      description: COD_DEV_AUTO
+    - name: TX_DEV_AUTO
+      spark_type: StringType
+      nullable: true
+      description: TX_DEV_AUTO
+    - name: DATE_REF_TX
+      spark_type: StringType
+      nullable: true
+      description: DATE_REF_TX
+    - name: MNT_AUTO_TOT_DEV
+      spark_type: StringType
+      nullable: true
+      description: MNT_AUTO_TOT_DEV
+    - name: MNT_AUTO_DEB_DEV
+      spark_type: StringType
+      nullable: true
+      description: MNT_AUTO_DEB_DEV
+    - name: MNT_AUTO_TOT_MAD
+      spark_type: StringType
+      nullable: true
+      description: MNT_AUTO_TOT_MAD
+    - name: MNT_AUTO_DEB_MAD
+      spark_type: StringType
+      nullable: true
+      description: MNT_AUTO_DEB_MAD
+    - name: DATE_COMITE
+      spark_type: StringType
+      nullable: true
+      description: DATE_COMITE
+    - name: DATE_GESTION
+      spark_type: StringType
+      nullable: true
+      description: DATE_GESTION
+    - name: DATE_ECHEANCE
+      spark_type: StringType
+      nullable: true
+      description: DATE_ECHEANCE
+    - name: COD_GAR_CTT
+      spark_type: StringType
+      nullable: true
+      description: COD_GAR_CTT
+    - name: COD_AUTO_IRREV
+      spark_type: StringType
+      nullable: true
+      description: COD_AUTO_IRREV
+    - name: COD_FIN_SPE
+      spark_type: StringType
+      nullable: true
+      description: COD_FIN_SPE
+    - name: RANG_AUTO
+      spark_type: StringType
+      nullable: true
+      description: RANG_AUTO
+    - name: AUTO_CUMUL
+      spark_type: StringType
+      nullable: true
+      description: AUTO_CUMUL
+    - name: TX_COM
+      spark_type: StringType
+      nullable: true
+      description: TX_COM
+    - name: MNT_COM
+      spark_type: StringType
+      nullable: true
+      description: MNT_COM
+    - name: MNT_FRAIS
+      spark_type: StringType
+      nullable: true
+      description: MNT_FRAIS
+    - name: DATE_OUVERTURE
+      spark_type: StringType
+      nullable: true
+      description: DATE_OUVERTURE
+    - name: DATE_MAJ
+      spark_type: StringType
+      nullable: true
+      description: DATE_MAJ
+    - name: DATE_CLOTURE
+      spark_type: StringType
+      nullable: true
+      description: DATE_CLOTURE
+    - name: COD_TYP_COND
+      spark_type: StringType
+      nullable: true
+      description: COD_TYP_COND
+    - name: CPT_GENERAL
+      spark_type: StringType
+      nullable: true
+      description: CPT_GENERAL
+    - name: COD_NAT_LIGNE
+      spark_type: StringType
+      nullable: true
+      description: COD_NAT_LIGNE
+    - name: COD_TYP_FR_DOSS
+      spark_type: StringType
+      nullable: true
+      description: COD_TYP_FR_DOSS
+    - name: TX_MAJORATION
+      spark_type: StringType
+      nullable: true
+      description: TX_MAJORATION
+    - name: LIB_AUT_COND
+      spark_type: StringType
+      nullable: true
+      description: LIB_AUT_COND
     - name: NUM_TIERS
       spark_type: StringType
       nullable: true
-      description: numero de tiers
-    - name: NUM_TIERS_EI
+      description: NUM_TIERS
+    - name: LIB_PRODUIT
       spark_type: StringType
       nullable: true
-      description: numero de tiers EI
-    - name: COD_TYPE_AUTO
+      description: LIB_PRODUIT
+    - name: NUM_COMPTE_ENGAGEMENT
       spark_type: StringType
       nullable: true
-      description: type d'autorisation
-    - name: FILIERE_GESTION
-      spark_type: StringType
-      nullable: true
-      description: filiére de gestion
-    - name: SOUS_FILIERE_GESTION
-      spark_type: StringType
-      nullable: true
-      description: sous filiere de gestion
-    - name: TOP_MULTI_DEBIT
-      spark_type: StringType
-      nullable: true
-      description: Indicateur ligne multi-débitrice (O/N)
-    - name: MNT_AUTORISATION
-      spark_type: DecimalType(19, 2)
-      nullable: true
-      description: Montant de l’autorisation
-    - name: COD_DEVISE
-      spark_type: StringType
-      nullable: true
-      description: Devise de l'autorisation
-    - name: DATE_EFFET
-      spark_type: TimestampType
-      nullable: true
-      description: Date effet de l’autorisation
-    - name: DATE_FIN
-      spark_type: TimestampType
-      nullable: true
-      description: Date de dernière échéance de l’autorisation = Date de fin de l’autorisation
-    - name: COD_ETAT
-      spark_type: StringType
-      nullable: true
-      description: Code état Cycle de Vie de l’autorisation
-    - name: DATE_DERN_ETAT
-      spark_type: TimestampType
-      nullable: true
-      description: Date de dernier changement d’état de l’autorisation
-    - name: CODE_SAS_CREATION_AUTO
-      spark_type: StringType
-      nullable: true
-      description: Code SAS de création de l’autorisation
-    - name: DATE_CREATION_AUTO
-      spark_type: TimestampType
-      nullable: true
-      description: Timestamp de création de l’autorisation
-    - name: CODE_SAS_DERN_MAJ
-      spark_type: StringType
-      nullable: true
-      description: Code SAS de dernière mise a jour
-    - name: DATE_DERN_MAJ
-      spark_type: TimestampType
-      nullable: true
-      description: Timestamp de dernière MAJ de l’autorisation
-    - name: DATE_SIGNATURE
-      spark_type: TimestampType
-      nullable: true
-      description: Date de signature du contrat
-    - name: COD_SAS_SIGNATURE
-      spark_type: StringType
-      nullable: true
-      description: User de saisie de la date de signature du contrat
-    - name: REFERENCE_FILIIERE
-      spark_type: StringType
-      nullable: true
-      description: Référence filière
-    - name: REFERENCE_SECONDAIRE
-      spark_type: StringType
-      nullable: true
-      description: Référence secondaire
-    - name: MNT_PONDERE
-      spark_type: DecimalType(19, 2)
-      nullable: true
-      description: Montant pondéré
-    - name: COD_LIGNE_OUVERTE
-      spark_type: StringType
-      nullable: true
-      description: Indicateur ligne ouverte/fermée
-    - name: COD_EPS_MEDIA
-      spark_type: StringType
-      nullable: true
-      description: types de média permettant l’émission de lignes EPSD, et gérées par l’application de gestion EPSDW
-    - name: CODE_PROMO
-      spark_type: StringType
-      nullable: true
-      description: Code promotion
-    - name: IDENTIFIANT_PRO_COM
-      spark_type: StringType
-      nullable: true
-      description: Identifiant PROCOM
-    - name: COD_OBJ_FINANCEMENT
-      spark_type: StringType
-      nullable: true
-      description: Code objet financement
-    - name: NUM_DOSSIER
-      spark_type: StringType
-      nullable: true
-      description: NUM dossier
-    - name: COD_TOP_DOSSIER
-      spark_type: StringType
-      nullable: true
-      description: Flag dossier
-    - name: FILLER
-      spark_type: StringType
-      nullable: true
-      description: FILLER
+      description: NUM_COMPTE_ENGAGEMENT
   write:
     format: parquet
     path_template: hdfs://ubuntu3:9000/data/bronze/{domain}/{table_name}/date_arrete={date_arrete}
@@ -3475,11 +3487,12 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
-  - field: IDF_REF_AUTORISATION
-    source_column: IDF_REF_AUTORISATION
+  - field: IDF_REF_AUTO
+    source_column: IDF_REF_AUTO
     data_type: StringType
-    description: PK IDF_REF_AUTORISATION — clé primaire
+    description: PK IDF_REF_AUTO — clé primaire
     checks:
     - type: not_null
       severity: CRITICAL
@@ -3489,58 +3502,321 @@ tables:
       severity: CRITICAL
       alert_threshold: 0.0
       control_type: BASIC
-  - field: COD_RENOUVELEE
-    source_column: COD_RENOUVELEE
+  - field: COD_NAT_AUTO
+    source_column: COD_NAT_AUTO
     data_type: StringType
-    description: COD_RENOUVELEE — codification EDD
+    description: COD_NAT_AUTO — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
+      - '110'   # EDD listait '110+C84:C202' (artefact formule Excel) → vrai code = 110
+      - '120'
+      - '121'
+      - '202'
+      - '212'
+      - '214'
+      - '218'
+      - '220'
+      - '222'
+      - '224'
+      - '226'
+      - '228'
+      - '230'
+      - '231'
+      - '232'
+      - '233'
+      - '234'
+      - '235'
+      - '236'
+      - '238'
+      - '240'
+      - '241'
+      - '242'
+      - '243'
+      - '244'
+      - '245'
+      - '246'
+      - '247'
+      - '248'
+      - '250'
+      - '252'
+      - '254'
+      - '255'
+      - '257'
+      - '271'
+      - '272'
+      - '273'
+      - '281'
+      - '283'
+      - '289'
+      - '308'
+      - '320'
+      - '324'
+      - '325'
+      - '328'
+      - '329'
+      - '332'
+      - '348'
+      - '352'
+      - '360'
+      - '367'
+      - '368'
+      - '370'
+      - '372'
+      - '374'
+      - '375'
+      - '376'
+      - '377'
+      - '378'
+      - '379'
+      - '383'
+      - '384'
+      - '385'
+      - '386'
+      - '387'
+      - '388'
+      - '389'
+      - '390'
+      - '392'
+      - '394'
+      - '395'
+      - '396'
+      - '397'
+      - '400'
+      - '410'
+      - '411'
+      - '412'
+      - '413'
+      - '414'
+      - '805'
+      - '806'
+      - '807'
+      - '808'
+      - '810'
+      - '811'
+      - '812'
+      - '813'
+      - '820'
+      - '821'
+      - '822'
+      - '824'
+      - '825'
+      - '826'
+      - '830'
+      - '835'
+      - '836'
+      - '837'
+      - '838'
+      - '839'
+      - '840'
+      - '841'
+      - '842'
+      - '845'
+      - '846'
+      - '847'
+      - '848'
+      - '849'
+      - '850'
+      - '851'
+      - '852'
+      - '854'
+      - '855'
+      - '863'
+      - '864'
+      - '865'
+      - '866'
+      - '1'
+      - '2'
+      - '3'
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: COD_ETAT_AUTO
+    source_column: COD_ETAT_AUTO
+    data_type: StringType
+    description: COD_ETAT_AUTO — codification EDD
+    checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
+    - type: in_list
+      severity: HIGH
+      allowed_values:
+      - ANU
+      - GES
+      - OUV
+      - TER
+      - VAS
+      - VAT
+      - VRC
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: COD_TYP_AUTO
+    source_column: COD_TYP_AUTO
+    data_type: StringType
+    description: COD_TYP_AUTO — codification EDD
+    checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
+    - type: in_list
+      severity: HIGH
+      allowed_values:
+      - F
       - R
-      - M
       alert_threshold: 1.0
       control_type: BASIC
-  - field: TOP_MULTI_DEBIT
-    source_column: TOP_MULTI_DEBIT
+  - field: COD_SRC_DOSS
+    source_column: COD_SRC_DOSS
     data_type: StringType
-    description: TOP_MULTI_DEBIT — codification EDD
+    description: COD_SRC_DOSS — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
-      - O
-      - N
+      - A
+      - E
+      - I
+      - P
       alert_threshold: 1.0
       control_type: BASIC
-  - field: COD_ETAT
-    source_column: COD_ETAT
+  - field: COD_GAR_CTT
+    source_column: COD_GAR_CTT
     data_type: StringType
-    description: COD_ETAT — codification EDD
+    description: COD_GAR_CTT — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
+      - 'N'
+      - 'O'
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: COD_AUTO_IRREV
+    source_column: COD_AUTO_IRREV
+    data_type: StringType
+    description: COD_AUTO_IRREV — codification EDD
+    checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
+    - type: in_list
+      severity: HIGH
+      allowed_values:
+      - I
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: COD_FIN_SPE
+    source_column: COD_FIN_SPE
+    data_type: StringType
+    description: COD_FIN_SPE — codification EDD
+    checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
+    - type: in_list
+      severity: HIGH
+      allowed_values:
+      - 'N'
+      - 'O'
       - '0'
       - '1'
       - '2'
+      - '3'
       - '4'
-      - '6'
-      - D
+      - '5'
       alert_threshold: 1.0
       control_type: BASIC
-  - field: COD_EPS_MEDIA
-    source_column: COD_EPS_MEDIA
+  - field: RANG_AUTO
+    source_column: RANG_AUTO
     data_type: StringType
-    description: COD_EPS_MEDIA — codification EDD
+    description: RANG_AUTO — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
+    - type: in_list
+      severity: HIGH
+      allowed_values:
+      - P
+      - S
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: COD_TYP_COND
+    source_column: COD_TYP_COND
+    data_type: StringType
+    description: COD_TYP_COND — codification EDD
+    checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
+    - type: in_list
+      severity: HIGH
+      allowed_values:
+      - 'N'
+      - P
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: COD_TYP_FR_DOSS
+    source_column: COD_TYP_FR_DOSS
+    data_type: StringType
+    description: COD_TYP_FR_DOSS — codification EDD
+    checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
+    - type: in_list
+      severity: HIGH
+      allowed_values:
+      - P
+      - S
+      alert_threshold: 1.0
+      control_type: BASIC
+  - field: COD_NAT_LIGNE
+    source_column: COD_NAT_LIGNE
+    data_type: StringType
+    description: COD_NAT_LIGNE — codification EDD
+    checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # complétude → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
       - '1'
       - '2'
       - '3'
-      - '4'
       alert_threshold: 1.0
       control_type: BASIC
   consistency_rules: []
