@@ -4316,6 +4316,7 @@ tables:
     mode: overwrite
     partition_by:
     - date_arrete
+    deduplicate: true
   quality_rules:
   - field: IDF_NUM_TIERS
     source_column: IDF_NUM_TIERS
@@ -4358,6 +4359,11 @@ tables:
     data_type: StringType
     description: COD_CYC_VIE — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4372,6 +4378,11 @@ tables:
     data_type: StringType
     description: COD_MOD_MODIF — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4385,6 +4396,11 @@ tables:
     data_type: StringType
     description: COD_NAT_JUR — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4400,6 +4416,7 @@ tables:
     description: COD_TYP_ADRESSE — codification EDD (empty à discuter avec métier)
     checks:
     - type: not_null
+      informational: true   # complétude → audit-only, hors statut ligne (2026-05-31)
       severity: MEDIUM
       alert_threshold: 1.0
       control_type: BASIC
@@ -4415,6 +4432,11 @@ tables:
     data_type: StringType
     description: COD_TYP_LTC — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4426,6 +4448,11 @@ tables:
     data_type: StringType
     description: COD_STY_LTC — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4438,6 +4465,11 @@ tables:
     data_type: StringType
     description: COD_MOD_MODIF_LTC — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4450,6 +4482,11 @@ tables:
     data_type: StringType
     description: COD_AGL_IMA_LTC — codification EDD
     checks:
+    - type: not_null   # flag 'manquant' — distinct du in_list (ajouté 2026-05-31)
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true   # systématique sur colonne optionnelle → hors statut ligne
     - type: in_list
       severity: HIGH
       allowed_values:
@@ -4462,6 +4499,7 @@ tables:
     description: COD_MTF_CYC_VIE — 99% empty dans la donnée, à discuter avec métier
     checks:
     - type: not_null
+      informational: true   # complétude → audit-only, hors statut ligne (2026-05-31)
       severity: MEDIUM
       alert_threshold: 50.0
       control_type: BASIC
