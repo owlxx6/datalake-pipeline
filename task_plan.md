@@ -64,13 +64,29 @@ Décision 2026-06-03 : **Bronze reste Parquet brut (path-based HDFS)** ; seuls
 - [ ] `load_ts` technique (= ingestion_ts)
 
 ### Phase H3 — SCD2 complet sur dimensions Silver (REQUIS)
-Décision 2026-06-02 : garder TOUT l'historique (toutes les versions), pas seulement actuelle+précédente.
-- [ ] colonnes SCD2 : `valid_from` / `valid_to` / `is_current` / `version`
-- [ ] logique MERGE Iceberg : comparer nouveau snapshot vs `is_current=true`
-      → clôturer ligne changée (valid_to, is_current=false) + insérer nouvelle version
-      → nouvelle clé = insertion ; clé disparue = clôture (soft delete)
-- [ ] appliquer aux dimensions : TIERS, POPS, TYPOLOGIE, GRC_PORTEFEUILLE, ASAL, IMAGE_CONTRAT
-- [ ] faits (credit/impayes/garantie/depassement) : restent snapshot par date_arrete (pas de SCD2)
+Décision 2026-06-02 : garder TOUT l'historique. Design cadré 2026-06-03.
+
+**Décisions design (2026-06-03)** :
+- Architecture : la **table Silver de la dimension DEVIENT SCD2** (versionnée, plus de
+  partition date_arrete ; à la place valid_from/valid_to/is_current). Pilote = **POPS** (hash).
+- Colonnes SCD2 : `valid_from`, `valid_to` (null/9999 si courant), `is_current`, `version`,
+  `row_hash` (empreinte attributs), `load_ts`. Clé technique = (PK métier, valid_from).
+- 3 familles de détection : F1 date_maj · F2 intervalles source (DATE_DEB/FIN) · hash (POPS/ASAL).
+- Config : `silver_write.scd2: true` + `scd2_signal: {type: hash|date_maj|interval, column: …}`.
+
+**Logique MERGE (par arrêté, comparer photo du jour vs is_current=true)** :
+- clé nouvelle → INSERT version 1 (valid_from=arrêté, is_current=true)
+- clé connue, row_hash identique → rien
+- clé connue, row_hash différent → CLÔTURE ancienne (valid_to, is_current=false) + INSERT nouvelle
+- clé disparue → CLÔTURE (soft delete)
+→ MERGE INTO Iceberg (clôture) + INSERT (nouvelles versions).
+
+**À faire** :
+- [ ] config_loader : silver_write.scd2 + scd2_signal
+- [ ] write_silver_scd2() : create (1er) / merge (suivants), row_hash sha2
+- [ ] pilote POPS, valider avec un 2e arrêté simulé (qq COD_USAGE modifiés)
+- [ ] étendre : TIERS, TYPOLOGIE (F2), GRC_PORTEFEUILLE, ASAL, IMAGE_CONTRAT
+- [ ] faits (credit/impayes/garantie/depassement) : restent snapshot (pas de SCD2)
 
 ### Phase H4 — Gold : détection de variation inter-arrêtés
 - [ ] diff snapshot N vs N-1 (créé / modifié / disparu) pour les KPIs de variation
