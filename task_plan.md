@@ -47,10 +47,12 @@ La technique de base est donc **snapshot + append-only**, PAS de delta/SCD impos
 - Gérer corrections tardives (bi-temporel).
 
 ### Phase H1 — Migration Silver → Iceberg
-- [ ] `write_silver` : format Iceberg (au lieu de saveAsTable Hive parquet)
-- [ ] partitionnement `date_arrete`, propriétés table (snapshot retention)
-- [ ] valider time-travel `AS OF` sur 1 table
-- [ ] re-migrer les 12 tables Silver
+Décision 2026-06-03 : **Bronze reste Parquet brut (path-based HDFS)** ; seuls
+**Silver + Gold** en Iceberg, catalogue Hive Metastore. write_bronze inchangé.
+- [x] `write_silver` : format Iceberg via DataFrameWriterV2 (createOrReplace +
+      overwritePartitions), partitionné par date_arrete — fait dans engine.py
+- [ ] valider time-travel `AS OF` sur 1 table pilote (POPS)
+- [ ] DROP des 12 tables Silver Hive + re-run → recréation Iceberg
 
 ### Phase H2 — Bi-temporel formalisé
 - [ ] colonnes `valid_from` (date_arrete) / `valid_to` / `is_current` sur Silver dimensions

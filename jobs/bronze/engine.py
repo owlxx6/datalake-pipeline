@@ -572,12 +572,18 @@ def write_silver(
     df_flagged: DataFrame, table: TableEntry, config: BronzeConfig,
     spark: SparkSession, date_arrete: str,
 ) -> int:
-    """Silver Hive — toutes les lignes + 4 colonnes flag DQ.
+    """Silver Iceberg — toutes les lignes + colonnes flag DQ.
 
-    - Si la table existe : `insertInto(overwrite=True)`. Combiné avec
-      `spark.sql.sources.partitionOverwriteMode=DYNAMIC`, n'écrase que la
-      partition `date_arrete` du jour (les autres dates restent intactes).
-    - Sinon : création initiale via saveAsTable.
+    Format Apache Iceberg (données Parquet sur HDFS, métadonnées Hive Metastore) :
+    active le time-travel (``... TIMESTAMP AS OF``) et prépare le MERGE INTO du SCD2.
+
+    - Table existante : ``overwritePartitions()`` (Iceberg dynamique) — remplace
+      uniquement la/les partition(s) ``date_arrete`` présentes dans la donnée du jour ;
+      les autres arrêtés restent intacts (snapshot par arrêté).
+    - Sinon : création Iceberg partitionnée par ``date_arrete``.
+
+    NB migration : les anciennes tables Silver en Hive Parquet doivent être
+    supprimées (DROP) une fois avant le premier run Iceberg.
     """
     sw = table.silver_write
     if sw is None:
@@ -587,23 +593,24 @@ def write_silver(
 
     if config.execution.dry_run:
         count = df_flagged.count()
-        print(f"  [DRY RUN] Silver → {full_table} ({count} lignes)")
+        print(f"  [DRY RUN] Silver (Iceberg) → {full_table} ({count} lignes)")
         return count
 
     df_to_write = df_flagged.withColumn("date_arrete", F.lit(date_arrete))
 
     if spark.catalog.tableExists(full_table):
-        df_to_write.write.insertInto(full_table, overwrite=True)
+        # Remplace uniquement la partition de l'arrêté du jour (les autres dates restent)
+        df_to_write.writeTo(full_table).overwritePartitions()
     else:
         (
-            df_to_write.write
-            .mode(sw.mode)
-            .partitionBy(*sw.partition_by)
-            .saveAsTable(full_table)
+            df_to_write.writeTo(full_table)
+            .using("iceberg")
+            .partitionedBy(F.col("date_arrete"))
+            .createOrReplace()
         )
 
     count = df_flagged.count()
-    print(f"  [SILVER] ✓ {count} lignes (avec flags DQ) → {full_table}")
+    print(f"  [SILVER] ✓ {count} lignes (Iceberg, avec flags DQ) → {full_table}")
     return count
 
 
