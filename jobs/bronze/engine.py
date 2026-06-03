@@ -390,11 +390,9 @@ def compute_dq_flags(
     fail_exprs: list = []
     weight_exprs: list = []
 
-    # Dédup Silver active → l'unicité PK est garantie par la suppression physique
-    # des doublons (deduplicate_silver). Le check unique ne doit donc PAS marquer
-    # REJECTED le survivant (sinon il serait exclu du Gold). Il reste mesuré en
-    # audit (run_dq → QUALITY_RESULTS) mais hors statut ligne.
-    dedup_on = bool(table.silver_write and table.silver_write.deduplicate)
+    # Note : la dédup Silver ne retire que les doublons PARFAITS (cf. deduplicate_silver),
+    # et elle s'exécute AVANT ce calcul. Le check `unique` ne voit donc plus que les
+    # vraies collisions de PK (même PK, valeurs différentes) → il les flague REJECTED.
 
     # quality_rules
     for rule in table.quality_rules:
@@ -406,9 +404,6 @@ def compute_dq_flags(
             # Les checks informational sont mesurés dans QUALITY_RESULTS (run_dq) mais
             # n'influencent PAS le statut de la ligne — on les saute ici.
             if check.informational:
-                continue
-            # Unicité résolue par la dédup → audit-only (cf. dedup_on ci-dessus).
-            if check.type == "unique" and dedup_on:
                 continue
             check_id = f"{rule.field}:{check.type}"
             if check.type == "unique":
@@ -521,51 +516,36 @@ def write_bronze(
     return count
 
 
-def deduplicate_silver(df_flagged: DataFrame, table: TableEntry) -> tuple[DataFrame, int]:
-    """Dédup Silver par PK (opt-in via silver_write.deduplicate).
+def deduplicate_silver(df_typed: DataFrame, table: TableEntry) -> tuple[DataFrame, int]:
+    """Dédup Silver — retire UNIQUEMENT les doublons PARFAITS (opt-in deduplicate).
 
-    Principe médaillon : Silver ne garde qu'une ligne par PK. Les doublons restent
-    dans Bronze (historisation). Règle de survie : meilleur dq_status
-    (PASSED > WARNING > REJECTED), puis ligne la plus récente (dedup_order_by, défaut
-    ingestion_ts).
+    Un doublon parfait = deux lignes identiques sur **toutes les colonnes métier**
+    (les colonnes du schéma). On en garde une seule : aucune information n'est perdue.
 
-    Les lignes à PK **incomplète** (au moins une colonne PK nulle) ne sont PAS des
-    doublons entre elles → passées intactes, jamais fusionnées.
+    Les **collisions de PK** (même PK mais valeurs différentes ailleurs) ne sont PAS
+    des doublons → elles sont **conservées** et seront flaguées par le check `unique`
+    (REJECTED) au lieu d'être jetées en silence.
 
-    Retourne (df_dédupliqué, nb_doublons_retirés).
+    Bronze garde toutes les lignes (doublons parfaits inclus) → historisation.
+    À appeler AVANT le calcul des flags DQ : ainsi `unique` ne voit plus que les
+    vraies collisions.
+
+    Retourne (df_dédupliqué, nb_doublons_parfaits_retirés).
     """
     sw = table.silver_write
-    pk = table.primary_key
-    if sw is None or not sw.deduplicate or not pk:
-        return df_flagged, 0
+    if sw is None or not sw.deduplicate:
+        return df_typed, 0
 
-    # Séparer PK complète / incomplète
-    pk_complete = F.lit(True)
-    for col in pk:
-        pk_complete = pk_complete & F.col(col).isNotNull()
-    df_keyed = df_flagged.filter(pk_complete)
-    df_nullkey = df_flagged.filter(~pk_complete)
+    # Colonnes métier = schéma source (on ignore les colonnes techniques constantes
+    # execution_id / source_file / ingestion_ts, identiques au sein d'un run).
+    business_cols = [f.name for f in table.schema.fields if f.name in df_typed.columns]
+    if not business_cols:
+        return df_typed, 0
 
-    # Ordre de survie : meilleur statut DQ puis récence
-    status_rank = (
-        F.when(F.col("dq_status") == "PASSED", F.lit(0))
-         .when(F.col("dq_status") == "WARNING", F.lit(1))
-         .otherwise(F.lit(2))
-    )
-    order = [status_rank.asc()]
-    recency = sw.dedup_order_by or "ingestion_ts"
-    if recency in df_flagged.columns:
-        order.append(F.col(recency).desc_nulls_last())
-
-    w = Window.partitionBy(*pk).orderBy(*order)
-    df_dedup = (
-        df_keyed.withColumn("__rn", F.row_number().over(w))
-                .filter(F.col("__rn") == 1)
-                .drop("__rn")
-    )
-
-    removed = df_keyed.count() - df_dedup.count()
-    return df_dedup.unionByName(df_nullkey), removed
+    before = df_typed.count()
+    df_dedup = df_typed.dropDuplicates(business_cols)
+    removed = before - df_dedup.count()
+    return df_dedup, removed
 
 
 def write_silver(
@@ -754,25 +734,26 @@ def run_table(
         # 2bis. Traçabilité d'ingestion (3 colonnes ajoutées avant Bronze)
         df_typed = add_ingestion_metadata(df_typed, source_path, execution_id)
 
-        # 3. DQ aggregates (QUALITY_RESULTS)
+        # 3. Bronze (typé, sans flag) — TOUTES les lignes (doublons parfaits inclus)
+        rows_written = write_bronze(df_typed, table, config, date_arrete)
+
+        # 3bis. Dédup Silver (opt-in) : retire les doublons PARFAITS uniquement.
+        #       Les collisions de PK sont conservées → flaguées par `unique`.
+        df_silver_base, rows_deduped = deduplicate_silver(df_typed, table)
+        if rows_deduped:
+            print(f"  [DEDUP] {rows_deduped} doublon(s) parfait(s) retiré(s) du Silver "
+                  f"(Bronze garde tout)")
+
+        # 4. DQ aggregates (QUALITY_RESULTS) — sur la donnée Silver (dédupliquée)
         quality_results = run_dq(
-            df_typed, table, config, execution_id, date_situation,
+            df_silver_base, table, config, execution_id, date_situation,
         )
         print_report(quality_results, table.name)
 
-        # 4. Per-row DQ flags
-        df_flagged = compute_dq_flags(df_typed, table, execution_id)
+        # 5. Per-row DQ flags — `unique` flague les vraies collisions de PK restantes
+        df_silver = compute_dq_flags(df_silver_base, table, execution_id)
 
-        # 4bis. Dédup Silver (opt-in) — Bronze garde tout (historisation)
-        df_silver, rows_deduped = deduplicate_silver(df_flagged, table)
-        if rows_deduped:
-            print(f"  [DEDUP] {rows_deduped} doublon(s) PK écarté(s) du Silver "
-                  f"(conservés en Bronze)")
-
-        # 5. Bronze (typed, sans flag) — toutes les lignes, doublons inclus
-        rows_written = write_bronze(df_typed, table, config, date_arrete)
-
-        # 6. Silver (dédupliqué si activé + flags)
+        # 6. Silver (Iceberg) — dédupliqué + flags
         rows_silver = write_silver(df_silver, table, config, spark, date_arrete)
 
         # Répartition des lignes par statut DQ (PASSED / WARNING / REJECTED)
