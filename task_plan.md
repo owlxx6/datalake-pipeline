@@ -51,8 +51,13 @@ Décision 2026-06-03 : **Bronze reste Parquet brut (path-based HDFS)** ; seuls
 **Silver + Gold** en Iceberg, catalogue Hive Metastore. write_bronze inchangé.
 - [x] `write_silver` : format Iceberg via DataFrameWriterV2 (createOrReplace +
       overwritePartitions), partitionné par date_arrete — fait dans engine.py
-- [ ] valider time-travel `AS OF` sur 1 table pilote (POPS)
-- [ ] DROP des 12 tables Silver Hive + re-run → recréation Iceberg
+- [x] valider Iceberg sur POPS (provider=iceberg, .snapshots/.history OK)
+- [x] DROP des 12 tables Silver Hive + re-run → **12 tables Silver en Iceberg** ✓
+- [x] **Correction dédup** : retire uniquement les doublons PARFAITS (pas sur PK) ;
+      collisions de PK conservées + flaguées REJECTED par `unique`. Ordre run_table
+      revu (Bronze → dédup → DQ → flags). Validé : DEPASSEMENT/GARANTIE_DETAIL/IDCE
+      = doublons 100% parfaits, résultats identiques. commit c2cd1f6.
+- [ ] reste H1 (optionnel) : démonstration time-travel `VERSION AS OF` sur 2 snapshots
 
 ### Phase H2 — Bi-temporel formalisé
 - [ ] colonnes `valid_from` (date_arrete) / `valid_to` / `is_current` sur Silver dimensions
