@@ -139,6 +139,18 @@ class WriteConfig(BaseModel):
     coalesce: int = 4
 
 
+class Scd2Signal(BaseModel):
+    """Signal de détection du changement pour le SCD2 (cf. 3 familles).
+      - type=hash     : comparaison d'empreinte des attributs (POPS, ASAL…)
+      - type=date_maj : la source porte une date de modif (column=DATE_MAJ…)
+      - type=interval : la source fournit déjà les bornes (valid_from_col/valid_to_col)
+    """
+    type: str = "hash"
+    column: Optional[str] = None
+    valid_from_col: Optional[str] = None
+    valid_to_col: Optional[str] = None
+
+
 class SilverWriteConfig(BaseModel):
     """Écriture des lignes propres (DQ passé) dans une table Hive Silver."""
     database: str
@@ -151,6 +163,10 @@ class SilverWriteConfig(BaseModel):
     deduplicate: bool = False
     # Colonne de récence pour départager les doublons (défaut : ingestion_ts).
     dedup_order_by: Optional[str] = None
+    # scd2=True : la table Silver devient versionnée (valid_from/valid_to/is_current).
+    # Réservé aux DIMENSIONS. Les faits restent en snapshot par date_arrete.
+    scd2: bool = False
+    scd2_signal: Optional[Scd2Signal] = None
 
 
 class DQCheck(BaseModel):
