@@ -82,10 +82,14 @@ Décision 2026-06-02 : garder TOUT l'historique. Design cadré 2026-06-03.
 → MERGE INTO Iceberg (clôture) + INSERT (nouvelles versions).
 
 **À faire** :
-- [ ] config_loader : silver_write.scd2 + scd2_signal
-- [ ] write_silver_scd2() : create (1er) / merge (suivants), row_hash sha2
-- [ ] pilote POPS, valider avec un 2e arrêté simulé (qq COD_USAGE modifiés)
-- [ ] étendre : TIERS, TYPOLOGIE (F2), GRC_PORTEFEUILLE, ASAL, IMAGE_CONTRAT
+- [x] config_loader : silver_write.scd2 + scd2_signal
+- [x] write_silver_scd2() : create (1er) / merge (suivants), row_hash sha2
+- [x] pilote POPS, validé avec un 2e arrêté simulé (COD_USAGE modifiés) — commit 68f0c77
+      NB : MERGE/UPDATE copy-on-write Iceberg 1.3.1 = NPE → réécriture DataFrame déterministe
+- [ ] scd2_signal.columns : liste explicite des champs comparés (éviter fausses versions
+      sur colonnes volatiles) — prérequis avant les dimensions à fort volume
+- [ ] étendre famille hash : ASAL, GRC_PORTEFEUILLE, IMAGE_CONTRAT, TIERS
+- [ ] implémenter famille interval (F2) puis l'appliquer à TYPOLOGIE (DATE_EFFET/DATE_FIN)
 - [ ] faits (credit/impayes/garantie/depassement) : restent snapshot (pas de SCD2)
 
 ### Phase H4 — Gold : détection de variation inter-arrêtés

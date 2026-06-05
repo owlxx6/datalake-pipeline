@@ -105,17 +105,11 @@ même si les noms de champs diffèrent.
 11. ✅ TIERS ↔ GARANTIE_TIERS via IDF_NUM_TIERS
 12. ✅ GARANTIE_TIERS ↔ GARANTIE_DETAIL ↔ GARANTIE_CONTRAT via IDF_NUM_CTR_GARANTIE
 
-### Ambiguïté RESTANTE (1 seule)
-N°6 — GARANTIE_CONTRAT.IDF_REF_EXT_CREDIT :
-Le diagramme montre IDF_REF_EXT_CTR = IDF_REF_EXT_CREDIT (via IMAGE_CONTRAT).
-Mais une note de réunion mentionne un lien direct CREDIT_AMORT ↔ GARANTIE_CONTRAT.
-Question en attente : IDF_REF_EXT_CREDIT contient-il :
-  a) IDF_REF_EXT_CTR (numéro contrat IMAGE_CONTRAT) ?
-  b) IDF_NUM_DOSS (numéro dossier CREDIT_AMORT) ?
-  c) IDF_REF_AUTORISATION (numéro autorisation IDCE) ?
-  d) Plusieurs selon COD_FILIERE_GES_CREDIT ?
-→ En attendant, implémenter le chemin du diagramme (option a)
-   avec un commentaire `# TODO: confirmer chemin garantie`
+### Ambiguïté N°6 — RÉSOLUE (par le diagramme)
+13. ✅ GARANTIE_CONTRAT.IDF_REF_EXT_CREDIT = IMAGE_CONTRAT.IDF_REF_EXT_CTR (option a).
+Tranché par `docs/diagram jointure.jpeg` (boîte de jointure
+`IDF_REF_EXT_CTR = IDF_REF_EXT_CREDIT`). La garantie se relie au crédit via le hub
+IMAGE_CONTRAT, pas en direct. Plus aucune ambiguïté ouverte sur le modèle de jointures.
 
 ## Préférences de travail
 - Procéder **étape par étape**, ne pas sauter d'étapes
