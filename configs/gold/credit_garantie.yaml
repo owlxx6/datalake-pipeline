@@ -32,9 +32,16 @@ targets:
     source: silver_credit_garantie.credit_amort
     historisation: snapshot
     grain: [idf_num_doss, date_arrete]
+    joins:
+      # as-of : gèle le tiers tel qu'il était à l'arrêté (via le hub contrat)
+      - with: silver_credit_garantie.image_contrat
+        match: {num_compte_emprunteur: idf_ref_ext_ctr}
+        as_of: date_arrete
+        select: [idf_num_tiers]
     columns:
       - {src: idf_num_doss, role: pk}
       - {src: num_compte_emprunteur, role: fk, ref: bridge_image_contrat}
+      - {src: idf_num_tiers, role: fk, ref: dim_tiers}
       - {src: cod_produit, role: fk, ref: dim_produit}
       - {src: date_accord, role: fk, ref: dim_temps}
       - {src: mnt_capital_rest_du, as: encours, role: measure}
@@ -42,3 +49,35 @@ targets:
       - {src: tx_credit, role: attribute}
       - {src: duree, role: attribute}
       - {src: cod_sit_doss, role: attribute}
+
+  # ── Fait impayés (détail créance, snapshot) ───────────────
+  - name: gdw_impayes
+    type: fact
+    source: silver_credit_garantie.impayes_cdl
+    historisation: snapshot
+    grain: [idf_num_dossier, idf_num_creance, date_arrete]
+    columns:
+      - {src: idf_num_dossier, as: idf_num_doss, role: fk, ref: gdw_encours}
+      - {src: idf_num_creance, role: pk}
+      - {src: num_compte, role: fk, ref: bridge_image_contrat}
+      - {src: mnt_impayes_cdl, role: measure}
+      - {src: mnt_creance, role: measure}
+      - {src: cod_statut_incident, role: attribute}
+
+  # ── OBT : synthèse crédit (agrégats 1:N + dims aplaties) ───
+  - name: gdw_synthese_credit
+    type: obt
+    base: gdw_encours
+    joins:
+      - with: dim_produit
+        match: {cod_produit: idf_code_produit}
+        select: [cod_famille, lib_famille]
+    aggregates:
+      - from: gdw_impayes
+        group_by: [idf_num_doss, date_arrete]
+        measures:
+          mnt_impaye_total: "sum(mnt_impayes_cdl)"
+          nb_creances_impayees: "count(*)"
+    derived:
+      flag_cdl: "coalesce(nb_creances_impayees, 0) > 0"
+      taux_impaye: "coalesce(mnt_impaye_total, 0) / nullif(encours, 0)"

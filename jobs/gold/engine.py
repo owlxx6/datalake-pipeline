@@ -99,23 +99,24 @@ def build_fact(spark: SparkSession, tgt: GoldTarget, db: str, date_arrete: str) 
             print(f"  [WARN] date_arrete '{date_arrete}' absent de {tgt.source}. Dispo: {avail}")
         df = df.where(F.col("date_arrete") == F.lit(date_arrete))
 
-    # Jointures as-of : gèle des attributs de dimension dans la version valide à l'arrêté
-    if tgt.joins:
-        df = df.alias("f")
-        for j in tgt.joins:
-            dim = spark.table(j["with"]).alias("d")
-            cond = None
-            for fc, dc in j["on"].items():
-                c = F.col(f"f.{fc}") == F.col(f"d.{dc}")
-                cond = c if cond is None else (cond & c)
-            if j.get("as_of"):
-                a = j["as_of"]
-                cond = cond & (F.col("d.valid_from") <= F.col(f"f.{a}")) & (
-                    F.col("d.valid_to").isNull() | (F.col("d.valid_to") > F.col(f"f.{a}"))
-                )
-            sel = j.get("select", [])
-            df = df.join(dim, cond, "left").select("f.*", *[F.col(f"d.{c}").alias(c) for c in sel])
-            df = df.alias("f")
+    # Jointures as-of : gèle des attributs de dimension dans la version valide à l'arrêté.
+    # Le fait ne traite qu'UN arrêté → on pré-filtre la dim à la version valide à cette
+    # date (constante) + dédup sur la clé → jointure 1:1, aucun fan-out.
+    for j in tgt.joins or []:
+        dim = spark.table(j["with"])
+        on = j["match"]                    # {col_fait: col_dim}
+        sel = j.get("select", [])
+        if j.get("as_of") and date_arrete:
+            dim = dim.where(
+                f"valid_from <= '{date_arrete}' "
+                f"AND (valid_to IS NULL OR valid_to > '{date_arrete}')"
+            )
+        keys = list(on.keys())
+        lookup = dim.select(
+            *[F.col(dc).alias(fc) for fc, dc in on.items()],
+            *[F.col(c) for c in sel],
+        ).dropDuplicates(keys)
+        df = df.join(lookup, keys, "left")
 
     cols = _norm_columns(tgt.columns)
     aliases = [a for _, a in cols]
@@ -135,7 +136,7 @@ def build_obt(spark: SparkSession, tgt: GoldTarget, db: str, date_arrete: str) -
     # Aplatir des attributs de dimensions
     for j in tgt.joins or []:
         dim = spark.table(_resolve(j["with"], db))
-        on = j["on"]                      # {col_base: col_dim}
+        on = j["match"]                   # {col_base: col_dim}
         sel = j.get("select", [])
         keys = list(on.keys())
         dim_sel = (
