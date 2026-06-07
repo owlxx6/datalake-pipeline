@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import yaml
 from pydantic import BaseModel
@@ -149,6 +149,11 @@ class Scd2Signal(BaseModel):
     column: Optional[str] = None
     valid_from_col: Optional[str] = None
     valid_to_col: Optional[str] = None
+    # Sous-ensemble des colonnes comparées pour détecter un changement.
+    # None = toutes les colonnes métier du schéma. Indispensable pour historiser
+    # un sous-ensemble (ex. attributs contractuels d'un crédit : taux, durée…)
+    # sans qu'une mesure transactionnelle déclenche une fausse version.
+    columns: Optional[List[str]] = None
 
 
 class SilverWriteConfig(BaseModel):

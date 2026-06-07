@@ -93,7 +93,8 @@ ORDER BY version;
 
 ## Implémentation
 
-Fonction `write_silver_scd2` dans `jobs/bronze/engine.py`.
+Fonction `_write_scd2` du module `jobs/bronze/historization.py` (point d'entrée unique
+`historize()`, qui dispatche SCD2 dimensions / snapshot faits).
 
 Le mouvement est calculé **intégralement en DataFrame** (classement clôture / inchangé /
 nouvelle version), puis la table est réécrite via `createOrReplace`. Le `MERGE` / `UPDATE`
@@ -110,3 +111,5 @@ silver_write:
 ```
 
 Pilote validé : **POPS**. Famille « hash » (empreinte des attributs métier).
+flux transactionnelle snapchot append , flux référentiel  dossier credit ila changer le taux de credit modification de duréee etc les trucs qui changent dans la durée de vie du credit ,
+delta transactionnel stock referentielle

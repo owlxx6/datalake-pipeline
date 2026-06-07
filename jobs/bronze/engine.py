@@ -48,6 +48,7 @@ from pyspark.sql.window import Window
 from jobs.bronze.config_loader import (
     load_config, BronzeConfig, TableEntry, DQCheck, CsvOptions,
 )
+from jobs.bronze.historization import historize
 
 
 # Mapping sévérité → poids (1 = plus sévère)
@@ -548,155 +549,6 @@ def deduplicate_silver(df_typed: DataFrame, table: TableEntry) -> tuple[DataFram
     return df_dedup, removed
 
 
-def write_silver(
-    df_flagged: DataFrame, table: TableEntry, config: BronzeConfig,
-    spark: SparkSession, date_arrete: str,
-) -> int:
-    """Silver Iceberg — toutes les lignes + colonnes flag DQ.
-
-    Format Apache Iceberg (données Parquet sur HDFS, métadonnées Hive Metastore) :
-    active le time-travel (``... TIMESTAMP AS OF``) et prépare le MERGE INTO du SCD2.
-
-    - Table existante : ``overwritePartitions()`` (Iceberg dynamique) — remplace
-      uniquement la/les partition(s) ``date_arrete`` présentes dans la donnée du jour ;
-      les autres arrêtés restent intacts (snapshot par arrêté).
-    - Sinon : création Iceberg partitionnée par ``date_arrete``.
-
-    NB migration : les anciennes tables Silver en Hive Parquet doivent être
-    supprimées (DROP) une fois avant le premier run Iceberg.
-    """
-    sw = table.silver_write
-    if sw is None:
-        return 0
-
-    full_table = f"{sw.database}.{sw.table}"
-
-    if config.execution.dry_run:
-        count = df_flagged.count()
-        print(f"  [DRY RUN] Silver (Iceberg) → {full_table} ({count} lignes)")
-        return count
-
-    df_to_write = df_flagged.withColumn("date_arrete", F.lit(date_arrete))
-
-    if spark.catalog.tableExists(full_table):
-        # Remplace uniquement la partition de l'arrêté du jour (les autres dates restent)
-        df_to_write.writeTo(full_table).overwritePartitions()
-    else:
-        (
-            df_to_write.writeTo(full_table)
-            .using("iceberg")
-            .partitionedBy(F.col("date_arrete"))
-            .createOrReplace()
-        )
-
-    count = df_flagged.count()
-    print(f"  [SILVER] ✓ {count} lignes (Iceberg, avec flags DQ) → {full_table}")
-    return count
-
-
-def write_silver_scd2(
-    df_silver: DataFrame, table: TableEntry, config: BronzeConfig,
-    spark: SparkSession, date_arrete: str,
-) -> int:
-    """Silver SCD2 (dimensions) — la table devient versionnée.
-
-    Colonnes ajoutées : row_hash, valid_from, valid_to, is_current, version, load_ts.
-    À chaque arrêté, on compare la photo du jour à l'état courant (is_current=true) :
-      - clé nouvelle              → INSERT version 1
-      - clé connue, hash identique → rien
-      - clé connue, hash différent → CLÔTURE l'ancienne + INSERT nouvelle version
-      - clé disparue de la photo   → CLÔTURE (soft delete)
-
-    Famille hash (POPS, ASAL…) : row_hash = sha2 des attributs métier. Les familles
-    date_maj / interval réutilisent la même mécanique (signal de comparaison différent).
-    Toutes les versions sont conservées (Iceberg + time-travel en plus).
-    """
-    sw = table.silver_write
-    pk = table.primary_key
-    full_table = f"{sw.database}.{sw.table}"
-    business_cols = [f.name for f in table.schema.fields if f.name in df_silver.columns]
-
-    # Empreinte des attributs métier (NULL-safe)
-    row_hash = F.sha2(
-        F.concat_ws("|", *[F.coalesce(F.col(c).cast("string"), F.lit("§")) for c in business_cols]),
-        256,
-    )
-    base = (
-        df_silver
-        .withColumn("row_hash", row_hash)
-        .withColumn("valid_to", F.lit(None).cast("string"))
-        .withColumn("is_current", F.lit(True))
-        .withColumn("load_ts", F.col("ingestion_ts"))
-    )
-
-    if config.execution.dry_run:
-        n = base.count()
-        print(f"  [DRY RUN] Silver SCD2 → {full_table} ({n} lignes en entrée)")
-        return n
-
-    # 1er chargement : création, tout en version 1
-    if not spark.catalog.tableExists(full_table):
-        df_init = base.withColumn("valid_from", F.lit(date_arrete)).withColumn("version", F.lit(1))
-        df_init.writeTo(full_table).using("iceberg").createOrReplace()
-        n = df_init.count()
-        print(f"  [SCD2] ✓ création {full_table} : {n} lignes (version 1)")
-        return n
-
-    # Chargements suivants : SCD2 par réécriture DataFrame déterministe.
-    # On évite MERGE/UPDATE copy-on-write : sur Iceberg 1.3.1 ils déclenchent un
-    # NullPointerException (UTF8String null) lors de la recopie des lignes inchangées.
-    # On reconstruit l'état complet de la table puis on l'écrit via createOrReplace
-    # (écriture bulk, qui gère correctement les null — comme à la création).
-    existing = spark.table(full_table)
-    current = existing.where("is_current = true")
-    history = existing.where("is_current = false OR is_current IS NULL")
-
-    # Comparaison clé par clé entre l'état courant et la photo du jour (base)
-    inc_hash = base.select(*pk, F.col("row_hash").alias("__new_hash"))
-    cur_cmp = current.join(inc_hash, pk, "left")
-
-    # Lignes courantes à CLÔTURER : clé disparue (__new_hash null) ou hash changé
-    closed = (
-        cur_cmp.where("__new_hash IS NULL OR __new_hash <> row_hash")
-               .withColumn("is_current", F.lit(False))
-               .withColumn("valid_to", F.lit(date_arrete))
-               .drop("__new_hash")
-    )
-    # Lignes courantes INCHANGÉES : conservées telles quelles
-    kept = cur_cmp.where("__new_hash IS NOT NULL AND __new_hash = row_hash").drop("__new_hash")
-
-    # NOUVELLES versions : clés nouvelles + clés au hash changé (version = max + 1)
-    cur_hash = current.select(*pk, F.col("row_hash").alias("__cur_hash"))
-    max_ver = existing.groupBy(*pk).agg(F.max("version").alias("__maxv"))
-    new_versions = (
-        base.join(cur_hash, pk, "left")
-            .where("__cur_hash IS NULL OR __cur_hash <> row_hash")
-            .drop("__cur_hash")
-            .join(max_ver, pk, "left")
-            .withColumn("version", F.coalesce(F.col("__maxv"), F.lit(0)) + F.lit(1))
-            .withColumn("valid_from", F.lit(date_arrete))
-            .drop("__maxv")
-    )
-
-    # Table finale = historique + clôturées + inchangées + nouvelles versions.
-    final = (
-        history
-        .unionByName(closed)
-        .unionByName(kept)
-        .unionByName(new_versions)
-    )
-    # Matérialiser AVANT d'écraser la table (on lit et on réécrit la même table).
-    final = final.persist()
-    n_total = final.count()
-    n_new = final.where(
-        (F.col("valid_from") == F.lit(date_arrete)) & (F.col("is_current") == F.lit(True))
-    ).count()
-    final.writeTo(full_table).using("iceberg").createOrReplace()
-    final.unpersist()
-    print(f"  [SCD2] ✓ {n_new} nouvelle(s) version(s) — {n_total} lignes au total → {full_table}")
-    return n_new
-
-
 def write_logs(
     spark: SparkSession, quality_results: list[dict], config: BronzeConfig,
     execution_id: str, date_situation: str,
@@ -789,7 +641,7 @@ def run_table(
       3. run_dq             → stats par règle pour QUALITY_RESULTS
       4. compute_dq_flags   → 4 colonnes flag par ligne
       5. write_bronze       (df typé, sans flag)
-      6. write_silver       (df flaggé, toutes les lignes)
+      6. historize          (df flaggé : SCD2 dimensions ou snapshot faits)
       7. write_logs         (QUALITY_RESULTS + LOG_PIPELINE)
     """
     start = time.monotonic()
@@ -856,11 +708,8 @@ def run_table(
         # 5. Per-row DQ flags — `unique` flague les vraies collisions de PK restantes
         df_silver = compute_dq_flags(df_silver_base, table, execution_id)
 
-        # 6. Silver (Iceberg) — dimensions SCD2 (versionné) ou faits snapshot
-        if table.silver_write and table.silver_write.scd2:
-            rows_silver = write_silver_scd2(df_silver, table, config, spark, date_arrete)
-        else:
-            rows_silver = write_silver(df_silver, table, config, spark, date_arrete)
+        # 6. Silver (Iceberg) — historisation : SCD2 (dimensions) ou snapshot (faits)
+        rows_silver = historize(df_silver, table, config, spark, date_arrete)
 
         # Répartition des lignes par statut DQ (PASSED / WARNING / REJECTED)
         # — calculée sur le df réellement écrit en Silver (post-dédup)
