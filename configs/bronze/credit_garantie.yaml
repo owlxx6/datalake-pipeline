@@ -5663,6 +5663,9 @@ tables:
     partition_by:
     - date_arrete
     deduplicate: true
+    scd2: true
+    scd2_signal:
+      type: hash
   quality_rules:
   - field: IDF_NUM_GUI
     source_column: IDF_NUM_GUI
