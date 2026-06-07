@@ -86,14 +86,27 @@ Décision 2026-06-02 : garder TOUT l'historique. Design cadré 2026-06-03.
 - [x] write_silver_scd2() : create (1er) / merge (suivants), row_hash sha2
 - [x] pilote POPS, validé avec un 2e arrêté simulé (COD_USAGE modifiés) — commit 68f0c77
       NB : MERGE/UPDATE copy-on-write Iceberg 1.3.1 = NPE → réécriture DataFrame déterministe
-- [ ] scd2_signal.columns : liste explicite des champs comparés (éviter fausses versions
-      sur colonnes volatiles) — prérequis avant les dimensions à fort volume
-- [ ] étendre famille hash : ASAL, GRC_PORTEFEUILLE, IMAGE_CONTRAT, TIERS
-- [ ] implémenter famille interval (F2) puis l'appliquer à TYPOLOGIE (DATE_EFFET/DATE_FIN)
-- [ ] faits (credit/impayes/garantie/depassement) : restent snapshot (pas de SCD2)
+- [x] **framework unique** `jobs/bronze/historization.py` (historize() dispatch
+      snapshot/SCD2) — commit d934b02
+- [x] scd2_signal.columns : sous-ensemble de colonnes comparées (codé)
+- [x] **6/6 dimensions en SCD2 hash** : POPS, ASAL, IMAGE_CONTRAT, GRC_PORTEFEUILLE,
+      TIERS, TYPOLOGIE — toutes validées VM (création v1)
+- [~] famille interval (F2) : **reportée** — TYPOLOGIE faite en hash (règle « historiser
+      tout » : tout changement de DATE_EFFET/FIN = nouvelle version). Interval = raffinement futur
+- [x] faits restent snapshot (pas de SCD2) — confirmé
+- [~] dim_credit (scission contractuel) : **abandonné** — l'OBT Gold (snapshot) couvre le
+      besoin « tous champs calculables historisés » sans SCD2 sur du transactionnel
 
-### Phase H4 — Gold : détection de variation inter-arrêtés
-- [ ] diff snapshot N vs N-1 (créé / modifié / disparu) pour les KPIs de variation
+### Phase H4 — Couche Gold (framework déclaratif)
+- [x] **moteur Gold générique** `jobs/gold/engine.py` (config-driven) — commits 2adaf35, 756a3ca
+      4 builders : date / dimension (SCD2 current|versioned) / fact (snapshot) / OBT
+- [x] config `configs/gold/credit_garantie.yaml` + contrat pydantic `jobs/gold/config_loader.py`
+- [x] mécaniques prouvées VM : dim_temps, dim_produit, gdw_encours (as-of tiers 199981/200000),
+      gdw_impayes, OBT gdw_synthese_credit (agrégat + flag_cdl 96474)
+- [ ] **APRÈS validation métier** : remplir le modèle final (dims tiers/typologie/agent/
+      portefeuille/bridge_contrat/+ORG ; faits depassement/garantie/autorisation ; OBT complet)
+- [ ] fix padding `cod_produit ↔ idf_code_produit` (normaliser les codes, jointures fait↔dim)
+- [ ] détection de variation inter-arrêtés (diff N vs N-1) sur les snapshots
 
 ## Phases (Bronze/Silver — historique)
 
@@ -146,10 +159,25 @@ Phase 0 → 1 → 3 séquentielles. Phases 2 et 4 parallélisables après la Pha
   Prérequis = migration Silver→Iceberg (MERGE). Faits restent snapshot.
 
 ## Statut
-**2026-06-02 — Bronze/Silver TERMINÉ : 12 tables Landing industrialisées** sur le moteur
-DQ 3-états (PASSED/WARNING/REJECTED) + dédup Silver opt-in + audit EDD.
-Prochaine session : **Phase H1 — migration Silver → Iceberg** (prérequis SCD2 + time-travel),
-puis H2/H3/H4. Cible stockage confirmée : Iceberg sur HDFS, métadonnées Hive Metastore.
+**2026-06-07 — H1, H3 et le framework Gold TERMINÉS.**
+- H1 : 12 tables Silver en Iceberg ✅
+- H3 : 6 dimensions Silver en SCD2 (POPS/ASAL/IMAGE_CONTRAT/GRC_PORTEFEUILLE/TIERS/TYPOLOGIE),
+  framework unique `historization.py` ✅
+- Gold : moteur déclaratif `jobs/gold/engine.py` + config — mécaniques (date/dim/fait/OBT/
+  as-of/agrégats) prouvées sur le pilote ✅
+- **BI = Power BI** (remplace Tableau).
+
+**Prochaine étape : remplir le modèle Gold final APRÈS validation métier** (le modèle
+en étoile peut différer du pilote — d'où le choix d'un Gold config-driven). Puis : fix
+padding codes, orchestration Airflow, Power BI, gouvernance, livrable.
+
+### Décisions récentes
+- 2026-06-07 — **Pas de SCD2 sur le transactionnel** : « historiser tout » sur un fait/OBT
+  = snapshot append par date_arrete (chaque arrêté gardé), pas SCD2 (qui créerait une fausse
+  version par ligne par arrêté). dim_credit abandonné au profit de l'OBT snapshot.
+- 2026-06-07 — **Gold = framework déclaratif** : le modèle vit dans le YAML (robuste au
+  changement de modèle métier). 4 types de cibles : date / dimension / fact / obt.
+- 2026-06-07 — **BI = Power BI**.
 
 ### 12 tables Silver validées (run réel 2026-05-31)
 credit_amort (200k, WARN 23719), impayes_cdl (1.7M, REJ 103526), garantie_contrat (258k),
