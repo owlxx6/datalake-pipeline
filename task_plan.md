@@ -97,6 +97,22 @@ Décision 2026-06-02 : garder TOUT l'historique. Design cadré 2026-06-03.
 - [~] dim_credit (scission contractuel) : **abandonné** — l'OBT Gold (snapshot) couvre le
       besoin « tous champs calculables historisés » sans SCD2 sur du transactionnel
 
+### Phase N — Framework de normalisation (déclaratif YAML) — À FAIRE
+Objectif : normaliser les valeurs de façon déclarative (config), pour que les clés de
+jointure matchent (padding) et que les codes collent aux `allowed_values` EDD.
+
+- Placement : `Landing → Bronze (brut) → [NORMALISATION] → dédup → DQ → Silver`
+  (Bronze garde la fidélité source ; Silver est normalisé).
+- Config : `normalization.defaults.string: [trim, nullify_empty]` (global) + override
+  par champ `schema.fields[].normalize: [...]`.
+- Ops : trim/ltrim/rtrim, upper/lower, collapse_spaces, remove_spaces, nullify_empty,
+  `{op: replace, pattern, with}`, `{op: lpad/rpad, width, char}`.
+- Module : `jobs/bronze/normalization.py` + appel dans `run_table`.
+- Scope conseillé : **minimal d'abord** (trim + nullify_empty en défaut global), étendre si besoin.
+- Charge estimée : ~½ journée code, ~1 journée avec test + re-baseline SCD2.
+- ⚠️ Re-baseline : normaliser change le `row_hash` → re-run des 6 dims (nouvelle version, une fois).
+- Motivation immédiate : corrige le padding `cod_produit ↔ idf_code_produit` (cf. Phase H4).
+
 ### Phase H4 — Couche Gold (framework déclaratif)
 - [x] **moteur Gold générique** `jobs/gold/engine.py` (config-driven) — commits 2adaf35, 756a3ca
       4 builders : date / dimension (SCD2 current|versioned) / fact (snapshot) / OBT
