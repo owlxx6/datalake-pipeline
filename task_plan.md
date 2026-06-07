@@ -108,7 +108,8 @@ jointure matchent (padding) et que les codes collent aux `allowed_values` EDD.
 - Ops : trim/ltrim/rtrim, upper/lower, collapse_spaces, remove_spaces, nullify_empty,
   `{op: replace, pattern, with}`, `{op: lpad/rpad, width, char}`.
 - Module : `jobs/bronze/normalization.py` + appel dans `run_table`.
-- Scope conseillé : **minimal d'abord** (trim + nullify_empty en défaut global), étendre si besoin.
+- Scope retenu (décision 2026-06-07) : **complet** (toutes les ops + per-field + args),
+  à faire plus tard (pas en cours).
 - Charge estimée : ~½ journée code, ~1 journée avec test + re-baseline SCD2.
 - ⚠️ Re-baseline : normaliser change le `row_hash` → re-run des 6 dims (nouvelle version, une fois).
 - Motivation immédiate : corrige le padding `cod_produit ↔ idf_code_produit` (cf. Phase H4).
