@@ -1,0 +1,44 @@
+# Modèle Gold — axe Crédit-Garantie (déclaratif).
+# PILOTE : dim_temps + dim_produit + gdw_encours. On étend après validation métier.
+database: gold_credit_garantie
+
+targets:
+
+  # ── Dimension date (générée) ──────────────────────────────
+  - name: dim_temps
+    type: date
+    range: {from: "2020-01-01", to: "2030-12-31"}
+
+  # ── Dimension produit (depuis Silver SCD2, état courant) ──
+  - name: dim_produit
+    type: dimension
+    source: silver_credit_garantie.pops
+    mode: scd2_current
+    key: [idf_code_produit]
+    columns:
+      - idf_code_produit
+      - cod_activite
+      - lib_activite
+      - cod_famille
+      - lib_famille
+      - prod_commercial
+      - lib_produit
+      - cod_usage
+      - cod_typ_produit
+
+  # ── Fait encours (snapshot par date_arrete) ───────────────
+  - name: gdw_encours
+    type: fact
+    source: silver_credit_garantie.credit_amort
+    historisation: snapshot
+    grain: [idf_num_doss, date_arrete]
+    columns:
+      - {src: idf_num_doss, role: pk}
+      - {src: num_compte_emprunteur, role: fk, ref: bridge_image_contrat}
+      - {src: cod_produit, role: fk, ref: dim_produit}
+      - {src: date_accord, role: fk, ref: dim_temps}
+      - {src: mnt_capital_rest_du, as: encours, role: measure}
+      - {src: mnt_credit, role: measure}
+      - {src: tx_credit, role: attribute}
+      - {src: duree, role: attribute}
+      - {src: cod_sit_doss, role: attribute}
