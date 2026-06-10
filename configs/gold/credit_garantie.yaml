@@ -17,6 +17,7 @@ targets:
     key: [idf_code_produit]
     columns:
       - idf_code_produit
+      - cod_sop          # clé de jointure avec les faits : COD_PRODUIT (crédit) = COD_SOP
       - cod_activite
       - lib_activite
       - cod_famille
@@ -69,8 +70,11 @@ targets:
     type: obt
     base: gdw_encours
     joins:
+      # Jointure produit corrigée (2026-06-10) : COD_PRODUIT (crédit, code du système
+      # opérant ex. CIM02) = POPS.COD_SOP — validé donnée réelle : 198981/200000 (99,5%).
+      # L'hypothèse du diagramme (= IDF_CODE_PRODUIT, code activité) donnait 0 match.
       - with: dim_produit
-        match: {cod_produit: idf_code_produit}
+        match: {cod_produit: cod_sop}
         select: [cod_famille, lib_famille]
     aggregates:
       - from: gdw_impayes

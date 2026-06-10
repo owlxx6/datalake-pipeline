@@ -85,31 +85,43 @@ Critique — ces règles ont été établies par trial and error :
 
 ## Ambiguïtés du modèle de données
 
-### Source de vérité
-Diagramme de jointures validé : `docs/diagram jointure.jpeg`
-La règle de nommage dure (jointure uniquement si noms identiques)
-est annulée. Les jointures confirmées par le diagramme sont valides
-même si les noms de champs diffèrent.
+### Source de vérité (révisée 2026-06-11)
+1. **Donnée réelle** (validation empirique — `scripts/test_jointures_diagramme.py`
+   et `scripts/diag_jointures_ko.py`, arrêté 2026-05-31)
+2. **Canevas EDD** (sémantique des champs)
+3. Diagramme `docs/diagram jointure.jpeg` — structure juste, mais 3 jointures
+   fausses corrigées par la donnée (rapprochements par similarité de noms).
+La règle de nommage dure (jointure uniquement si noms identiques) reste annulée.
 
-### Ambiguïtés RÉSOLUES (par le diagramme)
-1. ✅ NUM_COMPTE_EMPRUNTEUR (CREDIT_AMORT) = IDF_REF_EXT_CTR (IMAGE_CONTRAT)
-2. ✅ NUM_COMPTE (DEPASSEMENT) = IDF_REF_EXT_CTR (IMAGE_CONTRAT)
+### Jointures VALIDÉES par la donnée (taux de match réels)
+1. ✅ NUM_COMPTE_EMPRUNTEUR (CREDIT_AMORT) = IDF_REF_EXT_CTR (IMAGE_CONTRAT) — 99,99%
+2. ✅ NUM_COMPTE (DEPASSEMENT) = IDF_REF_EXT_CTR (IMAGE_CONTRAT) — 100%
 3. ✅ PK DEPASSEMENT = NUM_COMPTE + DATE_ENTREE + COMPTE_GENERAL + MNT_DEPASSEMENT
-4. ✅ IDF_NUM_DOSS (IMPAYES_CDL) → IDF_NUM_DOSS (CREDIT_AMORT) — lien direct
-5. ✅ COD_PRODUIT (CREDIT_AMORT) = IDF_CODE_PRODUIT (POPS) — jointure directe
-6. ✅ CONCAT(IDF_TYP_PRD, IDF_REF_PRD) = IDF_CODE_PRODUIT (POPS) — via IMAGE_CONTRAT
-7. ✅ IDF_REF_AUTO (AUTORISATIONS) = IDF_REF_EXT_CTR (IMAGE_CONTRAT)
-8. ✅ PORTEFEUILLE → ORG via IDF_NUM_GUI
-9. ✅ TIERS ↔ IMAGE_CONTRAT via IDF_NUM_TIERS
-10. ✅ TIERS ↔ TYPOLOGIE via IDF_NUM_TIERS
-11. ✅ TIERS ↔ GARANTIE_TIERS via IDF_NUM_TIERS
-12. ✅ GARANTIE_TIERS ↔ GARANTIE_DETAIL ↔ GARANTIE_CONTRAT via IDF_NUM_CTR_GARANTIE
+4. ✅ IDF_NUM_DOSSIER (IMPAYES_CDL) = IDF_NUM_DOSS (CREDIT_AMORT) — 100%
+5. ✅ **CORRIGÉE** : COD_PRODUIT (CREDIT_AMORT) = **COD_SOP** (POPS) — 99,49%.
+   (Diagramme disait IDF_CODE_PRODUIT → 0% : c'est un « code activité » selon l'EDD,
+   pas le code produit. COD_PRODUIT est le code du système opérant.)
+6. ✅ CONCAT(IDF_TYP_PRD, IDF_REF_PRD) = IDF_CODE_PRODUIT (POPS) — 100%
+   (chemin officiel encadrant : type du produit depuis un contrat du hub)
+7. ✅ **CORRIGÉE** : **NUM_COMPTE** (IDCE_AUTORISATION) = IDF_REF_EXT_CTR — 100%.
+   (Diagramme disait IDF_REF_AUTO → 0% : c'est la PK interne de l'autorisation,
+   séquence 16 chiffres, « Référence autorisation » selon l'EDD.)
+   Bonus : NUM_TIERS (IDCE_AUTORISATION) = IDF_NUM_TIERS (TIERS) — 99,96%.
+8. ⏳ PORTEFEUILLE → ORG via IDF_NUM_GUI (non testable : ORG non ingérée)
+9. ✅ TIERS ↔ IMAGE_CONTRAT via IDF_NUM_TIERS — 100%
+10. ✅ TIERS ↔ TYPOLOGIE via IDF_NUM_TIERS — 100%
+11. ⏳ TIERS ↔ GARANTIE_TIERS via IDF_NUM_TIERS (table non industrialisée)
+12. ✅ GARANTIE_CONTRAT ↔ GARANTIE_DETAIL via IDF_NUM_CTR_GARANTIE — 99,91%
+13. ✅ **CORRIGÉE (ambiguïté n°6, option b confirmée)** :
+   GARANTIE_CONTRAT.IDF_REF_EXT_CREDIT = **CREDIT_AMORT.IDF_NUM_DOSS** — 100%.
+   La garantie se relie au crédit EN DIRECT (la note de réunion avait raison),
+   pas via le hub (option a du diagramme → 0%). EDD : « Référence BTA ».
+   NB : NUM_CTR_CREDIT = « Référence interne du crédit (Non exploitée) » (EDD) → 0% partout.
 
-### Ambiguïté N°6 — RÉSOLUE (par le diagramme)
-13. ✅ GARANTIE_CONTRAT.IDF_REF_EXT_CREDIT = IMAGE_CONTRAT.IDF_REF_EXT_CTR (option a).
-Tranché par `docs/diagram jointure.jpeg` (boîte de jointure
-`IDF_REF_EXT_CTR = IDF_REF_EXT_CREDIT`). La garantie se relie au crédit via le hub
-IMAGE_CONTRAT, pas en direct. Plus aucune ambiguïté ouverte sur le modèle de jointures.
+### Leçon (à retenir pour toute nouvelle jointure)
+Les 3 erreurs du diagramme venaient de rapprochements par SIMILARITÉ DE NOMS
+(REF_EXT↔REF_EXT, REF↔REF, PRODUIT↔PRODUIT). Toute jointure se valide contre
+la donnée réelle (taux de match) + la sémantique EDD avant d'entrer dans le modèle.
 
 ## Préférences de travail
 - Procéder **étape par étape**, ne pas sauter d'étapes
