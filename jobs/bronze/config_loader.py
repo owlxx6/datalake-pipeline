@@ -123,6 +123,9 @@ class SchemaField(BaseModel):
     spark_type: str
     nullable: bool = True
     description: str = ""
+    # Normalisation déclarative (cf. jobs/bronze/normalization.py).
+    # None = défaut global ; [] = opt-out ; [ops] = ops du champ (str ou {op, args}).
+    normalize: Optional[list] = None
 
 
 class SchemaConfig(BaseModel):
@@ -228,6 +231,17 @@ class TableEntry(BaseModel):
     consistency_rules: list[ConsistencyRule] = []
 
 
+# ── Normalisation déclarative ─────────────────────────────────────────────────
+
+class NormalizationConfig(BaseModel):
+    """Normalisation appliquée entre Bronze (brut) et Silver.
+
+    `defaults` : ops par type, ex. {"string": ["trim", "nullify_empty"]} — appliquées
+    à toute colonne du type qui n'a pas de `normalize` propre dans son champ.
+    """
+    defaults: dict = {}
+
+
 # ── Top-level BronzeConfig ────────────────────────────────────────────────────
 
 class BronzeConfig(BaseModel):
@@ -238,6 +252,7 @@ class BronzeConfig(BaseModel):
     performance: PerformanceConfig = PerformanceConfig()
     retry: RetryConfig = RetryConfig()
     execution: ExecutionConfig = ExecutionConfig()
+    normalization: NormalizationConfig = NormalizationConfig()
     tables: list[TableEntry]
 
     def resolve(self, template: str, table_name: str = "", **extra) -> str:

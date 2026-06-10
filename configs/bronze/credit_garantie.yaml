@@ -26,6 +26,17 @@ spark:
     value: CORRECTED
   - key: spark.sql.sources.partitionOverwriteMode
     value: DYNAMIC
+# Normalisation déclarative (cf. jobs/bronze/normalization.py).
+# Source : RG des flux EDD — champs en position fixe (padding) → trim ;
+# valeurs vides → NULL. Les formats MONTANT/TAUX/DATE (virgule décimale,
+# signe +, multi-patterns) sont déjà gérés au typage par _smart_cast.
+# S'applique entre Bronze (qui reste brut) et Silver (normalisé).
+normalization:
+  defaults:
+    string:
+    - trim
+    - nullify_empty
+
 output:
   database: silver_credit_garantie
   quality_results:

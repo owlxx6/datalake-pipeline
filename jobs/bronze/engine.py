@@ -49,6 +49,7 @@ from jobs.bronze.config_loader import (
     load_config, BronzeConfig, TableEntry, DQCheck, CsvOptions,
 )
 from jobs.bronze.historization import historize
+from jobs.bronze.normalization import normalize
 
 
 # Mapping sévérité → poids (1 = plus sévère)
@@ -692,9 +693,12 @@ def run_table(
         # 3. Bronze (typé, sans flag) — TOUTES les lignes (doublons parfaits inclus)
         rows_written = write_bronze(df_typed, table, config, date_arrete)
 
-        # 3bis. Dédup Silver (opt-in) : retire les doublons PARFAITS uniquement.
+        # 3bis. Normalisation déclarative (Bronze reste brut → Silver est normalisé)
+        df_norm = normalize(df_typed, table, config)
+
+        # 3ter. Dédup Silver (opt-in) : retire les doublons PARFAITS uniquement.
         #       Les collisions de PK sont conservées → flaguées par `unique`.
-        df_silver_base, rows_deduped = deduplicate_silver(df_typed, table)
+        df_silver_base, rows_deduped = deduplicate_silver(df_norm, table)
         if rows_deduped:
             print(f"  [DEDUP] {rows_deduped} doublon(s) parfait(s) retiré(s) du Silver "
                   f"(Bronze garde tout)")
