@@ -114,6 +114,23 @@ jointure matchent (padding) et que les codes collent aux `allowed_values` EDD.
 - ⚠️ Re-baseline : normaliser change le `row_hash` → re-run des 6 dims (nouvelle version, une fois).
 - Motivation immédiate : corrige le padding `cod_produit ↔ idf_code_produit` (cf. Phase H4).
 
+### Phase DQ+ — Alignement sur le modèle DQ de la banque — À FAIRE
+Référence : `quality_dq_engine_results.csv` + `ACTIVITYCOMM.yaml` (framework DQ équipe DATA).
+Constat : notre QUALITY_RESULTS est ~75% iso (mêmes grain/nomenclature) ; on est plus riches
+sur alert_threshold_pct + flags 3-états par ligne ; eux ont des colonnes opérationnelles en plus.
+
+- [ ] Colonnes à ajouter dans `_qr_row` (~1-2h) : `description`, `error_message`,
+      `duration_seconds` (chrono par règle), `rule_code` (composite use_case_table_check_col),
+      `table_partition_exists`, `passed` (bool), `passed_percentage`, `execution_date`.
+- [ ] **advanced_controls** (~½ journée) : requêtes SQL métier déclarées en YAML
+      (id, description, severity, active, query avec placeholders {{silver_db}}/{{start_date}})
+      → exécutées par le moteur, résultats dans QUALITY_RESULTS (control_type=ADVANCED).
+- [ ] Types basic manquants vs ACTIVITYCOMM : `is_between` (bornes numériques),
+      `has_existing_reference` (référentiel), `has_distinct_count`, `is_email`.
+- [ ] Contrôles techniques fichier/entête (RG EDD) : NBR_LIGNE entête = lignes reçues,
+      fichier en double/vide, tolérance volumétrie vs j-1, seuil de rejets.
+Argument soutenance : table de résultats iso-format avec celle de l'équipe DATA.
+
 ### Phase H4 — Couche Gold (framework déclaratif)
 - [x] **moteur Gold générique** `jobs/gold/engine.py` (config-driven) — commits 2adaf35, 756a3ca
       4 builders : date / dimension (SCD2 current|versioned) / fact (snapshot) / OBT
@@ -160,6 +177,117 @@ jointure matchent (padding) et que les codes collent aux `allowed_values` EDD.
 
 ### Phase 5 — Livrable
 - [ ] Finaliser le document avec cartographie des 30 tables et choix d'historisation
+
+## Phase R — Rédaction du rapport PFE (EMSI) — EN COURS (2026-06-08)
+
+### Contexte
+- Auteur : **HABBOU Taha Yassine**. Encadrant EMSI : **Mr Mohammed Redouane**.
+  Encadrant entreprise : **Mr Reda Kilani** (Eurafric Information / BOA).
+- Base de travail : rapport d'une camarade (EL FATIHI Salma, même sujet) — `docs/rapport/`.
+  On RÉUTILISE la mise en page + le front matter (swap des noms), PAS le contenu technique.
+- Guide officiel : `GUIDE DE RÉDACTION DU RAPPORT DE PFE` (EMSI Rabat). Contraintes :
+  A4, marges 2.5/2.5/3/2.5, Times New Roman 12, interligne 1.5, justifié,
+  60-100 pages hors annexes. Front matter : page de garde → dédicace (opt) →
+  remerciements → résumé FR/EN + ملخص AR → TDM → listes figures/tableaux/abréviations →
+  intro générale → chapitres → conclusion → biblio → annexes.
+
+### Règle de contenu (CRITIQUE — directive Taha)
+NE JAMAIS INVENTER de donnée. Si une info manque → question directe à Taha, il fournit.
+Les chapitres techniques s'appuient sur le VRAI projet (Iceberg, SCD2 6 dims, moteur Gold
+déclaratif, framework DQ, Atlas/Ranger, GitLab/Jenkins/SonarQube) — différent du stack Salma.
+
+### Structure cible — 4 chapitres (demande encadrant EMSI)
+- **Ch.1 — Étude (contexte général)** : org d'accueil BOA/EAI, contexte, problématique,
+  objectifs, méthodologie SCRUM. [réutilise Salma Ch1 — vérifier détails org]
+- **Ch.2 — Étude de l'existant** : exploitation actuelle des données Crédit-Garantie +
+  limites ; état de l'art Big Data / Data Lake / architecture Médaillon. [Salma Ch2 + existant]
+- **Ch.3 — Conception de l'application** : architecture cible Bronze/Silver/Gold, choix
+  technologiques (NiFi, Spark/YARN, Iceberg+Hive Metastore, Airflow, Power BI, Atlas/Ranger),
+  modélisation Gold (étoile + framework déclaratif). [VRAI projet Taha]
+- **Ch.4 — Réalisation** : implémentation pipelines (datalake_lib, DQ déclaratif,
+  historisation snapshot + SCD2), orchestration, gouvernance, visualisation Power BI +
+  résultats. [VRAI projet Taha — task_plan/findings/code]
+- Ordre retenu (à confirmer) : Étude → Existant → Conception → Réalisation (flux académique).
+
+### Mécanique d'édition
+- Édition XML directe du DOCX Salma (unpack/edit/repack) pour préserver EXACTEMENT la mise
+  en page (logos BOA/EAI embarqués, styles, text boxes page de garde).
+- Page de garde + remerciements = text boxes dupliqués (mc:Choice + mc:Fallback) →
+  chaque nom apparaît 2× → replace_all.
+- Fichier de travail : `docs/rapport/RAPPORT_HABBOU_TAHA_base.docx`, unpacked dans
+  `docs/rapport/unpacked/`.
+
+### Décisions / points ouverts (Phase R)
+- 2026-06-08 — Réutiliser mise en page Salma, réécrire chapitres techniques depuis le vrai projet.
+- 2026-06-08 — Titre RETENU : « Conception et mise en œuvre d'une plateforme DATA standardisée :
+  modélisation des couches en médaillons, standardisation des Frameworks de développement et
+  gouvernance des données ».
+- 2026-06-08 — Dédicace : version générique sans noms (Taha ajustera après).
+- 2026-06-08 — Campus : **EMSI Rabat**.
+- 2026-06-08 — Ordre des chapitres : **Étude → Existant → Conception → Réalisation** (académique standard).
+
+### Avancement Phase R
+- [x] Guide EMSI + rapport Salma analysés ; DOCX copié + unpacké ; noms localisés
+- [x] Front matter : titre posé, HABBOU Taha Yassine, Mr Mohammed Redouane (EMSI),
+      KILANI Rida conservé, EMSI Rabat. Validé via textutil (ouverture + contenu OK).
+- [x] Dédicace rendue générique (sans noms) + accord masculin
+- [x] Intro générale : liste des chapitres restructurée 5→4 + stack alignée
+      (Iceberg via Hive Metastore, Atlas/Ranger — plus le « Hive » de Salma)
+- [x] **Ch.1 Étude du projet** : titre renommé, SCRUM complété + dates stage
+      (05/02→30/06/2026), accents « Top Employer » réparés. Figures EAI réutilisées.
+      Validé textutil. Reste (option) : conclusion de chapitre.
+- [ ] Résumé/Abstract/ملخص (depuis le vrai projet) — à rédiger
+- [x] **Ch.2 Étude de l'existant** : inséré dans le DOCX (Titre1/2/3 pour TOC, num. manuelle
+      2.1→2.4, puces, 2 placeholders [FIGURE ICI]). Existant SAP/SAP Data Services + état de
+      l'art (Big Data, DW vs Data Lake, médaillon, Iceberg, gouvernance). Validé textutil.
+      → en attente validation Taha + visuels (DW vs Data Lake ; médaillon).
+- [x] **Ch.3 Conception** : inséré (3.1→3.7) + 2 tableaux (choix techno, faits Gold) + 3
+      placeholders figures. Patchs Taha appliqués (architecture cible/POC, Impala cible,
+      framework à moteurs + 7 contrôles DQ in_list/max_length/date_valid/date_range,
+      silver_credit_garantie, SCD2 dimensions). Validé textutil.
+      → §3.6 (noms Gold) à éventuellement vérifier côté Taha (vient de modele_gold_credit_garantie.md).
+- [x] **Ch.4 Réalisation** : inséré (4.1→4.8) + 2 tableaux (12 tables Silver, 6 dims SCD2).
+      Chiffres réels arrêté 2026-05-31. Patchs Taha : Spark **mode local** (pas YARN),
+      normalisation = point d'extension/perspectives, Gold réalisé. Cible = Airflow/Atlas/
+      Ranger/Impala/Power BI/CI-CD. Validé textutil.
+- [x] **4 chapitres complets dans le DOCX** (Ch1→Ch4 + Conclusion). Reste le closing :
+- [x] Conclusion générale (synthèse + perspectives) — injectée après le titre existant
+- [x] Résumé FR + Abstract EN + ملخص AR (RTL) + mots-clés — injectés dans Abstract/Résumé
+- [x] Bibliographie (9 sources officielles Apache/Databricks/Cloudera) — placeholders supprimés
+- [x] Figures 6/8 insérées : Fig9 DW/DataLake, Fig10 médaillon, Fig11 archi (image),
+      Fig12 DQ YAML, Fig13 modèle Gold (image diagram jointure), Fig14 descripteur YAML.
+- [ ] RESTE figures/images (fournies par Taha) :
+      · Fig15 §4.4 — capture QUALITY_RESULTS (PASSED/WARNING/REJECTED) [VM]
+      · Fig16 §4.6 — capture gdw_synthese_credit / flag_cdl [VM]
+      · Dashboards Power BI — captures à fournir quand construits (Power BI = cible ;
+        si dashboards réalisés d'ici la soutenance → §4.6/4.7 + figures dédiées)
+      · En option pendant l'expansion : nouvelles figures théoriques Ch.2 (archi HDFS/YARN,
+        Spark, SCD2, étoile Kimball) — générables sans données.
+
+## Phase R2 — Expansion 35 → 55-70 pages (demande encadrant, 2026-06-09)
+Cible ~60 p. : Ch1 ~9p (BOA + SCRUM détaillé + phases réelles), Ch2 ~13p (état de l'art
+approfondi : Hadoop/Spark/Iceberg/Lakehouse/Kimball/SCD/DQ/gouvernance), Ch3 ~13p (conception
+détaillée : flux, modèle données, moteur DQ, historisation, arborescence framework), Ch4 ~14p
+(environnement, déroulé, difficultés réelles, validation), Glossaire 1-2p.
+Méthode inchangée : texte → validation Taha → injection. Théorie = fondamentaux sourcés ;
+faits = docs/configs du repo.
+- [ ] RESTE : dans Word, mettre à jour TOC + listes figures/tableaux (F9) ; vérifier page de garde
+      (titre long), enrichir le Glossaire si besoin
+- [x] RAPPORT TEXTUELLEMENT COMPLET : page de garde, dédicace, remerciements, résumés FR/EN/AR,
+      4 chapitres (Étude/Existant/Conception/Réalisation), conclusion générale, bibliographie.
+- [ ] Bibliographie GLOBALE en fin de rapport (regrouper les réf. de chaque chapitre)
+- [ ] Workflow/chapitre : texte → [FIGURE ICI] → Taha fournit visuel/données → valider → suivant
+- [ ] Conclusion + perspectives, bibliographie, listes auto, repack + validation
+
+### Livrable courant
+`docs/rapport/RAPPORT_HABBOU_TAHA.docx` (front matter OK). Source éditable :
+`docs/rapport/unpacked/`. Repack = `python3 zipfile` (lxml absent → pack.py skip).
+Rendu PDF impossible en local (pas de LibreOffice) ; validation via `textutil`.
+
+### Points ouverts page de garde (non bloquants)
+- Date soutenance = placeholder `../07/2026` (inconnue).
+- Labels génériques « Nom de l'étudiant1/2 » restent (layout Salma) — à nettoyer si voulu.
+- Titre non gras (comme placeholder Salma) — bold possible si souhaité.
 
 ## Chemin critique
 Phase 0 → 1 → 3 séquentielles. Phases 2 et 4 parallélisables après la Phase 1.
