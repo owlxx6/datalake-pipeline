@@ -37,6 +37,11 @@ class GoldTarget(BaseModel):
     aggregates: Optional[List[Dict[str, Any]]] = None
     derived: Optional[Dict[str, str]] = None
 
+    # type=view — couche sémantique KPI : {alias: expression SQL}.
+    # Les KPI (ratios, taux) vivent en VUE, pas matérialisés : changer une
+    # définition métier = éditer la formule, zéro re-run de données.
+    select: Optional[Dict[str, str]] = None
+
 
 class GoldConfig(BaseModel):
     database: str

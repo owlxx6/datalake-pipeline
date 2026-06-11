@@ -164,11 +164,26 @@ def build_obt(spark: SparkSession, tgt: GoldTarget, db: str, date_arrete: str) -
     print(f"  [GOLD] ✓ OBT {db}.{tgt.name} : {df.count()} lignes")
 
 
+def build_view(spark: SparkSession, tgt: GoldTarget, db: str) -> None:
+    """Vue KPI (couche sémantique) — rien n'est matérialisé.
+
+    Les KPI (ratios, taux) sont définis ici et calculés à la lecture : une
+    redéfinition métier = changer la formule dans le YAML, zéro re-run de données.
+    Les tables Gold ne portent que des briques additives ; Power BI consomme la vue.
+    """
+    base = _resolve(tgt.base, db)
+    exprs = [f"{expr} AS {alias}" for alias, expr in (tgt.select or {}).items()]
+    cols = ", ".join(["b.*"] + exprs)
+    spark.sql(f"CREATE OR REPLACE VIEW {db}.{tgt.name} AS SELECT {cols} FROM {base} b")
+    print(f"  [GOLD] ✓ vue KPI {db}.{tgt.name} sur {base} ({len(exprs)} indicateur(s))")
+
+
 _BUILDERS = {
     "date": lambda s, t, db, d: build_date(s, t, db),
     "dimension": lambda s, t, db, d: build_dimension(s, t, db),
     "fact": lambda s, t, db, d: build_fact(s, t, db, d),
     "obt": lambda s, t, db, d: build_obt(s, t, db, d),
+    "view": lambda s, t, db, d: build_view(s, t, db),
 }
 
 

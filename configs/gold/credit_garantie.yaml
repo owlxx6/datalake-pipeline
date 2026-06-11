@@ -27,6 +27,35 @@ targets:
       - cod_usage
       - cod_typ_produit
 
+  # ── Dimension organisation (réseau agences, depuis ORG SCD2) ──
+  # Jointure validée donnée : grc_portefeuille.idf_num_gui = org.idf_num_gui (100%)
+  - name: dim_organisation
+    type: dimension
+    source: silver_credit_garantie.org
+    mode: scd2_current
+    key: [idf_num_gui, idf_num_bur]
+    columns:
+      - idf_num_gui
+      - idf_num_bur
+      - cod_fed
+      - lib_fed_court
+      - cod_bqe
+      - lib_bqe
+      - lib_typ_dir
+      - num_dir
+      - lib_dir_court
+      - lib_typ_grp
+      - num_grp
+      - lib_grp_court
+      - lib_court_gui
+      - lib_long_gui
+      - lib_bur
+      - typ_bur
+      - cod_ecv_bur
+      - nom_vil_bur
+      - code_post_bur
+      - code_reg_eco
+
   # ── Fait encours (snapshot par date_arrete) ───────────────
   - name: gdw_encours
     type: fact
@@ -83,5 +112,14 @@ targets:
           mnt_impaye_total: "sum(mnt_impayes_cdl)"
           nb_creances_impayees: "count(*)"
     derived:
+      # uniquement des BRIQUES (flags/compteurs) — les KPI ratios vivent dans la vue
       flag_cdl: "coalesce(nb_creances_impayees, 0) > 0"
+
+  # ── Vue KPI (couche sémantique — rien n'est matérialisé) ──
+  # Un nouveau KPI métier = une ligne ici, zéro re-run de données.
+  - name: v_kpi_credit
+    type: view
+    base: gdw_synthese_credit
+    select:
       taux_impaye: "coalesce(mnt_impaye_total, 0) / nullif(encours, 0)"
+      poids_impaye_creance: "coalesce(mnt_impaye_total, 0) / nullif(mnt_credit, 0)"
