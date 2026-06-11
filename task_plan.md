@@ -114,6 +114,23 @@ jointure matchent (padding) et que les codes collent aux `allowed_values` EDD.
 - ⚠️ Re-baseline : normaliser change le `row_hash` → re-run des 6 dims (nouvelle version, une fois).
 - Motivation immédiate : corrige le padding `cod_produit ↔ idf_code_produit` (cf. Phase H4).
 
+### Re-baseline normalisation — FAIT (2026-06-11)
+Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
+- 7 dims SCD2 recréées v1 normalisées (drop+re-run) : TIERS 154245 · IMAGE_CONTRAT 158322 ·
+  GRC_PORTEFEUILLE 151528 · TYPOLOGIE 154249 · ASAL 4464 · POPS 1226 · ORG 762
+- 6 faits/pont re-runs (snapshot réécrit) : CREDIT_AMORT 200000 (non-régression DQ exacte :
+  PASSED 176281/WARN 23719/REJ 0) · IMPAYES_CDL 1597242 · DEPASSEMENT 75870 ·
+  GARANTIE_DETAIL 253900 · GARANTIE_CONTRAT 258473 · IDCE_AUTORISATION 368567
+- **Découverte qualité (IMPAYES_CDL)** : les 103526 lignes ex-REJECTED (PK vide) étaient
+  une même ligne de remplissage répétée (différant par le padding). Normalisées, elles
+  deviennent des doublons parfaits → dédup en garde 1 (REJECTED=1, Bronze garde 1700767).
+  WARNING 44023 (vides→NULL maintenant vus par not_null MEDIUM — effet voulu).
+- **Fixes perf** (révélés par la normalisation, profitables à tout le moteur) :
+  1) normalize() en projection unique (42 withColumn empilés = explosion du plan Catalyst)
+  2) localCheckpoint après normalisation (la DQ relançait tout le plan PAR règle →
+     ~40 recalculs complets ; désormais 1 matérialisation, règles sur du matérialisé)
+- Levier futur noté : DQ en une seule passe d'agrégation (1 job au lieu de N).
+
 ### Phase DQ+ — Alignement sur le modèle DQ de la banque — À FAIRE
 Référence : `quality_dq_engine_results.csv` + `ACTIVITYCOMM.yaml` (framework DQ équipe DATA).
 Constat : notre QUALITY_RESULTS est ~75% iso (mêmes grain/nomenclature) ; on est plus riches

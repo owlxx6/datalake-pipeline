@@ -696,6 +696,11 @@ def run_table(
         # 3bis. Normalisation déclarative (Bronze reste brut → Silver est normalisé)
         df_norm = normalize(df_typed, table, config)
 
+        # Matérialise UNE fois et tronque le lignage : sinon chaque règle DQ relance
+        # tout le plan (cast ~85 col + normalisation) → N règles × recalcul complet,
+        # ce qui fige les grosses tables (CREDIT_AMORT) pendant de longues minutes.
+        df_norm = df_norm.localCheckpoint()
+
         # 3ter. Dédup Silver (opt-in) : retire les doublons PARFAITS uniquement.
         #       Les collisions de PK sont conservées → flaguées par `unique`.
         df_silver_base, rows_deduped = deduplicate_silver(df_norm, table)

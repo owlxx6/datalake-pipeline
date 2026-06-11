@@ -79,19 +79,25 @@ def normalize(df: DataFrame, table, config) -> DataFrame:
     # None = champ sans clé normalize ; [] = opt-out explicite ; [...] = ops du champ
     field_ops = {f.name: f.normalize for f in table.schema.fields}
 
+    # Projection UNIQUE (pas de withColumn en boucle) : N withColumn = N couches de
+    # plan imbriquées, ce qui fait exploser le temps d'optimisation Catalyst sur les
+    # tables larges (CREDIT_AMORT : 85 colonnes typées + 42 normalisées + DQ).
     applied = 0
+    projection = []
     for fname in df.columns:
         ops = field_ops.get(fname, None)
         if ops is None and fname in string_cols:
             ops = default_string_ops          # défaut sur colonne string non spécifiée
-        if not ops:
-            continue
-        col = F.col(fname)
-        for op in ops:
-            col = _apply_op(col, op)
-        df = df.withColumn(fname, col)
-        applied += 1
+        if ops:
+            col = F.col(fname)
+            for op in ops:
+                col = _apply_op(col, op)
+            projection.append(col.alias(fname))
+            applied += 1
+        else:
+            projection.append(F.col(fname))
 
     if applied:
+        df = df.select(*projection)
         print(f"  [NORM] normalisation appliquée sur {applied} colonne(s)")
     return df
