@@ -107,7 +107,8 @@ La règle de nommage dure (jointure uniquement si noms identiques) reste annulé
    (Diagramme disait IDF_REF_AUTO → 0% : c'est la PK interne de l'autorisation,
    séquence 16 chiffres, « Référence autorisation » selon l'EDD.)
    Bonus : NUM_TIERS (IDCE_AUTORISATION) = IDF_NUM_TIERS (TIERS) — 99,96%.
-8. ⏳ PORTEFEUILLE → ORG via IDF_NUM_GUI (non testable : ORG non ingérée)
+8. ✅ GRC_PORTEFEUILLE.IDF_NUM_GUI = ORG.IDF_NUM_GUI — 100% (151 528/151 528 ;
+   ORG ingérée via NiFi le 2026-06-11, 762 lignes, 7e dimension SCD2)
 9. ✅ TIERS ↔ IMAGE_CONTRAT via IDF_NUM_TIERS — 100%
 10. ✅ TIERS ↔ TYPOLOGIE via IDF_NUM_TIERS — 100%
 11. ⏳ TIERS ↔ GARANTIE_TIERS via IDF_NUM_TIERS (table non industrialisée)

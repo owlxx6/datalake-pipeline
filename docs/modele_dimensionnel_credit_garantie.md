@@ -71,7 +71,7 @@ Tiers et produits :
 
 Organisation et garanties :
 - `tiers.IDF_NUM_TIERS` = `grc_portefeuille.IDF_NUM_TIERS` — **100%**
-- `grc_portefeuille.IDF_NUM_GUI` = `org.IDF_NUM_GUI` — ⏳ non testable (ORG non ingérée)
+- `grc_portefeuille.IDF_NUM_GUI` = `org.IDF_NUM_GUI` — **100%** (ORG ingérée via NiFi, 762 lignes, dimension SCD2)
 - `tiers ↔ garantie_tiers` — ⏳ non testable (table non industrialisée)
 - `garantie_contrat.IDF_NUM_CTR_GARANTIE` = `garantie_detail.IDF_NUM_CTR_GARANTIE` — **99,91%**
 
@@ -81,7 +81,7 @@ Chaînage fait↔fait :
 ## Schéma (vue d'ensemble, jointures validées)
 
 ```
-   ORG(⏳) ──IDF_NUM_GUI── grc_portefeuille ──IDF_NUM_TIERS──┐
+   dim_organisation(ORG) ──IDF_NUM_GUI── grc_portefeuille ──IDF_NUM_TIERS──┐
                                                               │
    dim_typologie ──IDF_NUM_TIERS────────────────────────  dim_tiers ◄──NUM_TIERS── fact_autorisation
                                                               │ IDF_NUM_TIERS
