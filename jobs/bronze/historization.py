@@ -150,9 +150,21 @@ def _write_scd2(
     current = existing.where("is_current = true")
     history = existing.where("is_current = false OR is_current IS NULL")
 
+    # Jointures NULL-SAFE sur la PK (eqNullSafe) : en SQL, NULL <> NULL — une ligne
+    # avec une composante de PK nulle ne se rejoindrait jamais elle-même et serait
+    # clôturée + réinsérée à CHAQUE run (ligne fantôme par run). Cohérent avec le
+    # row_hash, déjà null-safe (coalesce '§').
+    def _nullsafe_left_join(left, right, extra_col: str):
+        l, r = left.alias("l"), right.alias("r")
+        cond = None
+        for c in pk:
+            e = F.col(f"l.{c}").eqNullSafe(F.col(f"r.{c}"))
+            cond = e if cond is None else cond & e
+        return l.join(r, cond, "left").select(F.col("l.*"), F.col(f"r.{extra_col}"))
+
     # Comparaison clé par clé entre l'état courant et la photo du jour
     inc_hash = base.select(*pk, F.col("row_hash").alias("__new_hash"))
-    cur_cmp = current.join(inc_hash, pk, "left")
+    cur_cmp = _nullsafe_left_join(current, inc_hash, "__new_hash")
 
     # Lignes courantes à CLÔTURER : clé disparue (__new_hash null) ou hash changé
     closed = (
@@ -168,10 +180,12 @@ def _write_scd2(
     cur_hash = current.select(*pk, F.col("row_hash").alias("__cur_hash"))
     max_ver = existing.groupBy(*pk).agg(F.max("version").alias("__maxv"))
     new_versions = (
-        base.join(cur_hash, pk, "left")
+        _nullsafe_left_join(base, cur_hash, "__cur_hash")
             .where("__cur_hash IS NULL OR __cur_hash <> row_hash")
             .drop("__cur_hash")
-            .join(max_ver, pk, "left")
+    )
+    new_versions = (
+        _nullsafe_left_join(new_versions, max_ver, "__maxv")
             .withColumn("version", F.coalesce(F.col("__maxv"), F.lit(0)) + F.lit(1))
             .withColumn("valid_from", F.lit(date_arrete))
             .drop("__maxv")
