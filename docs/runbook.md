@@ -382,3 +382,35 @@ hdfs dfs -ls "hdfs://ubuntu3:9000/data/bronze/tiers/TIERS/date_arrete=2026-05-15
 4. Vérifier les résultats dans spark-sql (sections 4.1 à 4.4)
 
 Aucune modification de `engine.py` ou `config_loader.py` n'est nécessaire.
+
+## Airflow (orchestration)
+
+### Démarrage (APRÈS HDFS + Metastore — jamais avant)
+```bash
+su - hadoop                      # le tiret est important (bon HOME, bon env)
+source ~/airflow-venv/bin/activate
+cd /home/hadoop                  # JAMAIS depuis /home/vboxuser (Permission denied gunicorn)
+nohup airflow scheduler  > ~/logs/airflow-scheduler.log 2>&1 &
+nohup airflow webserver --port 8090 --workers 1 > ~/logs/airflow-webserver.log 2>&1 &
+```
+- UI : http://ubuntu3:8090 (admin / mot de passe réinitialisé via `airflow users reset-password`)
+- Port 8080 = Spark Master UI → webserver Airflow sur **8090**.
+- **UN SEUL scheduler à la fois** : un doublon SIGTERM-e les tâches de l'autre (~45 s).
+- Éviter `airflow standalone` : couplé tout-ou-rien (webserver mort → scheduler emporté).
+- VM chargée : webserver lent à démarrer → `AIRFLOW__WEBSERVER__WEB_SERVER_MASTER_TIMEOUT=300`.
+- dags_folder = /media/sf_datalake-pipeline/dags (dossier partagé).
+
+### Déclencher un arrêté
+```bash
+airflow dags trigger credit_garantie_medaillon --conf '{"date_arrete": "2026-05-31"}'
+airflow tasks states-for-dag-run credit_garantie_medaillon "<run_id>" | tail -8
+```
+
+### Checklist post-reboot VM (ordre strict)
+```bash
+start-dfs.sh
+hdfs dfsadmin -safemode get          # leave si ON
+nohup hive --service metastore > ~/logs/metastore.log 2>&1 &   # ss -tlnp | grep 9083
+# puis scheduler + webserver (ci-dessus)
+```
+⚠️ Metastore absent = les jobs Iceberg « tournent » indéfiniment en retry Thrift silencieux.
