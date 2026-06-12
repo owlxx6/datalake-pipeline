@@ -1501,6 +1501,28 @@ tables:
       alert_threshold: 1.0
       control_type: BASIC
   consistency_rules: []
+  advanced_controls:
+  - id: CG_CRD_1
+    description: Encours négatif — capital restant dû < 0
+    severity: HIGH
+    active: true
+    alert_threshold: 0.0
+    query: |
+      SELECT idf_num_doss, mnt_capital_rest_du
+      FROM {{silver_db}}.credit_amort
+      WHERE date_arrete = '{{start_date}}'
+        AND mnt_capital_rest_du < 0
+  - id: CG_CRD_2
+    description: Crédit actif (cod_sit_doss=2) avec dossier soldé (date fin réelle renseignée)
+    severity: MEDIUM
+    active: true
+    alert_threshold: 0.0
+    query: |
+      SELECT idf_num_doss, cod_sit_doss, date_fin_doss_reel
+      FROM {{silver_db}}.credit_amort
+      WHERE date_arrete = '{{start_date}}'
+        AND trim(cod_sit_doss) = '2'
+        AND date_fin_doss_reel IS NOT NULL
 - name: CREDIT_RH
   domain: credit_rh
   primary_key: &id001
@@ -5200,6 +5222,21 @@ tables:
     severity: CRITICAL
     alert_threshold: 0.0
     control_type: BASIC
+  advanced_controls:
+  - id: CG_IMP_1
+    description: Impayé orphelin — dossier sans crédit parent dans CREDIT_AMORT
+    severity: HIGH
+    active: true
+    alert_threshold: 0.0
+    query: |
+      SELECT i.idf_num_dossier
+      FROM {{silver_db}}.impayes_cdl i
+      LEFT JOIN {{silver_db}}.credit_amort c
+        ON trim(i.idf_num_dossier) = trim(c.idf_num_doss)
+        AND c.date_arrete = '{{start_date}}'
+      WHERE i.date_arrete = '{{start_date}}'
+        AND i.idf_num_dossier IS NOT NULL
+        AND c.idf_num_doss IS NULL
 - name: ORG
   domain: org
   primary_key: &id015

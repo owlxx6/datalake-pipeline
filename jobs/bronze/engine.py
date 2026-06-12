@@ -302,6 +302,7 @@ def run_dq(
         for check in rule.checks:
             rule_id = f"DQ_{rule.field}_{check.type}".upper()
 
+            t0 = time.monotonic()
             if check.type == "unique":
                 _tmp = "__dup_count__"
                 failed = (
@@ -315,12 +316,15 @@ def run_dq(
                 if condition is None:
                     continue
                 failed = df_scope.filter(condition).count()
+            duration = time.monotonic() - t0
 
             rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
             results.append(_qr_row(
                 execution_id, date_situation, rule_id, check.type,
                 col_name, check.severity, scope_count, failed, rate,
                 check.alert_threshold, check.control_type, config, table,
+                description=_check_description(col_name, check, rule),
+                duration_seconds=duration,
             ))
 
     # consistency_rules
@@ -338,35 +342,126 @@ def run_dq(
             condition = condition | c
 
         fields_str = ", ".join(rule.required_fields)
+        t0 = time.monotonic()
         failed = df_scope.filter(condition).count()
+        duration = time.monotonic() - t0
         rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
 
         results.append(_qr_row(
             execution_id, date_situation, rule_id, "consistency",
             fields_str, rule.severity, scope_count, failed, rate,
             rule.alert_threshold, rule.control_type, config, table,
+            description=f"Consistency '{rule.name}': required fields when {rule.condition}",
+            duration_seconds=duration,
         ))
 
     return results
+
+
+def run_advanced_controls(
+    spark: SparkSession, table: TableEntry, config: BronzeConfig,
+    execution_id: str, date_situation: str, date_arrete: str,
+) -> list[dict]:
+    """Contrôles métier SQL déclaratifs (control_type=ADVANCED).
+
+    Exécutés APRÈS l'écriture Silver (les requêtes lisent les tables Silver).
+    Chaque requête retourne les lignes en anomalie ; le comptage alimente
+    QUALITY_RESULTS, au même format que les contrôles basic.
+    """
+    controls = [c for c in table.advanced_controls if c.active]
+    if not controls or table.silver_write is None:
+        return []
+
+    full_table = f"{table.silver_write.database}.{table.silver_write.table}"
+    scope_count = spark.table(full_table).count()
+    results: list[dict] = []
+
+    print(f"\n  ── CONTRÔLES AVANCÉS — {table.name} " + "─" * 30)
+    for ctl in controls:
+        query = (
+            ctl.query
+            .replace("{{silver_db}}", config.output.database)
+            .replace("{{start_date}}", date_arrete)
+        )
+        t0 = time.monotonic()
+        failed = spark.sql(query).count()
+        duration = time.monotonic() - t0
+        rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
+        icon = "✓" if rate <= ctl.alert_threshold else "✗"
+        print(f"  [{icon}] ADV_{ctl.id:<28} {failed:>8} ligne(s) en anomalie "
+              f"({rate:.2f}%) [{ctl.severity}]")
+        results.append(_qr_row(
+            execution_id, date_situation, f"ADV_{ctl.id}".upper(), "sql",
+            "-", ctl.severity, scope_count, failed, rate,
+            ctl.alert_threshold, "ADVANCED", config, table,
+            description=ctl.description or f"Advanced control {ctl.id}",
+            duration_seconds=duration,
+        ))
+    return results
+
+
+def _check_description(col_name: str, check: DQCheck, rule) -> str:
+    """Description lisible du contrôle (convention équipe DATA : Check 'COL' …)."""
+    if check.type == "not_null":
+        d = f"Check '{col_name}' is not null"
+    elif check.type == "unique":
+        d = f"Check '{col_name}' is unique"
+    elif check.type == "in_list":
+        vals = check.allowed_values or []
+        shown = ", ".join(str(v) for v in vals[:8]) + ("…" if len(vals) > 8 else "")
+        d = f"Check '{col_name}' in [{shown}]"
+    elif check.type == "max_length":
+        d = f"Check '{col_name}' length <= {check.max_length}"
+    elif check.type == "regex":
+        d = f"Check '{col_name}' matches '{check.pattern}'"
+    elif check.type == "date_valid":
+        d = f"Check '{col_name}' is a valid date"
+    elif check.type == "date_range":
+        d = f"Check '{col_name}' date in [{check.min_date} .. {check.max_date_expr}]"
+    else:
+        d = f"Check '{col_name}' {check.type}"
+    if getattr(rule, "description", ""):
+        d += f" — {rule.description}"
+    return d
 
 
 def _qr_row(
     execution_id, date_situation, rule_id, rule_type, field_name,
     severity, scope_count, failed, rate, threshold, control_type,
     config: BronzeConfig, table: TableEntry,
+    description: str = "", duration_seconds: float = 0.0,
 ) -> dict:
+    """Une ligne QUALITY_RESULTS — iso-format avec le modèle DQ de l'équipe DATA
+    (quality_dq_engine_results.csv) + nos spécificités (threshold, layer, env)."""
+    status = "PASSED" if rate <= threshold else "FAILED"
+    silver = table.silver_write
+    full_table = f"{silver.database}.{silver.table}" if silver else table.name
+    error_message = (
+        f"Column '{field_name}' contains {failed} failed '{rule_type}' checks"
+        if failed else ""
+    )
     return {
         "execution_id": execution_id,
         "date_situation": date_situation,
         "rule_id": rule_id,
+        # composite à la convention équipe DATA : USECASE_table_type_colonne
+        "rule_code": f"{config.project.domain}_{full_table}_{rule_type}_{field_name}",
         "rule_type": rule_type,
+        "description": description or f"Check '{field_name}' {rule_type}",
         "field_name": field_name,
         "severity": severity,
         "records_checked": scope_count,
         "records_failed": failed,
         "failure_rate_pct": round(rate, 4),
+        "passed_percentage": round(100.0 - rate, 4),
         "alert_threshold_pct": threshold,
-        "status": "PASSED" if rate <= threshold else "FAILED",
+        "status": status,
+        "passed": status == "PASSED",
+        "error_message": error_message,
+        "duration_seconds": round(duration_seconds, 4),
+        # la partition source a été lue avec succès pour atteindre la DQ
+        "table_partition_exists": True,
+        "execution_date": datetime.now().isoformat(),
         "control_type": control_type,
         "layer": "BRONZE",
         "table_name": table.name,
@@ -719,6 +814,12 @@ def run_table(
 
         # 6. Silver (Iceberg) — historisation : SCD2 (dimensions) ou snapshot (faits)
         rows_silver = historize(df_silver, table, config, spark, date_arrete)
+
+        # 6bis. Contrôles avancés (SQL métier déclaratif) — lisent le Silver écrit
+        if not config.execution.dry_run:
+            quality_results.extend(run_advanced_controls(
+                spark, table, config, execution_id, date_situation, date_arrete,
+            ))
 
         # Répartition des lignes par statut DQ (PASSED / WARNING / REJECTED)
         # — calculée sur le df réellement écrit en Silver (post-dédup)

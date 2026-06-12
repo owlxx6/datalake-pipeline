@@ -217,6 +217,22 @@ class ConsistencyRule(BaseModel):
     control_type: str = "ADVANCED"
 
 
+class AdvancedControl(BaseModel):
+    """Contrôle métier SQL déclaratif (convention équipe DATA / ACTIVITYCOMM).
+
+    La requête SELECT retourne les lignes EN ANOMALIE. Placeholders supportés :
+    {{silver_db}} (base Silver) et {{start_date}} (date d'arrêté du run).
+    Exécuté APRÈS l'écriture Silver ; résultat dans QUALITY_RESULTS
+    (control_type=ADVANCED, rule_id=ADV_<id>).
+    """
+    id: str
+    description: str = ""
+    severity: str = "HIGH"
+    active: bool = True
+    alert_threshold: float = 0.0
+    query: str
+
+
 class TableEntry(BaseModel):
     """Une table dans le YAML groupé."""
     name: str
@@ -229,6 +245,7 @@ class TableEntry(BaseModel):
     silver_write: Optional[SilverWriteConfig] = None  # Silver Hive — données clean (post-DQ)
     quality_rules: list[QualityRule] = []
     consistency_rules: list[ConsistencyRule] = []
+    advanced_controls: list[AdvancedControl] = []
 
 
 # ── Normalisation déclarative ─────────────────────────────────────────────────

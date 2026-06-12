@@ -185,11 +185,11 @@ def _write_scd2(
         .unionByName(new_versions)
     )
     # Matérialiser AVANT d'écraser la table (on lit et on réécrit la même table).
+    # n_new compté sur new_versions directement : un filtre valid_from=arrêté serait
+    # faux en re-run du même arrêté (les lignes inchangées portent ce valid_from).
     final = final.persist()
     n_total = final.count()
-    n_new = final.where(
-        (F.col("valid_from") == F.lit(date_arrete)) & (F.col("is_current") == F.lit(True))
-    ).count()
+    n_new = new_versions.count()
     final.writeTo(full_table).using("iceberg").createOrReplace()
     final.unpersist()
     print(f"  [SCD2] ✓ {n_new} nouvelle(s) version(s) — {n_total} lignes au total → {full_table}")
