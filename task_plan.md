@@ -131,6 +131,20 @@ Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
      ~40 recalculs complets ; désormais 1 matérialisation, règles sur du matérialisé)
 - Levier futur noté : DQ en une seule passe d'agrégation (1 job au lieu de N).
 
+### Sprint S1 — Orchestration Airflow — FAIT (2026-06-12)
+- [x] DAG `credit_garantie_medaillon` (dags/dag_credit_garantie.py) : 16 tâches —
+      verifier_landing → 13 tables Bronze/Silver → Gold déclaratif → recette sanity.
+- [x] **RUN COMPLET VERT sur la VM** (16/16 success, arrêté 2026-05-31) — la recette
+      « TOUT EST PROPRE » s'exécute depuis l'orchestrateur. Airflow = RÉALISÉ.
+- [x] Difficultés résolues (matière rapport) : venv Airflow sans deps jobs
+      (→ PYSPARK_PYTHON système), standalone tout-ou-rien (→ scheduler/webserver
+      séparés), schedulers en doublon (SIGTERM des tâches), Metastore absent
+      post-reboot (retry Thrift silencieux), port 8080 occupé (→ 8090), cwd
+      vboxuser (Permission denied gunicorn). Runbook section Airflow ajoutée.
+- [ ] Captures UI (Graph vert, recette, Grid) — webserver à relancer post-run.
+- [ ] Supprimer dags/dag_silver_credit.py (obsolète) — accord Taha requis.
+- [ ] Option : schedule mensuel (actuellement trigger manuel par arrêté).
+
 ### Phase DQ+ — Alignement sur le modèle DQ de la banque — À FAIRE
 Référence : `quality_dq_engine_results.csv` + `ACTIVITYCOMM.yaml` (framework DQ équipe DATA).
 Constat : notre QUALITY_RESULTS est ~75% iso (mêmes grain/nomenclature) ; on est plus riches
