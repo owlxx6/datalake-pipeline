@@ -145,6 +145,20 @@ Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
 - [ ] Supprimer dags/dag_silver_credit.py (obsolète) — accord Taha requis.
 - [ ] Option : schedule mensuel (actuellement trigger manuel par arrêté).
 
+### Ordre des sprints restants (décision Taha 2026-06-12)
+**S3 CI/CD → S4 DQ finitions → S2 Power BI → S-CLEAN nettoyage repo** (+ S5 métier, S6 rapport).
+
+### Sprint S-CLEAN — Nettoyage du repo — À FAIRE
+- [x] dags/dag_silver_credit.py supprimé (squelette avril, chemins morts) — accord Taha.
+- [ ] Statuer sur `datalake_lib/` : squelette non utilisé par les moteurs (jobs/). Options :
+      supprimer, ou y migrer proprement les moteurs (gros refactor), ou README "héritage".
+- [ ] dags/configs/*.yaml (34 fichiers ancien format, avril) : obsolètes vs configs/bronze.
+- [ ] jobs/silver/silver_credit_encours.py + jobs/base_job.py : ancien pipeline, non utilisés.
+- [ ] scripts/ : trier one-shot (generate_configs…) vs outils pérennes (sanity, jointures).
+- [ ] tests/ : alignés sur datalake_lib obsolète — réécrire sur jobs/ ou retirer.
+- [ ] echantillon/ : vérifier .gitignore (données bancaires, jamais commitées).
+⚠️ Règle : tout passage en revue AVEC validation Taha avant suppression.
+
 ### Phase DQ+ — Alignement sur le modèle DQ de la banque — À FAIRE
 Référence : `quality_dq_engine_results.csv` + `ACTIVITYCOMM.yaml` (framework DQ équipe DATA).
 Constat : notre QUALITY_RESULTS est ~75% iso (mêmes grain/nomenclature) ; on est plus riches
