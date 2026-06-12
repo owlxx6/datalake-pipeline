@@ -179,6 +179,16 @@ tables:
       - Mr
       alert_threshold: 1.0
       control_type: BASIC
+  - field: ADR_EMAIL
+    source_column: ADR_EMAIL
+    data_type: StringType
+    description: Email agent — conformité de format
+    checks:
+    - type: email
+      severity: MEDIUM
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true
   consistency_rules: []
 - name: CREDIT_NON_AMORT
   domain: credit_non_amort
@@ -1500,6 +1510,18 @@ tables:
       - O
       alert_threshold: 1.0
       control_type: BASIC
+  - field: TX_CREDIT
+    source_column: TX_CREDIT
+    data_type: StringType
+    description: Taux d'intérêt — bornes numériques
+    checks:
+    - type: range
+      severity: MEDIUM
+      min_value: 0.0
+      max_value: 100.0
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true
   consistency_rules: []
   advanced_controls:
   - id: CG_CRD_1
@@ -4889,6 +4911,17 @@ tables:
       severity: HIGH
       alert_threshold: 1.0
       control_type: BASIC
+  - field: COD_CYC_VIE
+    source_column: COD_CYC_VIE
+    data_type: StringType
+    description: Cycle de vie — cardinalité attendue (réf. ACTIVITYCOMM)
+    checks:
+    - type: distinct_count
+      severity: MEDIUM
+      num_distinct_values: 2
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true
   consistency_rules:
   - name: pk_composite_complete
     description: PK composite (4 colonnes) toutes non-nulles
@@ -5214,6 +5247,17 @@ tables:
       - CP 11
       alert_threshold: 1.0
       control_type: BASIC
+  - field: IDF_NUM_DOSSIER
+    source_column: IDF_NUM_DOSSIER
+    data_type: StringType
+    description: FK dossier — existence dans le référentiel crédit
+    checks:
+    - type: referential
+      severity: HIGH
+      ref: "{{silver_db}}.credit_amort.IDF_NUM_DOSS"
+      alert_threshold: 0.0
+      control_type: BASIC
+      informational: true
   consistency_rules:
   - name: pk_composite_complete
     description: PK composite (2 colonnes) toutes non-nulles

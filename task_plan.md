@@ -136,16 +136,18 @@ Référence : `quality_dq_engine_results.csv` + `ACTIVITYCOMM.yaml` (framework D
 Constat : notre QUALITY_RESULTS est ~75% iso (mêmes grain/nomenclature) ; on est plus riches
 sur alert_threshold_pct + flags 3-états par ligne ; eux ont des colonnes opérationnelles en plus.
 
-- [ ] Colonnes à ajouter dans `_qr_row` (~1-2h) : `description`, `error_message`,
-      `duration_seconds` (chrono par règle), `rule_code` (composite use_case_table_check_col),
-      `table_partition_exists`, `passed` (bool), `passed_percentage`, `execution_date`.
-- [ ] **advanced_controls** (~½ journée) : requêtes SQL métier déclarées en YAML
-      (id, description, severity, active, query avec placeholders {{silver_db}}/{{start_date}})
-      → exécutées par le moteur, résultats dans QUALITY_RESULTS (control_type=ADVANCED).
-- [ ] Types basic manquants vs ACTIVITYCOMM : `is_between` (bornes numériques),
-      `has_existing_reference` (référentiel), `has_distinct_count`, `is_email`.
+- [x] Colonnes opérationnelles dans `_qr_row` — commit d64a631 : rule_code composite,
+      description par type, error_message, duration_seconds (chrono/règle), passed,
+      passed_percentage, execution_date, table_partition_exists. QUALITY_RESULTS recréée.
+- [x] **advanced_controls** — commit d64a631 : SQL métier déclaratif en YAML
+      ({{silver_db}}/{{start_date}}), exécutés post-Silver, control_type=ADVANCED.
+      3 livrés : CG_IMP_1 (impayé orphelin, 0 anomalie — recoupe la jointure 100%),
+      CG_CRD_1 (encours négatif), CG_CRD_2 (actif mais soldé).
+- [x] Types basic ajoutés (lot 3) : `range` (is_between), `email`, `referential`
+      (anti-join, agrégé), `distinct_count` (niveau table) + 4 démos YAML — tous
+      validés VM (COD_CYC_VIE = exactement 2 distinctes, conforme ACTIVITYCOMM).
 - [ ] Contrôles techniques fichier/entête (RG EDD) : NBR_LIGNE entête = lignes reçues,
-      fichier en double/vide, tolérance volumétrie vs j-1, seuil de rejets.
+      fichier en double/vide, tolérance volumétrie vs j-1, seuil de rejets — RESTE À FAIRE.
 Argument soutenance : table de résultats iso-format avec celle de l'équipe DATA.
 
 ### Phase H4 — Couche Gold (framework déclaratif)

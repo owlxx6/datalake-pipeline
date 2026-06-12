@@ -273,6 +273,27 @@ def _check_condition(col_name: str, check: DQCheck):
             for c in conds[1:]:
                 result = result | c
             return result & col.isNotNull()
+    elif check.type == "range":
+        # Bornes numériques (équiv. is_between équipe DATA) — NULL exclu (rôle not_null)
+        num = col.cast("double")
+        conds = []
+        if check.min_value is not None:
+            conds.append(num < check.min_value)
+        if check.max_value is not None:
+            conds.append(num > check.max_value)
+        if conds:
+            result = conds[0]
+            for c in conds[1:]:
+                result = result | c
+            return result & col.isNotNull()
+    elif check.type == "email":
+        # Équiv. is_email équipe DATA — vide/NULL exclus (rôle not_null)
+        return (
+            ~F.trim(col).rlike(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+            & col.isNotNull() & (F.trim(col) != "")
+        )
+    # referential / distinct_count : contrôles agrégés (gérés dans run_dq), pas de
+    # condition ligne → None (compute_dq_flags les saute naturellement).
     return None
 
 
@@ -311,6 +332,29 @@ def run_dq(
                     .filter(F.col(_tmp) > 1)
                     .count()
                 )
+            elif check.type == "referential" and check.ref:
+                # FK orpheline : valeurs absentes de la table parente (anti-join).
+                # NULL/vide exclus (rôle de not_null). Contrôle agrégé, pas de flag ligne.
+                ref_path = check.ref.replace("{{silver_db}}", config.output.database)
+                ref_table, ref_col = ref_path.rsplit(".", 1)
+                spark = df_scope.sparkSession
+                ref_keys = (
+                    spark.table(ref_table)
+                    .select(F.trim(F.col(ref_col)).alias("__ref_k")).distinct()
+                )
+                failed = (
+                    df_scope.select(F.trim(F.col(col_name)).alias("__ref_k"))
+                    .where("__ref_k IS NOT NULL AND __ref_k <> ''")
+                    .join(ref_keys, "__ref_k", "left_anti")
+                    .count()
+                )
+            elif check.type == "distinct_count" and check.num_distinct_values is not None:
+                # Cardinalité attendue (niveau table) : échec total si écart.
+                actual = (
+                    df_scope.select(F.trim(F.col(col_name)).alias("__v"))
+                    .where("__v IS NOT NULL AND __v <> ''").distinct().count()
+                )
+                failed = 0 if actual == check.num_distinct_values else scope_count
             else:
                 condition = _check_condition(col_name, check)
                 if condition is None:
@@ -418,6 +462,14 @@ def _check_description(col_name: str, check: DQCheck, rule) -> str:
         d = f"Check '{col_name}' is a valid date"
     elif check.type == "date_range":
         d = f"Check '{col_name}' date in [{check.min_date} .. {check.max_date_expr}]"
+    elif check.type == "range":
+        d = f"Check '{col_name}' between {check.min_value} and {check.max_value}"
+    elif check.type == "email":
+        d = f"Check '{col_name}' is a valid email"
+    elif check.type == "referential":
+        d = f"Check '{col_name}' exists in {check.ref}"
+    elif check.type == "distinct_count":
+        d = f"Check '{col_name}' has {check.num_distinct_values} distinct values"
     else:
         d = f"Check '{col_name}' {check.type}"
     if getattr(rule, "description", ""):

@@ -194,6 +194,12 @@ class DQCheck(BaseModel):
     max_date_expr: Optional[str] = None
     min_value: Optional[float] = None
     max_value: Optional[float] = None
+    # referential : la valeur doit exister dans la table parente.
+    # Format : "{{silver_db}}.table.colonne" (placeholder résolu au run).
+    # Contrôle agrégé (anti-join) — pas de flag ligne à ligne.
+    ref: Optional[str] = None
+    # distinct_count : nombre attendu de valeurs distinctes (contrôle niveau table).
+    num_distinct_values: Optional[int] = None
 
 
 class QualityRule(BaseModel):
