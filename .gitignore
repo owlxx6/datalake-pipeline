@@ -1,47 +1,9 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-*.egg
-.pytest_cache/
-.coverage
-htmlcov/
-.venv/
-venv/
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Project
-*.log
-/tmp/
-/output/
-/data/local/
-
-# Airflow
-airflow.db
-airflow.cfg
-logs/
-dags/__pycache__/
-
-# Données sensibles — ne JAMAIS commit
 *.env
-credentials.json
-*_secret*
-# Extraits de données bancaires (potentiellement client/PII)
+__pycache__/
+*.pyc
+# CI/CD runtime (jamais committé — données locales VM, owned vboxuser)
+jenkins_data/
+*.db
+*.db-journal
+# données bancaires échantillon
 echantillon/
-
-# Artefacts générés
-datalake_lib.zip
-
-# Claude Code internals
-.claude/
-
-~$*

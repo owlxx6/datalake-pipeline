@@ -1,0 +1,60 @@
+version: '3.8'
+
+# Stack CI/CD du projet (GitLab + Jenkins + SonarQube).
+# IMPORTANT : exécuter sur le DISQUE NATIF de la VM (ex. ~/datalake-pipeline),
+# JAMAIS depuis le dossier partagé VirtualBox (/media/sf_*) — les volumes Docker
+# (bind ./jenkins_data, base GitLab) ne supportent pas vboxsf.
+
+services:
+
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    container_name: gitlab
+    restart: unless-stopped
+    privileged: true
+    hostname: gitlab.local
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://gitlab.local'
+        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+    ports:
+      - "8929:80"
+      - "2224:22"
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+    shm_size: '256m'
+
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    container_name: jenkins-server
+    user: root
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - ./jenkins_data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  sonarqube:
+    image: sonarqube:community
+    container_name: sonarqube-server
+    ports:
+      - "9001:9000"
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+
+volumes:
+  gitlab_config:
+  gitlab_logs:
+  gitlab_data:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
