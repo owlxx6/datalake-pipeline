@@ -29,6 +29,12 @@ SPARK_SUBMIT = (
     "spark-submit --driver-memory 4g"
 )
 
+# Expressions Jinja (résolues par Airflow au runtime) — définies une seule fois.
+DATE_ARRETE = "{{ dag_run.conf.get('date_arrete') or params.date_arrete }}"
+DATE_ARRETE_NODASH = (
+    "{{ (dag_run.conf.get('date_arrete') or params.date_arrete) | replace('-', '') }}"
+)
+
 # Les 13 tables alimentées en Landing (les autres entrées du YAML n'ont pas de donnée)
 TABLES = [
     "TIERS", "IMAGE_CONTRAT", "GRC_PORTEFEUILLE", "TYPOLOGIE", "ASAL", "POPS", "ORG",
@@ -56,10 +62,7 @@ with DAG(
 
     verifier_landing = BashOperator(
         task_id="verifier_landing",
-        bash_command=(
-            f"hdfs dfs -ls /data/landing/pops/date_arrete="
-            f"{{{{ (dag_run.conf.get('date_arrete') or params.date_arrete) | replace('-', '') }}}}"
-        ),
+        bash_command=f"hdfs dfs -ls /data/landing/pops/date_arrete={DATE_ARRETE_NODASH}",
     )
 
     bronze_silver_tasks = []
@@ -68,9 +71,7 @@ with DAG(
             task_id=f"bronze_silver_{table.lower()}",
             bash_command=(
                 f"cd {PROJECT} && {SPARK_SUBMIT} jobs/bronze/engine.py "
-                f"--config {CONFIG} "
-                f"--date-arrete {{{{ dag_run.conf.get('date_arrete') or params.date_arrete }}}} "
-                f"--table {table}"
+                f"--config {CONFIG} --date-arrete {DATE_ARRETE} --table {table}"
             ),
         ))
 
@@ -78,8 +79,7 @@ with DAG(
         task_id="gold_modele_declaratif",
         bash_command=(
             f"cd {PROJECT} && {SPARK_SUBMIT} jobs/gold/engine.py "
-            f"--config {GOLD_CONFIG} "
-            f"--date-arrete {{{{ dag_run.conf.get('date_arrete') or params.date_arrete }}}}"
+            f"--config {GOLD_CONFIG} --date-arrete {DATE_ARRETE}"
         ),
     )
 
@@ -87,8 +87,8 @@ with DAG(
         task_id="recette_sanity_check",
         bash_command=(
             f"cd {PROJECT} && {SPARK_SUBMIT} scripts/check_lake_sanity.py "
-            f"2>&1 | tee /tmp/sanity_dag.log | grep -E '\\[OK|\\[KO|VERDICT' ; "
-            f"grep -q 'TOUT EST PROPRE' /tmp/sanity_dag.log"
+            "2>&1 | tee /tmp/sanity_dag.log | grep -E '\\[OK|\\[KO|VERDICT' ; "
+            "grep -q 'TOUT EST PROPRE' /tmp/sanity_dag.log"
         ),
     )
 

@@ -235,66 +235,100 @@ def resolve_date_arrete(df_raw: DataFrame, table: TableEntry, cli_date_arrete: s
 
 # ── DQ check condition ────────────────────────────────────────────────────────
 
-def _check_condition(col_name: str, check: DQCheck):
-    """Retourne une expression Column qui vaut TRUE si le check est en échec."""
-    col = F.col(col_name)
+def _or_bounds(conds: list):
+    """Combine une liste de conditions par OU ; None si vide."""
+    if not conds:
+        return None
+    result = conds[0]
+    for c in conds[1:]:
+        result = result | c
+    return result
 
-    if check.type == "not_null":
-        # Une chaîne vide (ou whitespace) est sémantiquement "non renseigné" — on la
-        # traite comme NULL. Permet de flagger les valeurs manquantes par not_null,
-        # indépendamment de la forme (NULL strict vs '' vs '   ').
-        return col.isNull() | (F.trim(col.cast(StringType())) == "")
-    elif check.type == "unique":
-        w = Window.partitionBy(col_name)
-        return (F.count(col_name).over(w) > 1) & col.isNotNull()
-    elif check.type == "in_list" and check.allowed_values:
-        stripped = [v.strip() for v in check.allowed_values]
-        # Les chaînes vides sont sémantiquement "non renseigné" (équivalent NULL).
-        # On les exclut du check in_list — c'est le rôle de not_null de les flagger.
-        return (
-            ~F.trim(col).isin(stripped)
-            & col.isNotNull()
-            & (F.trim(col) != "")
-        )
-    elif check.type == "max_length" and check.max_length:
-        return F.length(col.cast(StringType())) > check.max_length
-    elif check.type == "regex" and check.pattern:
-        return ~col.rlike(check.pattern) & col.isNotNull()
-    elif check.type == "date_valid":
-        return F.to_date(col.cast(StringType())).isNull() & col.isNotNull()
-    elif check.type == "date_range":
-        conds = []
-        if check.min_date:
-            conds.append(col < F.lit(check.min_date).cast(DateType()))
-        if check.max_date_expr:
-            conds.append(col > F.expr(check.max_date_expr))
-        if conds:
-            result = conds[0]
-            for c in conds[1:]:
-                result = result | c
-            return result & col.isNotNull()
-    elif check.type == "range":
-        # Bornes numériques (équiv. is_between équipe DATA) — NULL exclu (rôle not_null)
-        num = col.cast("double")
-        conds = []
-        if check.min_value is not None:
-            conds.append(num < check.min_value)
-        if check.max_value is not None:
-            conds.append(num > check.max_value)
-        if conds:
-            result = conds[0]
-            for c in conds[1:]:
-                result = result | c
-            return result & col.isNotNull()
-    elif check.type == "email":
-        # Équiv. is_email équipe DATA — vide/NULL exclus (rôle not_null)
-        return (
-            ~F.trim(col).rlike(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
-            & col.isNotNull() & (F.trim(col) != "")
-        )
-    # referential / distinct_count : contrôles agrégés (gérés dans run_dq), pas de
-    # condition ligne → None (compute_dq_flags les saute naturellement).
-    return None
+
+def _cond_not_null(col, check):
+    # Vide / whitespace = "non renseigné", traité comme NULL.
+    return col.isNull() | (F.trim(col.cast(StringType())) == "")
+
+
+def _cond_unique(col, check):
+    w = Window.partitionBy(col)
+    return (F.count(col).over(w) > 1) & col.isNotNull()
+
+
+def _cond_in_list(col, check):
+    if not check.allowed_values:
+        return None
+    stripped = [v.strip() for v in check.allowed_values]
+    # Vides exclus (rôle de not_null).
+    return ~F.trim(col).isin(stripped) & col.isNotNull() & (F.trim(col) != "")
+
+
+def _cond_max_length(col, check):
+    if not check.max_length:
+        return None
+    return F.length(col.cast(StringType())) > check.max_length
+
+
+def _cond_regex(col, check):
+    if not check.pattern:
+        return None
+    return ~col.rlike(check.pattern) & col.isNotNull()
+
+
+def _cond_date_valid(col, check):
+    return F.to_date(col.cast(StringType())).isNull() & col.isNotNull()
+
+
+def _cond_date_range(col, check):
+    conds = []
+    if check.min_date:
+        conds.append(col < F.lit(check.min_date).cast(DateType()))
+    if check.max_date_expr:
+        conds.append(col > F.expr(check.max_date_expr))
+    bounds = _or_bounds(conds)
+    return bounds & col.isNotNull() if bounds is not None else None
+
+
+def _cond_range(col, check):
+    # Bornes numériques (équiv. is_between) — NULL exclu (rôle not_null).
+    num = col.cast("double")
+    conds = []
+    if check.min_value is not None:
+        conds.append(num < check.min_value)
+    if check.max_value is not None:
+        conds.append(num > check.max_value)
+    bounds = _or_bounds(conds)
+    return bounds & col.isNotNull() if bounds is not None else None
+
+
+def _cond_email(col, check):
+    # Équiv. is_email — vide/NULL exclus (rôle not_null).
+    return (
+        ~F.trim(col).rlike(r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$")
+        & col.isNotNull() & (F.trim(col) != "")
+    )
+
+
+# Table de dispatch : type de check → fonction construisant la condition d'échec.
+# referential / distinct_count sont des contrôles agrégés (gérés dans run_dq), donc
+# absents ici → _check_condition renvoie None (compute_dq_flags les saute).
+_CHECK_BUILDERS = {
+    "not_null": _cond_not_null,
+    "unique": _cond_unique,
+    "in_list": _cond_in_list,
+    "max_length": _cond_max_length,
+    "regex": _cond_regex,
+    "date_valid": _cond_date_valid,
+    "date_range": _cond_date_range,
+    "range": _cond_range,
+    "email": _cond_email,
+}
+
+
+def _check_condition(col_name: str, check: DQCheck):
+    """Retourne une expression Column qui vaut TRUE si le check est en échec (ou None)."""
+    builder = _CHECK_BUILDERS.get(check.type)
+    return builder(F.col(col_name), check) if builder else None
 
 
 # ── DQ statistiques par règle (pour QUALITY_RESULTS) ─────────────────────────
