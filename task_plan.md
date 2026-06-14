@@ -148,6 +148,22 @@ Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
 ### Ordre des sprints restants (décision Taha 2026-06-12)
 **S3 CI/CD → S4 DQ finitions → S2 Power BI → S-CLEAN nettoyage repo** (+ S5 métier, S6 rapport).
 
+### Sprint S3 — CI/CD (Jenkins + SonarQube + GitLab) — FAIT (2026-06-14)
+- [x] Stack CI migrée du repo VM séparé vers le repo canonique (commit bddf745) :
+      docker-compose.yml, Dockerfile.jenkins, Jenkinsfile, sonar-project.properties, .gitignore.
+- [x] Jenkinsfile adapté à la vraie structure (jobs/, dags/, scripts/) — 5 stages :
+      checkout -> compile (py_compile) -> validation config YAML -> SonarQube -> deploy DAG.
+      Contrôles compile/validate exécutés sur la VM via SSH (deps Python y vivent).
+- [x] Code poussé vers le GitLab local (force, histoires indépendantes) → Jenkins build
+      le vrai projet. **Build Jenkins SUCCESS** : 5/5 stages verts, Sonar 59 fichiers analysés.
+- [x] Topologie : 2 repos étaient indépendants (GitHub owlxx6 = code / GitLab taha-group4 =
+      scaffolding CI). Désormais unifiés dans le repo code.
+- [ ] SÉCURITÉ : régénérer le token GitLab exposé (glpat-IVYf…) + le mettre en credential
+      (pas en clair dans l'URL du remote ni dans jobs/.../config.xml).
+- [ ] Pousser bddf745 vers GitHub origin (owlxx6) — actuellement seulement en local + GitLab.
+- [ ] (option) Jenkinsfile : la stage deploy copie vers le dossier partagé (= source) ;
+      en cible, viser un emplacement de déploiement distinct.
+
 ### Sprint S-CLEAN — Nettoyage du repo — À FAIRE
 - [x] dags/dag_silver_credit.py supprimé (squelette avril, chemins morts) — accord Taha.
 - [ ] Statuer sur `datalake_lib/` : squelette non utilisé par les moteurs (jobs/). Options :
