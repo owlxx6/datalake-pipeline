@@ -1,28 +1,60 @@
-# État session courante — reprise S3 (2026-06-12)
+# État session — reprise post-compact (2026-06-14)
 
-## Où on en est
-- **S1 Airflow : BOUCLÉ** — DAG credit_garantie_medaillon 16/16 vert (commit cfc5d59),
-  runbook section Airflow, recette sanity exécutée par l'orchestrateur.
-  Captures UI : à confirmer (Graph vert + recette + Grid).
-- **Ordre acté : S3 CI/CD → S4 DQ finitions → S2 Power BI → S-CLEAN** (+ S5 métier, S6 rapport).
-- Vieux dag_silver_credit.py supprimé (commit aa4b28b). Sprint S-CLEAN cadré au plan.
+HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier partagé VM = ce repo.
 
-## S3 CI/CD — démarré, plan validé à confirmer
-- Pipeline .gitlab-ci.yml proposé : compile (py_compile) → lint (ruff/flake8)
-  → validate-config (YAML+pydantic bronze/gold — le contrat déclaratif en CI) → sonar.
-- Taha dit : GitLab + runner + SonarQube DÉJÀ installés/configurés sur la VM.
-- GitLab self-hosted : http://localhost:8929/root/datalake-pipeline (Docker), remote git « local ».
-- SonarQube + jenkins.war + jdk17 dans /home/hadoop/apps/.
-- EN ATTENTE (commandes envoyées, sorties pas encore reçues) :
-  free -h · ps aux --sort=-%mem · docker ps · which gitlab-runner / gitlab-runner list
-  · ls ~/apps/sonarqube/bin
-- Allègement VM en cours : pkill airflow/gunicorn + kill metastore (11659) OK pour S3 ;
-  garder HDFS + GitLab docker.
+## Sprints — statut
+- ✅ Silver (H1 Iceberg + H3 SCD2 7 dimensions) · normalisation 13/13 · recette `check_lake_sanity.py` 23/23
+- ✅ Gold : moteur déclaratif `jobs/gold/engine.py` (date/dimension/fact/obt/view) + OBT `gdw_synthese_credit` + vue `v_kpi_credit`
+- ✅ DQ+ : QUALITY_RESULTS iso-banque + advanced_controls + 11 types de checks
+- ✅ S1 Airflow : DAG `credit_garantie_medaillon` 16/16 vert
+- ✅ S3 CI/CD : GitLab+Jenkins+SonarQube, build 5 stages SUCCESS, Sonar A/0% dup, issues 29→traitées
+- ✅ S4 : REJECTED documenté (flag, jamais suppression) ; Lot A entête fichier = perspective
+- ⏳ Reste : S2 Power BI · S-CLEAN · S5 métier · S6 rapport
 
-## Repères VM (post-reboot, ordre strict — cf. runbook)
-start-dfs.sh → safemode get → metastore (nohup hive --service metastore) →
-airflow scheduler (nohup, UN SEUL) → webserver --port 8090 --workers 1 (depuis /home/hadoop).
+## RELIQUATS IMPORTANTS (à ne pas oublier)
+1. ⚠️ **Non-régression NON FAITE** après les refactors Sonar d'engine.py (run_dq, compute_dq_flags,
+   _qr_row, _check_condition, _check_description, audit script). À VÉRIFIER : run CREDIT_AMORT →
+   doit redonner **PASSED=176281 / WARNING=23719 / REJECTED=0**. Nécessite HDFS+Metastore+Spark.
+2. Pousser commits récents (ee14fc3→27c01c6) vers **GitLab local** (rebuild confirmation) ET **GitHub origin**.
+3. Sonar : fichiers pas encore re-scannés en détail (historization.py, gold/engine.py, config_loader.py,
+   scripts diag/inspect/generate/simulate) — corriger si signalés.
+4. SÉCURITÉ : régénérer le token GitLab exposé `glpat-IVYf…` (visible dans jobs/.../config.xml + remote).
 
-## Git
-HEAD main = aa4b28b. Tout est committé (code + docs + plan). Non tracké volontairement :
-docs/REPORT_DATA_PACK.md, docs/modele_gold_credit_garantie.md, docs/rapport/, echantillon/.
+## Baselines de vérification (ne pas perdre)
+- CREDIT_AMORT DQ : PASSED 176281 / WARNING 23719 / REJECTED 0 (sur 200000)
+- Lake sanity 23/23 OK · OBT gdw_synthese_credit : 200000, famille_renseignee 198981, flag_cdl 96474
+- Silver dims SCD2 v1 : tiers 154245 · image_contrat 158322 · grc 151528 · typologie 154249 · asal 4464 · pops 1226 · org 762
+- Faits : credit_amort 200000 · impayes_cdl 1597242 · depassement 75870 · garantie_detail 253900 · garantie_contrat 258473 · idce_autorisation 368567
+
+## Topologie repos (IMPORTANT)
+- Repo canonique = ce dossier (Mac, origin GitHub owlxx6) — contient code + CI (Jenkinsfile, docker-compose,
+  Dockerfile.jenkins, sonar-project.properties).
+- GitLab local (VM, `http://localhost:8929/root/datalake-pipeline`) = ce que Jenkins build ; on y pousse via
+  remote `gitlab` (depuis /media/sf_datalake-pipeline après `git config --global --add safe.directory ...`).
+- Clone VM `~/datalake-pipeline` = disque natif, héberge `jenkins_data/` + lance docker-compose (PAS le
+  dossier partagé : docker n'aime pas vboxsf).
+
+## CI/CD — exploitation (VM)
+- docker v1 → commande `docker-compose` (avec tiret), pas `docker compose`.
+- Stack lourde sur 9,5 Go : GitLab(~3-4G)+Jenkins(~1G)+Sonar(~2G). Pour pousser, couper Sonar+Jenkins
+  (`docker stop sonarqube-server jenkins-server`) le temps que GitLab serve, puis rallumer.
+- SonarQube sur **port 9001** (pas 9000). Attendre `status:UP` avant un build (sinon scan échoue « STARTING »).
+- Build : Jenkins http://ubuntu3:8081 (admin/admin2026) → datalake-pipeline → Build Now.
+- Token Sonar pour l'API issues : My Account → Security → Generate ; `curl -u "$TOKEN:" .../api/issues/search`.
+
+## Checklist post-reboot VM (ordre strict — cf. runbook)
+```
+start-dfs.sh ; hdfs dfsadmin -safemode get (leave si ON)
+nohup hive --service metastore > ~/logs/metastore.log 2>&1 &   # port 9083 (requis Iceberg)
+# CI : cd ~/datalake-pipeline && docker-compose up -d   (puis docker start sonarqube-server si conflit)
+# Airflow (si besoin) : 1 SEUL scheduler + webserver --port 8090 depuis /home/hadoop, venv activé
+```
+
+## S2 Power BI — à anticiper
+Power BI Desktop = Windows-only (ni Mac ni VM Ubuntu). Plan : (1) démarrer un **Spark Thrift Server**
+sur la VM (port 10000) exposant le Gold en SQL ; (2) Power BI sur machine Windows (EAI) → ODBC →
+dashboards KPI (OBT) + Data Quality Dashboard (QUALITY_RESULTS). Mon rôle = endpoint SQL + requêtes ;
+dashboards = manuel.
+
+## Prochaine action au choix
+S2 (préparer Thrift Server + pack requêtes) · Non-régression (rallumer HDFS+Spark, run CREDIT_AMORT) · S-CLEAN.
