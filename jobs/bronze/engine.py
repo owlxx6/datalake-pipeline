@@ -617,6 +617,9 @@ def compute_dq_flags(
       - dq_status         : "PASSED" (aucun défaut) / "WARNING" (défaut HIGH/MEDIUM/LOW,
                             ligne utilisable) / "REJECTED" (défaut CRITICAL sur PK, ligne
                             inutilisable). Piloté par la gravité, pas la présence d'un défaut.
+                            NB : REJECTED est un FLAG, jamais une suppression — la ligne reste
+                            TOUJOURS écrite en Silver (politique « on flague, on n'enlève pas »).
+                            Le tri/exclusion éventuel des REJECTED est laissé au consommateur aval.
       - dq_severity_max   : sévérité max parmi les règles échouées (NULL si PASSED)
       - dq_execution_id   : lien vers LOG_PIPELINE
     """

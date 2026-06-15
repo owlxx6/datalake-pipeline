@@ -392,6 +392,8 @@ en étoile peut différer du pilote — d'où le choix d'un Gold config-driven).
 padding codes, orchestration Airflow, Power BI, gouvernance, livrable.
 
 ### Décisions récentes
+- 2026-06-14 — **REJECTED = flag, pas suppression** : la ligne reste écrite en Silver
+  (« on flague, on n'enlève pas ») ; pas de 4e statut INVALID_PK. Documenté dans compute_dq_flags.
 - 2026-06-07 — **Pas de SCD2 sur le transactionnel** : « historiser tout » sur un fait/OBT
   = snapshot append par date_arrete (chaque arrêté gardé), pas SCD2 (qui créerait une fausse
   version par ligne par arrêté). dim_credit abandonné au profit de l'OBT snapshot.
