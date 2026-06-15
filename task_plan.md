@@ -148,7 +148,7 @@ Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
 ### Ordre des sprints restants (décision Taha 2026-06-12)
 **S3 CI/CD → S4 DQ finitions → S2 Power BI → S-CLEAN nettoyage repo** (+ S5 métier, S6 rapport).
 
-### Sprint S3 — CI/CD (Jenkins + SonarQube + GitLab) — FAIT (2026-06-14)
+### Sprint S3 — CI/CD (Jenkins + SonarQube + GitLab) — BOUCLÉ (2026-06-14)
 - [x] Stack CI migrée du repo VM séparé vers le repo canonique (commit bddf745) :
       docker-compose.yml, Dockerfile.jenkins, Jenkinsfile, sonar-project.properties, .gitignore.
 - [x] Jenkinsfile adapté à la vraie structure (jobs/, dags/, scripts/) — 5 stages :
@@ -158,6 +158,18 @@ Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
       le vrai projet. **Build Jenkins SUCCESS** : 5/5 stages verts, Sonar 59 fichiers analysés.
 - [x] Topologie : 2 repos étaient indépendants (GitHub owlxx6 = code / GitLab taha-group4 =
       scaffolding CI). Désormais unifiés dans le repo code.
+- [x] Qualité SonarQube : 29 issues → traitées sur dag_credit_garantie.py (f-strings,
+      littéraux), engine.py (6 fonctions : _check_condition, run_dq+_quality/_consistency_results,
+      compute_dq_flags, _check_description, _qr_row), audit_edd_vs_yaml.py (constantes + complexité).
+      Build Jenkins SUCCESS ; sécurité A, 0% duplication.
+- [ ] RELIQUATS S3 (non bloquants, le pipeline tourne) :
+      · commit fa0e558 (run_dq scindé) à pousser + 1 dernier rebuild pour confirmer le compte d'issues
+      · fichiers pas encore re-scannés en détail : historization.py, gold/engine.py, config_loader.py,
+        scripts diag/inspect/generate/simulate — corriger si Sonar en signale
+      · ⚠️ NON-RÉGRESSION À FAIRE : après les refactors DQ d'engine.py, relancer CREDIT_AMORT
+        et vérifier PASSED=176281/WARNING=23719/REJECTED=0 (preuve comportement inchangé) —
+        nécessite HDFS+Metastore+Spark (session dédiée)
+      · pousser tous les commits vers GitHub origin (owlxx6) — actuellement local + GitLab
 - [ ] SÉCURITÉ : régénérer le token GitLab exposé (glpat-IVYf…) + le mettre en credential
       (pas en clair dans l'URL du remote ni dans jobs/.../config.xml).
 - [ ] Pousser bddf745 vers GitHub origin (owlxx6) — actuellement seulement en local + GitLab.
