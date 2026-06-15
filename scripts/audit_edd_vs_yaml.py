@@ -22,44 +22,100 @@ ROOT = Path(__file__).resolve().parents[1]
 YAML_PATH = ROOT / "configs/bronze/credit_garantie.yaml"
 CANEVAS = ROOT / "canevas"
 
+# Fichiers EDD partagés par plusieurs onglets/tables (constantes — évite la duplication).
+EDD_CREDIT = "EDD_MODEL_CREDIT.xlsx"
+EDD_GARWEB = "EDD_MODEL_GARWEB.xlsx"
+EDD_IDCE = "EDD_MODEL_IDCE.xlsx"
+EDD_TIERS = "EDD_MODEL_TIERS.xlsx"
+EDD_AUTORISATIONS = "EDD_MODEL_AUTORISATIONS.xlsx"
+
 # table YAML -> (fichier EDD, onglet) — gère les typos d'onglets
 MAP = {
     "ASAL": ("EDD_MODEL_ASAL.xlsx", "ASAL"),
-    "CREDIT_NON_AMORT": ("EDD_MODEL_AUTORISATIONS.xlsx", "CREDIT_NON_AMORT"),
-    "CREDIT_AMORT": ("EDD_MODEL_CREDIT.xlsx", "CREDIT_AMORT"),
-    "CREDIT_RH": ("EDD_MODEL_CREDIT.xlsx", "CREDIT_RH"),
-    "NEVOLAN_CONTRAT": ("EDD_MODEL_CREDIT.xlsx", "NEVOLAN_CONTRAT"),
-    "NEVOLAN_TA": ("EDD_MODEL_CREDIT.xlsx", "NEVOLAN_TA"),
-    "CREDIT_AMORT_TA": ("EDD_MODEL_CREDIT.xlsx", "CREDIT_AMORT_TA"),
+    "CREDIT_NON_AMORT": (EDD_AUTORISATIONS, "CREDIT_NON_AMORT"),
+    "CREDIT_AMORT": (EDD_CREDIT, "CREDIT_AMORT"),
+    "CREDIT_RH": (EDD_CREDIT, "CREDIT_RH"),
+    "NEVOLAN_CONTRAT": (EDD_CREDIT, "NEVOLAN_CONTRAT"),
+    "NEVOLAN_TA": (EDD_CREDIT, "NEVOLAN_TA"),
+    "CREDIT_AMORT_TA": (EDD_CREDIT, "CREDIT_AMORT_TA"),
     "DEPASSEMENT": ("EDD_MODEL_DEPASSEMENT.xlsx", "DEPASSEMENT"),
-    "GARANTIE_DETAIL": ("EDD_MODEL_GARWEB.xlsx", "GARANTIE_DETAIL"),
-    "GARANTIE_TIERS": ("EDD_MODEL_GARWEB.xlsx", "GARANTIE_TIERS"),
-    "GARANTIE_CONTRAT": ("EDD_MODEL_GARWEB.xlsx", "GARANTIE_CONTRAT"),
-    "GARANTIE_INSCRIPTION": ("EDD_MODEL_GARWEB.xlsx", "GARANTIE_INSCRIPTION"),
-    "GARANTIE_BIEN": ("EDD_MODEL_GARWEB.xlsx", "GARANTIE_BIEN"),
-    "GARANTIE_RENOUVELLEMENT": ("EDD_MODEL_GARWEB.xlsx", "GARANTIE_RENOUVELLEMENT"),
-    "IDCE_DOSSIER": ("EDD_MODEL_IDCE.xlsx", "IDCE_DOSSIER"),
+    "GARANTIE_DETAIL": (EDD_GARWEB, "GARANTIE_DETAIL"),
+    "GARANTIE_TIERS": (EDD_GARWEB, "GARANTIE_TIERS"),
+    "GARANTIE_CONTRAT": (EDD_GARWEB, "GARANTIE_CONTRAT"),
+    "GARANTIE_INSCRIPTION": (EDD_GARWEB, "GARANTIE_INSCRIPTION"),
+    "GARANTIE_BIEN": (EDD_GARWEB, "GARANTIE_BIEN"),
+    "GARANTIE_RENOUVELLEMENT": (EDD_GARWEB, "GARANTIE_RENOUVELLEMENT"),
+    "IDCE_DOSSIER": (EDD_IDCE, "IDCE_DOSSIER"),
     # NB : la donnée physique 'idce_autorisation' correspond au canevas AUTORISATIONS
     # (onglet mal nommé 'CREDIT_NON_AMORT'), pas à l'onglet IDCE_AUTORISATION du fichier IDCE.
-    "IDCE_AUTORISATION": ("EDD_MODEL_AUTORISATIONS.xlsx", "CREDIT_NON_AMORT"),
-    "IDCE_TIERS_DOSSIER": ("EDD_MODEL_IDCE.xlsx", "ICDE_TIERS_DOSSIER"),
-    "IDCE_EVENT_DOSSIER": ("EDD_MODEL_IDCE.xlsx", "IDCE_EVENT_DOSSIER"),
-    "IDCE_EVENT_AUTO": ("EDD_MODEL_IDCE.xlsx", "IDCE_EVENT_AUTO"),
-    "IDCE_TIERS_AUTO": ("EDD_MODEL_IDCE.xlsx", "IDCE_TIERS_AUTO"),
-    "IDCE_LIENS_AUTO": ("EDD_MODEL_IDCE.xlsx", "IDCE_LIEN_AUTO"),
+    "IDCE_AUTORISATION": (EDD_AUTORISATIONS, "CREDIT_NON_AMORT"),
+    "IDCE_TIERS_DOSSIER": (EDD_IDCE, "ICDE_TIERS_DOSSIER"),
+    "IDCE_EVENT_DOSSIER": (EDD_IDCE, "IDCE_EVENT_DOSSIER"),
+    "IDCE_EVENT_AUTO": (EDD_IDCE, "IDCE_EVENT_AUTO"),
+    "IDCE_TIERS_AUTO": (EDD_IDCE, "IDCE_TIERS_AUTO"),
+    "IDCE_LIENS_AUTO": (EDD_IDCE, "IDCE_LIEN_AUTO"),
     "IMAGE_CONTRAT": ("EDD_MODEL_IMAGE_CONTRAT.xlsx", "IMAGE_CONTRAT"),
     "IMPAYES_CDL": ("EDD_MODEL_IMPAYES_CDL.xlsx", "IMPAYES_CDL"),
     "ORG": ("EDD_MODEL_ORG.xlsx", "ORG"),
     "POPS": ("EDD_MODEL_POPS.xlsx", "POPS"),
     "GRC_PORTEFEUILLE": ("EDD_MODEL_PORTEFEUILLE.xlsx", "GRC_PORTFEUILLE"),
-    "TIERS": ("EDD_MODEL_TIERS.xlsx", "TIERS"),
-    "CONTACTS": ("EDD_MODEL_TIERS.xlsx", "CONTACTS"),
-    "REPRESENTANT_LEG": ("EDD_MODEL_TIERS.xlsx", "REPRESENTANT_LEG"),
-    "TIERS_EI": ("EDD_MODEL_TIERS.xlsx", "TIERS_EI"),
+    "TIERS": (EDD_TIERS, "TIERS"),
+    "CONTACTS": (EDD_TIERS, "CONTACTS"),
+    "REPRESENTANT_LEG": (EDD_TIERS, "REPRESENTANT_LEG"),
+    "TIERS_EI": (EDD_TIERS, "TIERS_EI"),
     "TYPOLOGIE": ("EDD_MODEL_TYPOLOGIE.xlsx", "TYPOLOGIE"),
 }
 
 TRUE_FLAGS = {"O", "OUI", "X", "1", "TRUE"}
+
+
+def _cell(row, off: int, k: int) -> str:
+    idx = off + k
+    return str(row[idx]).strip() if len(row) > idx and row[idx] not in (None, "") else ""
+
+
+def _header_offset(rows) -> tuple[int, int]:
+    """(ligne d'en-tête, offset de colonne) repérés via 'Champ EDD'."""
+    hi = next(i for i, r in enumerate(rows) if any("Champ EDD" in str(v) for v in r if v))
+    off = [j for j, v in enumerate(rows[hi]) if str(v).strip() == "Champ EDD"][0]
+    return hi, off
+
+
+def _codif_start(rows, hi: int, off: int):
+    """Index de la 1ʳᵉ ligne du bloc codif (CHAMP / CODE), ou None."""
+    for i in range(hi + 1, len(rows)):
+        if _cell(rows[i], off, 0) == "CHAMP" and _cell(rows[i], off, 1) == "CODE":
+            return i
+    return None
+
+
+def _parse_fields(rows, hi: int, field_end: int, off: int) -> dict:
+    fields = {}
+    for i in range(hi + 1, field_end):
+        champ = _cell(rows[i], off, 0)
+        if not champ or champ.startswith("VARCHAR") or champ == "CHAMP":
+            continue
+        fields[champ] = {
+            "pk": _cell(rows[i], off, 4).upper() in TRUE_FLAGS,
+            "oblig": _cell(rows[i], off, 5).upper() in TRUE_FLAGS,
+            "codif": _cell(rows[i], off, 6).upper() in TRUE_FLAGS,
+        }
+    return fields
+
+
+def _parse_codif(rows, ci, off: int) -> dict:
+    codif = {}
+    if ci is None:
+        return codif
+    cur = None
+    for i in range(ci + 1, len(rows)):
+        champ = _cell(rows[i], off, 0)
+        code = _cell(rows[i], off, 1)
+        if champ:
+            cur = champ
+        if cur and code:
+            codif.setdefault(cur, set()).add(code)
+    return codif
 
 
 def parse_edd(path: Path, sheet: str):
@@ -68,46 +124,12 @@ def parse_edd(path: Path, sheet: str):
       codif  : {champ: set(codes)}
     """
     wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
-    ws = wb[sheet]
-    rows = [list(r) for r in ws.iter_rows(values_only=True)]
+    rows = [list(r) for r in wb[sheet].iter_rows(values_only=True)]
     wb.close()
-    # ligne d'en-tête
-    hi = next(i for i, r in enumerate(rows) if any("Champ EDD" in str(v) for v in r if v))
-    off = [j for j, v in enumerate(rows[hi]) if str(v).strip() == "Champ EDD"][0]
-
-    def cell(r, k):
-        return str(r[off + k]).strip() if len(r) > off + k and r[off + k] not in (None, "") else ""
-
-    # début du bloc codif (CHAMP / CODE / LIBELLE)
-    ci = None
-    for i in range(hi + 1, len(rows)):
-        if cell(rows[i], 0) == "CHAMP" and cell(rows[i], 1) == "CODE":
-            ci = i
-            break
+    hi, off = _header_offset(rows)
+    ci = _codif_start(rows, hi, off)
     field_end = ci if ci is not None else len(rows)
-
-    fields = {}
-    for i in range(hi + 1, field_end):
-        champ = cell(rows[i], 0)
-        if not champ or champ.startswith("VARCHAR") or champ == "CHAMP":
-            continue
-        fields[champ] = {
-            "pk": cell(rows[i], 4).upper() in TRUE_FLAGS,
-            "oblig": cell(rows[i], 5).upper() in TRUE_FLAGS,
-            "codif": cell(rows[i], 6).upper() in TRUE_FLAGS,
-        }
-
-    codif = {}
-    if ci is not None:
-        cur = None
-        for i in range(ci + 1, len(rows)):
-            champ = cell(rows[i], 0)
-            code = cell(rows[i], 1)
-            if champ:
-                cur = champ
-            if cur and code:
-                codif.setdefault(cur, set()).add(code)
-    return fields, codif
+    return _parse_fields(rows, hi, field_end, off), _parse_codif(rows, ci, off)
 
 
 def yaml_rules(table: dict):
@@ -126,9 +148,30 @@ def yaml_rules(table: dict):
     return out, list(table.get("primary_key") or [])
 
 
+_DEFAULT_YR = {"not_null": False, "unique": False, "in_list": None}
+
+
+def _field_issues(f: str, v: dict, yr: dict, ecodif: dict, ypk: list) -> list[str]:
+    """Écarts EDD↔YAML pour un champ (codif manquante, oblig, valeurs)."""
+    out = []
+    if v["codif"] and yr["in_list"] is None:
+        extra = f" (EDD: {sorted(ecodif.get(f, []))})" if f in ecodif else ""
+        out.append(f"  [CODIF-MANQ] {f} codifiable EDD, pas d'in_list YAML{extra}")
+    if v["oblig"] and not yr["not_null"] and f not in ypk:
+        out.append(f"  [OBLIG-MANQ] {f} Oblig=O EDD, pas de not_null YAML")
+    if yr["in_list"] is not None and f in ecodif:
+        miss = ecodif[f] - yr["in_list"]
+        trop = yr["in_list"] - ecodif[f]
+        if miss:
+            out.append(f"  [VAL-MANQ]   {f} : EDD non listés YAML → {sorted(miss)}")
+        if trop:
+            out.append(f"  [VAL-TROP]   {f} : YAML hors EDD → {sorted(trop)}")
+    return out
+
+
 def audit(name: str, table: dict) -> list[str]:
     if name not in MAP:
-        return [f"  (pas de canevas EDD mappé)"]
+        return ["  (pas de canevas EDD mappé)"]
     fname, sheet = MAP[name]
     path = CANEVAS / fname
     if not path.exists():
@@ -138,30 +181,14 @@ def audit(name: str, table: dict) -> list[str]:
     except Exception as e:
         return [f"  (erreur lecture EDD : {e})"]
     yrules, ypk = yaml_rules(table)
-    issues = []
 
-    # PK
+    issues = []
     edd_pk = sorted([f for f, v in efields.items() if v["pk"]])
     if edd_pk and set(edd_pk) != set(ypk):
         issues.append(f"  [PK-DIFF]    EDD={edd_pk}  YAML={ypk}")
 
     for f, v in efields.items():
-        yr = yrules.get(f, {"not_null": False, "unique": False, "in_list": None})
-        # codifiable EDD sans in_list YAML
-        if v["codif"] and yr["in_list"] is None:
-            extra = f" (EDD: {sorted(ecodif.get(f, []))})" if f in ecodif else ""
-            issues.append(f"  [CODIF-MANQ] {f} codifiable EDD, pas d'in_list YAML{extra}")
-        # oblig EDD sans not_null YAML (hors PK)
-        if v["oblig"] and not yr["not_null"] and f not in ypk:
-            issues.append(f"  [OBLIG-MANQ] {f} Oblig=O EDD, pas de not_null YAML")
-        # comparaison valeurs si in_list des deux côtés
-        if yr["in_list"] is not None and f in ecodif:
-            miss = ecodif[f] - yr["in_list"]
-            trop = yr["in_list"] - ecodif[f]
-            if miss:
-                issues.append(f"  [VAL-MANQ]   {f} : EDD non listés YAML → {sorted(miss)}")
-            if trop:
-                issues.append(f"  [VAL-TROP]   {f} : YAML hors EDD → {sorted(trop)}")
+        issues += _field_issues(f, v, yrules.get(f, _DEFAULT_YR), ecodif, ypk)
 
     # in_list YAML alors que pas codifiable EDD
     for f, yr in yrules.items():
