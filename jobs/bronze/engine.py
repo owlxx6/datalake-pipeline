@@ -378,44 +378,35 @@ def _count_failed(df_scope: DataFrame, col_name: str, check: DQCheck,
     return None if condition is None else df_scope.filter(condition).count()
 
 
-def run_dq(
-    df: DataFrame, table: TableEntry, config: BronzeConfig,
-    execution_id: str, date_situation: str,
-) -> list[dict]:
-    """Calcule les agrégats DQ par règle (records_failed, taux, statut).
-
-    Ne filtre AUCUNE ligne. Retourne uniquement la liste des résultats pour
-    QUALITY_RESULTS. Les flags ligne par ligne sont calculés séparément par
-    compute_dq_flags.
-    """
-    ctx = DQRunContext(execution_id, date_situation, config, table)
+def _quality_results(ctx: DQRunContext, df: DataFrame) -> list[dict]:
+    """Résultats DQ des quality_rules (un dict par check applicable)."""
     results: list[dict] = []
-
-    # quality_rules
-    for rule in table.quality_rules:
+    for rule in ctx.table.quality_rules:
         col_name = rule.source_column
         if col_name not in df.columns:
             continue
         df_scope = df.filter(rule.filter_condition) if rule.filter_condition else df
         scope_count = df_scope.count()
-
         for check in rule.checks:
             t0 = time.monotonic()
-            failed = _count_failed(df_scope, col_name, check, scope_count, config)
+            failed = _count_failed(df_scope, col_name, check, scope_count, ctx.config)
             if failed is None:
                 continue
-            duration = time.monotonic() - t0
             rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
             results.append(_qr_row(
                 ctx, f"DQ_{rule.field}_{check.type}".upper(), check.type,
                 col_name, check.severity, scope_count, failed, rate,
                 check.alert_threshold, check.control_type,
                 description=_check_description(col_name, check, rule),
-                duration_seconds=duration,
+                duration_seconds=time.monotonic() - t0,
             ))
+    return results
 
-    # consistency_rules
-    for rule in table.consistency_rules:
+
+def _consistency_results(ctx: DQRunContext, df: DataFrame) -> list[dict]:
+    """Résultats DQ des consistency_rules (complétude conditionnelle multi-colonnes)."""
+    results: list[dict] = []
+    for rule in ctx.table.consistency_rules:
         df_scope = df.filter(rule.condition)
         scope_count = df_scope.count()
         null_conds = [F.col(f).isNull() for f in rule.required_fields if f in df.columns]
@@ -424,20 +415,27 @@ def run_dq(
         condition = null_conds[0]
         for c in null_conds[1:]:
             condition = condition | c
-
         t0 = time.monotonic()
         failed = df_scope.filter(condition).count()
-        duration = time.monotonic() - t0
         rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
         results.append(_qr_row(
             ctx, f"DQ_CONSISTENCY_{rule.name}".upper(), "consistency",
             ", ".join(rule.required_fields), rule.severity, scope_count, failed, rate,
             rule.alert_threshold, rule.control_type,
             description=f"Consistency '{rule.name}': required fields when {rule.condition}",
-            duration_seconds=duration,
+            duration_seconds=time.monotonic() - t0,
         ))
-
     return results
+
+
+def run_dq(
+    df: DataFrame, table: TableEntry, config: BronzeConfig,
+    execution_id: str, date_situation: str,
+) -> list[dict]:
+    """Agrégats DQ par règle (QUALITY_RESULTS). Ne filtre AUCUNE ligne ;
+    les flags ligne par ligne sont calculés séparément par compute_dq_flags."""
+    ctx = DQRunContext(execution_id, date_situation, config, table)
+    return _quality_results(ctx, df) + _consistency_results(ctx, df)
 
 
 def run_advanced_controls(
