@@ -27,6 +27,7 @@ import re
 import sys
 import time
 import traceback
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
@@ -333,6 +334,50 @@ def _check_condition(col_name: str, check: DQCheck):
 
 # ── DQ statistiques par règle (pour QUALITY_RESULTS) ─────────────────────────
 
+@dataclass
+class DQRunContext:
+    """Contexte invariant d'une exécution DQ — regroupe les paramètres communs
+    pour ne pas les passer un par un (réduit le nombre d'arguments de _qr_row)."""
+    execution_id: str
+    date_situation: str
+    config: BronzeConfig
+    table: TableEntry
+
+
+def _count_failed(df_scope: DataFrame, col_name: str, check: DQCheck,
+                  scope_count: int, config: BronzeConfig):
+    """Nombre de lignes en échec pour un check (agrégé). None = check à ignorer."""
+    if check.type == "unique":
+        return (
+            df_scope
+            .withColumn("__dup_count__", F.count(col_name).over(Window.partitionBy(col_name)))
+            .filter(F.col("__dup_count__") > 1)
+            .count()
+        )
+    if check.type == "referential" and check.ref:
+        # FK orpheline : valeurs absentes de la table parente (anti-join), NULL/vide exclus.
+        ref_path = check.ref.replace("{{silver_db}}", config.output.database)
+        ref_table, ref_col = ref_path.rsplit(".", 1)
+        ref_keys = (
+            df_scope.sparkSession.table(ref_table)
+            .select(F.trim(F.col(ref_col)).alias("__ref_k")).distinct()
+        )
+        return (
+            df_scope.select(F.trim(F.col(col_name)).alias("__ref_k"))
+            .where("__ref_k IS NOT NULL AND __ref_k <> ''")
+            .join(ref_keys, "__ref_k", "left_anti")
+            .count()
+        )
+    if check.type == "distinct_count" and check.num_distinct_values is not None:
+        actual = (
+            df_scope.select(F.trim(F.col(col_name)).alias("__v"))
+            .where("__v IS NOT NULL AND __v <> ''").distinct().count()
+        )
+        return 0 if actual == check.num_distinct_values else scope_count
+    condition = _check_condition(col_name, check)
+    return None if condition is None else df_scope.filter(condition).count()
+
+
 def run_dq(
     df: DataFrame, table: TableEntry, config: BronzeConfig,
     execution_id: str, date_situation: str,
@@ -343,6 +388,7 @@ def run_dq(
     QUALITY_RESULTS. Les flags ligne par ligne sont calculés séparément par
     compute_dq_flags.
     """
+    ctx = DQRunContext(execution_id, date_situation, config, table)
     results: list[dict] = []
 
     # quality_rules
@@ -350,85 +396,43 @@ def run_dq(
         col_name = rule.source_column
         if col_name not in df.columns:
             continue
-
         df_scope = df.filter(rule.filter_condition) if rule.filter_condition else df
         scope_count = df_scope.count()
 
         for check in rule.checks:
-            rule_id = f"DQ_{rule.field}_{check.type}".upper()
-
             t0 = time.monotonic()
-            if check.type == "unique":
-                _tmp = "__dup_count__"
-                failed = (
-                    df_scope
-                    .withColumn(_tmp, F.count(col_name).over(Window.partitionBy(col_name)))
-                    .filter(F.col(_tmp) > 1)
-                    .count()
-                )
-            elif check.type == "referential" and check.ref:
-                # FK orpheline : valeurs absentes de la table parente (anti-join).
-                # NULL/vide exclus (rôle de not_null). Contrôle agrégé, pas de flag ligne.
-                ref_path = check.ref.replace("{{silver_db}}", config.output.database)
-                ref_table, ref_col = ref_path.rsplit(".", 1)
-                spark = df_scope.sparkSession
-                ref_keys = (
-                    spark.table(ref_table)
-                    .select(F.trim(F.col(ref_col)).alias("__ref_k")).distinct()
-                )
-                failed = (
-                    df_scope.select(F.trim(F.col(col_name)).alias("__ref_k"))
-                    .where("__ref_k IS NOT NULL AND __ref_k <> ''")
-                    .join(ref_keys, "__ref_k", "left_anti")
-                    .count()
-                )
-            elif check.type == "distinct_count" and check.num_distinct_values is not None:
-                # Cardinalité attendue (niveau table) : échec total si écart.
-                actual = (
-                    df_scope.select(F.trim(F.col(col_name)).alias("__v"))
-                    .where("__v IS NOT NULL AND __v <> ''").distinct().count()
-                )
-                failed = 0 if actual == check.num_distinct_values else scope_count
-            else:
-                condition = _check_condition(col_name, check)
-                if condition is None:
-                    continue
-                failed = df_scope.filter(condition).count()
+            failed = _count_failed(df_scope, col_name, check, scope_count, config)
+            if failed is None:
+                continue
             duration = time.monotonic() - t0
-
             rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
             results.append(_qr_row(
-                execution_id, date_situation, rule_id, check.type,
+                ctx, f"DQ_{rule.field}_{check.type}".upper(), check.type,
                 col_name, check.severity, scope_count, failed, rate,
-                check.alert_threshold, check.control_type, config, table,
+                check.alert_threshold, check.control_type,
                 description=_check_description(col_name, check, rule),
                 duration_seconds=duration,
             ))
 
     # consistency_rules
     for rule in table.consistency_rules:
-        rule_id = f"DQ_CONSISTENCY_{rule.name}".upper()
         df_scope = df.filter(rule.condition)
         scope_count = df_scope.count()
-
         null_conds = [F.col(f).isNull() for f in rule.required_fields if f in df.columns]
         if not null_conds:
             continue
-
         condition = null_conds[0]
         for c in null_conds[1:]:
             condition = condition | c
 
-        fields_str = ", ".join(rule.required_fields)
         t0 = time.monotonic()
         failed = df_scope.filter(condition).count()
         duration = time.monotonic() - t0
         rate = (failed / scope_count * 100) if scope_count > 0 else 0.0
-
         results.append(_qr_row(
-            execution_id, date_situation, rule_id, "consistency",
-            fields_str, rule.severity, scope_count, failed, rate,
-            rule.alert_threshold, rule.control_type, config, table,
+            ctx, f"DQ_CONSISTENCY_{rule.name}".upper(), "consistency",
+            ", ".join(rule.required_fields), rule.severity, scope_count, failed, rate,
+            rule.alert_threshold, rule.control_type,
             description=f"Consistency '{rule.name}': required fields when {rule.condition}",
             duration_seconds=duration,
         ))
@@ -452,6 +456,7 @@ def run_advanced_controls(
 
     full_table = f"{table.silver_write.database}.{table.silver_write.table}"
     scope_count = spark.table(full_table).count()
+    ctx = DQRunContext(execution_id, date_situation, config, table)
     results: list[dict] = []
 
     print(f"\n  ── CONTRÔLES AVANCÉS — {table.name} " + "─" * 30)
@@ -469,69 +474,66 @@ def run_advanced_controls(
         print(f"  [{icon}] ADV_{ctl.id:<28} {failed:>8} ligne(s) en anomalie "
               f"({rate:.2f}%) [{ctl.severity}]")
         results.append(_qr_row(
-            execution_id, date_situation, f"ADV_{ctl.id}".upper(), "sql",
+            ctx, f"ADV_{ctl.id}".upper(), "sql",
             "-", ctl.severity, scope_count, failed, rate,
-            ctl.alert_threshold, "ADVANCED", config, table,
+            ctl.alert_threshold, "ADVANCED",
             description=ctl.description or f"Advanced control {ctl.id}",
             duration_seconds=duration,
         ))
     return results
 
 
+def _desc_in_list(col_name: str, check: DQCheck) -> str:
+    vals = check.allowed_values or []
+    shown = ", ".join(str(v) for v in vals[:8]) + ("…" if len(vals) > 8 else "")
+    return f"Check '{col_name}' in [{shown}]"
+
+
+# Description lisible par type de check (convention équipe DATA : Check 'COL' …).
+_DESC_BUILDERS = {
+    "not_null": lambda c, ck: f"Check '{c}' is not null",
+    "unique": lambda c, ck: f"Check '{c}' is unique",
+    "in_list": _desc_in_list,
+    "max_length": lambda c, ck: f"Check '{c}' length <= {ck.max_length}",
+    "regex": lambda c, ck: f"Check '{c}' matches '{ck.pattern}'",
+    "date_valid": lambda c, ck: f"Check '{c}' is a valid date",
+    "date_range": lambda c, ck: f"Check '{c}' date in [{ck.min_date} .. {ck.max_date_expr}]",
+    "range": lambda c, ck: f"Check '{c}' between {ck.min_value} and {ck.max_value}",
+    "email": lambda c, ck: f"Check '{c}' is a valid email",
+    "referential": lambda c, ck: f"Check '{c}' exists in {ck.ref}",
+    "distinct_count": lambda c, ck: f"Check '{c}' has {ck.num_distinct_values} distinct values",
+}
+
+
 def _check_description(col_name: str, check: DQCheck, rule) -> str:
-    """Description lisible du contrôle (convention équipe DATA : Check 'COL' …)."""
-    if check.type == "not_null":
-        d = f"Check '{col_name}' is not null"
-    elif check.type == "unique":
-        d = f"Check '{col_name}' is unique"
-    elif check.type == "in_list":
-        vals = check.allowed_values or []
-        shown = ", ".join(str(v) for v in vals[:8]) + ("…" if len(vals) > 8 else "")
-        d = f"Check '{col_name}' in [{shown}]"
-    elif check.type == "max_length":
-        d = f"Check '{col_name}' length <= {check.max_length}"
-    elif check.type == "regex":
-        d = f"Check '{col_name}' matches '{check.pattern}'"
-    elif check.type == "date_valid":
-        d = f"Check '{col_name}' is a valid date"
-    elif check.type == "date_range":
-        d = f"Check '{col_name}' date in [{check.min_date} .. {check.max_date_expr}]"
-    elif check.type == "range":
-        d = f"Check '{col_name}' between {check.min_value} and {check.max_value}"
-    elif check.type == "email":
-        d = f"Check '{col_name}' is a valid email"
-    elif check.type == "referential":
-        d = f"Check '{col_name}' exists in {check.ref}"
-    elif check.type == "distinct_count":
-        d = f"Check '{col_name}' has {check.num_distinct_values} distinct values"
-    else:
-        d = f"Check '{col_name}' {check.type}"
+    """Description lisible du contrôle, + suffixe de la description de règle si présente."""
+    builder = _DESC_BUILDERS.get(check.type)
+    d = builder(col_name, check) if builder else f"Check '{col_name}' {check.type}"
     if getattr(rule, "description", ""):
         d += f" — {rule.description}"
     return d
 
 
 def _qr_row(
-    execution_id, date_situation, rule_id, rule_type, field_name,
+    ctx: DQRunContext, rule_id, rule_type, field_name,
     severity, scope_count, failed, rate, threshold, control_type,
-    config: BronzeConfig, table: TableEntry,
     description: str = "", duration_seconds: float = 0.0,
 ) -> dict:
     """Une ligne QUALITY_RESULTS — iso-format avec le modèle DQ de l'équipe DATA
     (quality_dq_engine_results.csv) + nos spécificités (threshold, layer, env)."""
     status = "PASSED" if rate <= threshold else "FAILED"
-    silver = table.silver_write
-    full_table = f"{silver.database}.{silver.table}" if silver else table.name
+    silver = ctx.table.silver_write
+    full_table = f"{silver.database}.{silver.table}" if silver else ctx.table.name
     error_message = (
         f"Column '{field_name}' contains {failed} failed '{rule_type}' checks"
         if failed else ""
     )
     return {
-        "execution_id": execution_id,
-        "date_situation": date_situation,
+        "execution_id": ctx.execution_id,
+        "date_situation": ctx.date_situation,
         "rule_id": rule_id,
         # composite à la convention équipe DATA : USECASE_table_type_colonne
-        "rule_code": f"{config.project.domain}_{full_table}_{rule_type}_{field_name}",
+        "rule_code": f"{ctx.config.project.domain}_{full_table}_{rule_type}_{field_name}",
         "rule_type": rule_type,
         "description": description or f"Check '{field_name}' {rule_type}",
         "field_name": field_name,
@@ -550,13 +552,63 @@ def _qr_row(
         "execution_date": datetime.now().isoformat(),
         "control_type": control_type,
         "layer": "BRONZE",
-        "table_name": table.name,
-        "domain": config.project.domain,
-        "environment": config.project.environment,
+        "table_name": ctx.table.name,
+        "domain": ctx.config.project.domain,
+        "environment": ctx.config.project.environment,
     }
 
 
 # ── Flag DQ par ligne (pour Silver) ───────────────────────────────────────────
+
+def _row_condition(col_name: str, check: DQCheck):
+    """Condition d'échec ligne-à-ligne pour un check (None si non applicable)."""
+    if check.type == "unique":
+        return (
+            (F.count(col_name).over(Window.partitionBy(col_name)) > 1)
+            & F.col(col_name).isNotNull()
+        )
+    return _check_condition(col_name, check)
+
+
+def _collect_quality_flag_exprs(table: TableEntry, df_cols: set) -> tuple[list, list]:
+    """Expressions (échec, poids) des quality_rules pour le flag par ligne.
+    Les checks informational sont mesurés dans QUALITY_RESULTS mais EXCLUS du statut ligne."""
+    fails: list = []
+    weights: list = []
+    for rule in table.quality_rules:
+        col_name = rule.source_column
+        if col_name not in df_cols:
+            continue
+        scope_expr = F.expr(rule.filter_condition) if rule.filter_condition else F.lit(True)
+        for check in rule.checks:
+            if check.informational:
+                continue
+            cond = _row_condition(col_name, check)
+            if cond is None:
+                continue
+            failed = cond & scope_expr
+            fails.append(F.when(failed, F.lit(f"{rule.field}:{check.type}")))
+            weights.append(F.when(failed, F.lit(SEVERITY_WEIGHT.get(check.severity, 4))))
+    return fails, weights
+
+
+def _collect_consistency_flag_exprs(table: TableEntry, df_cols: set) -> tuple[list, list]:
+    """Expressions (échec, poids) des consistency_rules pour le flag par ligne."""
+    fails: list = []
+    weights: list = []
+    for rule in table.consistency_rules:
+        scope_expr = F.expr(rule.condition)
+        null_conds = [F.col(f).isNull() for f in rule.required_fields if f in df_cols]
+        if not null_conds:
+            continue
+        any_null = null_conds[0]
+        for c in null_conds[1:]:
+            any_null = any_null | c
+        failed = any_null & scope_expr
+        fails.append(F.when(failed, F.lit(f"CONSISTENCY:{rule.name}")))
+        weights.append(F.when(failed, F.lit(SEVERITY_WEIGHT.get(rule.severity, 4))))
+    return fails, weights
+
 
 def compute_dq_flags(
     df_typed: DataFrame, table: TableEntry, execution_id: str,
@@ -570,48 +622,13 @@ def compute_dq_flags(
       - dq_severity_max   : sévérité max parmi les règles échouées (NULL si PASSED)
       - dq_execution_id   : lien vers LOG_PIPELINE
     """
-    fail_exprs: list = []
-    weight_exprs: list = []
-
     # Note : la dédup Silver ne retire que les doublons PARFAITS (cf. deduplicate_silver),
     # et elle s'exécute AVANT ce calcul. Le check `unique` ne voit donc plus que les
     # vraies collisions de PK (même PK, valeurs différentes) → il les flague REJECTED.
-
-    # quality_rules
-    for rule in table.quality_rules:
-        col_name = rule.source_column
-        if col_name not in df_typed.columns:
-            continue
-        scope_expr = F.expr(rule.filter_condition) if rule.filter_condition else F.lit(True)
-        for check in rule.checks:
-            # Les checks informational sont mesurés dans QUALITY_RESULTS (run_dq) mais
-            # n'influencent PAS le statut de la ligne — on les saute ici.
-            if check.informational:
-                continue
-            check_id = f"{rule.field}:{check.type}"
-            if check.type == "unique":
-                cond = (F.count(col_name).over(Window.partitionBy(col_name)) > 1) & F.col(col_name).isNotNull()
-            else:
-                cond = _check_condition(col_name, check)
-                if cond is None:
-                    continue
-            failed = cond & scope_expr
-            fail_exprs.append(F.when(failed, F.lit(check_id)))
-            weight_exprs.append(F.when(failed, F.lit(SEVERITY_WEIGHT.get(check.severity, 4))))
-
-    # consistency_rules
-    for rule in table.consistency_rules:
-        scope_expr = F.expr(rule.condition)
-        null_conds = [F.col(f).isNull() for f in rule.required_fields if f in df_typed.columns]
-        if not null_conds:
-            continue
-        any_null = null_conds[0]
-        for c in null_conds[1:]:
-            any_null = any_null | c
-        check_id = f"CONSISTENCY:{rule.name}"
-        failed = any_null & scope_expr
-        fail_exprs.append(F.when(failed, F.lit(check_id)))
-        weight_exprs.append(F.when(failed, F.lit(SEVERITY_WEIGHT.get(rule.severity, 4))))
+    fq, wq = _collect_quality_flag_exprs(table, set(df_typed.columns))
+    fc, wc = _collect_consistency_flag_exprs(table, set(df_typed.columns))
+    fail_exprs = fq + fc
+    weight_exprs = wq + wc
 
     # Aucune règle DQ — flags neutres
     if not fail_exprs:
