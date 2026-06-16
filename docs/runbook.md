@@ -414,3 +414,67 @@ nohup hive --service metastore > ~/logs/metastore.log 2>&1 &   # ss -tlnp | grep
 # puis scheduler + webserver (ci-dessus)
 ```
 ⚠️ Metastore absent = les jobs Iceberg « tournent » indéfiniment en retry Thrift silencieux.
+
+---
+
+## 9. Apache Atlas (gouvernance — lineage)
+
+Installé en `/home/hadoop/apache-atlas-2.4.0` (serveur déjà compilé). Backends **externes**
+(`MANAGE_LOCAL_*=false`) : HBase standalone + SolrCloud, tous deux sur le **ZooKeeper d'HBase
+(2181)**. Atlas REST/UI sur **21000** (admin/admin). Pas besoin d'HDFS : HBase est en
+`file:///home/hadoop/hbase/data`.
+
+⚠️ **RAM** : Atlas (HBase+Solr+JVM) ≈ 3-4 Go → ne coexiste PAS avec le stack CI
+(GitLab+Jenkins+Sonar). Couper la CI avant : `docker stop gitlab jenkins-server sonarqube-server`.
+
+### 9.1 Démarrage (ordre STRICT : HBase → Solr → Atlas)
+```bash
+export ATLAS_HOME=/home/hadoop/apache-atlas-2.4.0
+# 1) HBase standalone (fournit aussi ZooKeeper 2181)
+/home/hadoop/hbase/bin/start-hbase.sh        # jps -> HMaster ; ss -ltn | grep -E ':2181|:16010'
+# 2) Solr en mode cloud, branché sur le ZK d'HBase
+/home/hadoop/solr/bin/solr start -c -z localhost:2181   # port 8983
+# 3) Atlas (démarrage lent : 3-8 min)
+python3 $ATLAS_HOME/bin/atlas_start.py
+# 4) attendre que l'API réponde
+curl -s -u admin:admin http://localhost:21000/api/atlas/admin/version   # 200 + JSON = up
+```
+> Le log de démarrage est `logs/atlas.<timestamp>.out` (PAS `application.log`, absent ici).
+> `grep -a` (fichier binaire).
+
+### 9.2 Panne classique : collections Solr fantômes (500 sur toute lecture)
+Symptôme : Atlas répond `version` 200 mais **toute lecture de type/entité = 500**. Log Atlas :
+`no core retrieved for vertex_index ... code=404`. Cause : les 3 collections
+(`vertex_index`, `edge_index`, `fulltext_index`) sont enregistrées dans ZK mais leur **core
+n'a pas d'index** (métadonnée survit au reboot, pas les données). Réparation = recréer :
+```bash
+python3 $ATLAS_HOME/bin/atlas_stop.py
+for c in vertex_index edge_index fulltext_index; do /home/hadoop/solr/bin/solr delete -c $c; done
+for c in vertex_index edge_index fulltext_index; do
+  /home/hadoop/solr/bin/solr create -c $c -d $ATLAS_HOME/conf/solr -shards 1 -replicationFactor 1
+done
+python3 $ATLAS_HOME/bin/atlas_start.py
+# vérif : GET .../v2/types/typedefs doit renvoyer 200 (plus 500)
+```
+
+### 9.3 Pousser le lineage médaillon
+Le module dérive le graphe Landing→Bronze→Silver→Gold des MÊMES YAML (stdlib, pas de dépendance) :
+```bash
+cd /media/sf_datalake-pipeline                 # en user hadoop (accès au partage)
+python3 -u jobs/governance/atlas_lineage.py    # --dry-run pour voir sans pousser
+```
+Résultat attendu : 46 datasets + 32 processus. Vérif lineage :
+```bash
+curl -s -u admin:admin "http://localhost:21000/api/atlas/v2/lineage/uniqueAttribute/type/medallion_dataset?attr:qualifiedName=gold.gdw_synthese_credit@credit_garantie&direction=INPUT&depth=10"
+```
+UI : `http://ubuntu3:21000` → Search by type `medallion_dataset` → une entité → onglet **Lineage**.
+
+### 9.4 Arrêt (inverse)
+```bash
+python3 $ATLAS_HOME/bin/atlas_stop.py
+/home/hadoop/solr/bin/solr stop -all
+/home/hadoop/hbase/bin/stop-hbase.sh
+```
+
+> Process Atlas figé qui prend le terminal en otage (tout ce qu'on tape disparaît) :
+> `pkill -9 -f atlas_lineage` ou `pkill -9 -f atlas`, depuis un terminal **du même user**.

@@ -206,29 +206,31 @@ Justification vs alternatives :
 ⚠️ **Contrainte RAM** : Atlas (HBase + Solr embedded, ~2-4 Go) ne coexiste PAS avec le
 stack CI (GitLab+Jenkins+Sonar ~6 Go) sur 9,5 Go. → couper la CI le temps d'Atlas.
 
-**Prérequis infra (le vrai gros morceau, ~1 j la 1ʳᵉ fois)** :
-- [ ] Installer Atlas sur la VM (binaire si dispo, sinon build Maven), mode embedded HBase+Solr.
-- [ ] `docker stop` du stack CI pour libérer la RAM ; démarrer Atlas ; vérifier UI `:21000`
-      (admin/admin par défaut).
+**RÉALISÉ (2026-06-16)** — lineage poussé et vérifié dans Atlas (46 datasets, 32 processus ;
+lineage OBT gdw_synthese_credit = 27 relations / 28 nœuds jusqu'aux 4 sources Landing).
 
-**Code framework** `jobs/governance/atlas_lineage.py` :
-- [ ] Client REST API v2 (requests) : auth basic, URL + nom de cluster configurables
-      (section `governance.atlas` dans le YAML, ou variables).
-- [ ] Typedefs : réutiliser les types built-in `DataSet` / `Process` (ou typedefs custom
-      `medallion_dataset` / `medallion_process` si on veut des attributs métier).
-- [ ] DataSets : 1 entité par table, `qualifiedName = <layer>.<table>@<cluster>`
-      (lus depuis configs/bronze + configs/gold). Upsert idempotent par qualifiedName.
-- [ ] Process Bronze→Silver : 1 par table (le YAML bronze décrit le 1:1).
-- [ ] Process Silver→Gold : inputs dérivés des `match:`/sources déclarées de chaque cible
-      Gold (dim/fact/obt) dans configs/gold/credit_garantie.yaml.
-- [ ] Script one-shot `scripts/push_atlas_lineage.py` (ou mode du module) — rejouable.
+**Prérequis infra** :
+- [x] Atlas déjà installé `/home/hadoop/apache-atlas-2.4.0` (serveur compilé, backends EXTERNES :
+      HBase standalone + SolrCloud sur ZK 2181 ; pas d'HDFS, HBase en file://).
+- [x] CI coupée pour la RAM (`docker stop gitlab`) ; démarrage ordre strict HBase → Solr(-c -z 2181)
+      → Atlas ; UI/REST :21000.
+- [x] **Panne résolue** : collections Solr fantômes (core absent → 500 sur toute lecture) →
+      delete + recreate des 3 collections depuis `$ATLAS_HOME/conf/solr` (cf. runbook §9.2).
+
+**Code framework** `jobs/governance/atlas_lineage.py` (stdlib urllib, pas de dépendance) :
+- [x] Client REST API v2 (basic auth, URL/cluster configurables par env ou args).
+- [x] Typedefs custom `medallion_dataset` / `medallion_process` (sous-types DataSet/Process,
+      attribut `layer`) ; création idempotente (409 = OK).
+- [x] DataSets : `qualifiedName = <layer>.<table>@<cluster>`, lus depuis configs/bronze + gold.
+- [x] Process Landing→Bronze (ingest/NiFi) + Bronze→Silver (refine/Spark) : 13 tables actives.
+- [x] Process Silver→Gold (build/Spark) : inputs dérivés de source/joins/base/aggregates du YAML gold
+      (FK exclues — flux de données réel uniquement).
+- [x] Module rejouable + `--dry-run` (pas de wrapper séparé : le module est exécutable).
 
 **Intégration & livrables** :
 - [ ] (option) tâche Airflow finale `push_lineage_atlas` (BashOperator), non bloquante.
-- [ ] Capture du graphe lineage Atlas → figure gouvernance pour le rapport (Ch.4).
-- [ ] Runbook : section « Atlas » (install, démarrage, RAM vs CI) + doc technique FR.
-
-Charge estimée : ~1 j infra (install Atlas) + ~0,5-1 j code/test = **~1,5-2 j**.
+- [~] Capture du graphe lineage Atlas → figure gouvernance Ch.4 (à faire par Taha dans l'UI).
+- [x] Runbook : section §9 « Apache Atlas » (topologie, démarrage, réparation Solr, push, RAM).
 
 ### Phase DQ+ — Alignement sur le modèle DQ de la banque — À FAIRE
 Référence : `quality_dq_engine_results.csv` + `ACTIVITYCOMM.yaml` (framework DQ équipe DATA).
