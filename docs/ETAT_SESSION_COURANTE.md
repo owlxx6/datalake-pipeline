@@ -9,7 +9,7 @@ HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier parta
 - ✅ S1 Airflow : DAG `credit_garantie_medaillon` 16/16 vert
 - ✅ S3 CI/CD : GitLab+Jenkins+SonarQube, build 5 stages SUCCESS, Sonar A/0% dup, issues 29→traitées
 - ✅ S4 : REJECTED documenté (flag, jamais suppression) ; Lot A entête fichier = perspective
-- ⏳ Reste : S2 Power BI · S-CLEAN · S5 métier · S6 rapport
+- ⏳ Reste : S2 Power BI · **S7 gouvernance Atlas (lineage, méthode REST/YAML)** · S-CLEAN · S5 métier · S6 rapport
 
 ## RELIQUATS IMPORTANTS (à ne pas oublier)
 1. ⚠️ **Non-régression NON FAITE** après les refactors Sonar d'engine.py (run_dq, compute_dq_flags,

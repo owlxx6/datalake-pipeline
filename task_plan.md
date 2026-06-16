@@ -145,8 +145,9 @@ Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
 - [ ] Supprimer dags/dag_silver_credit.py (obsolète) — accord Taha requis.
 - [ ] Option : schedule mensuel (actuellement trigger manuel par arrêté).
 
-### Ordre des sprints restants (décision Taha 2026-06-12)
-**S3 CI/CD → S4 DQ finitions → S2 Power BI → S-CLEAN nettoyage repo** (+ S5 métier, S6 rapport).
+### Ordre des sprints restants (décision Taha 2026-06-12, MAJ 2026-06-16)
+S3 CI/CD ✅ → S4 DQ finitions ✅ → **S2 Power BI → S7 gouvernance Atlas (lineage) →
+S-CLEAN nettoyage repo** (+ S5 métier, S6 rapport).
 
 ### Sprint S3 — CI/CD (Jenkins + SonarQube + GitLab) — BOUCLÉ (2026-06-14)
 - [x] Stack CI migrée du repo VM séparé vers le repo canonique (commit bddf745) :
@@ -186,6 +187,48 @@ Tout le Silver est désormais normalisé (trim + nullify_empty), 13/13 tables :
 - [ ] tests/ : alignés sur datalake_lib obsolète — réécrire sur jobs/ ou retirer.
 - [ ] echantillon/ : vérifier .gitignore (données bancaires, jamais commitées).
 ⚠️ Règle : tout passage en revue AVEC validation Taha avant suppression.
+
+### Sprint S7 — Gouvernance : lineage Apache Atlas — À FAIRE
+Objectif : matérialiser le lineage **Bronze → Silver → Gold** dans Apache Atlas
+(pilier gouvernance de la stack cible), pour la traçabilité d'audit (Bâle III) et la
+soutenance.
+
+**Décision méthode (2026-06-16) : REST API piloté par le YAML.** Un module lit le MÊME
+YAML déclaratif (sources→cibles déjà décrites) et POSTe les entités Atlas via l'API v2.
+Justification vs alternatives :
+- Spark Atlas Connector (SAC) écarté : abandonné, non supporté Spark 3.4 (risque très élevé).
+- Hive Hook écarté : nos écritures passent par Spark DataFrameWriterV2 (pas du SQL Hive)
+  → Atlas verrait les tables mais pas la chaîne de processus médaillon. + dépend de Kafka.
+- REST/YAML retenu : faible risque, lineage exact et maîtrisé, **réutilise le framework
+  déclaratif** (cohérent avec la thèse) au lieu d'ajouter une techno bolt-on. Code écrit en
+  local (notre mode de travail), Atlas allumé seulement pour pousser + capture.
+
+⚠️ **Contrainte RAM** : Atlas (HBase + Solr embedded, ~2-4 Go) ne coexiste PAS avec le
+stack CI (GitLab+Jenkins+Sonar ~6 Go) sur 9,5 Go. → couper la CI le temps d'Atlas.
+
+**Prérequis infra (le vrai gros morceau, ~1 j la 1ʳᵉ fois)** :
+- [ ] Installer Atlas sur la VM (binaire si dispo, sinon build Maven), mode embedded HBase+Solr.
+- [ ] `docker stop` du stack CI pour libérer la RAM ; démarrer Atlas ; vérifier UI `:21000`
+      (admin/admin par défaut).
+
+**Code framework** `jobs/governance/atlas_lineage.py` :
+- [ ] Client REST API v2 (requests) : auth basic, URL + nom de cluster configurables
+      (section `governance.atlas` dans le YAML, ou variables).
+- [ ] Typedefs : réutiliser les types built-in `DataSet` / `Process` (ou typedefs custom
+      `medallion_dataset` / `medallion_process` si on veut des attributs métier).
+- [ ] DataSets : 1 entité par table, `qualifiedName = <layer>.<table>@<cluster>`
+      (lus depuis configs/bronze + configs/gold). Upsert idempotent par qualifiedName.
+- [ ] Process Bronze→Silver : 1 par table (le YAML bronze décrit le 1:1).
+- [ ] Process Silver→Gold : inputs dérivés des `match:`/sources déclarées de chaque cible
+      Gold (dim/fact/obt) dans configs/gold/credit_garantie.yaml.
+- [ ] Script one-shot `scripts/push_atlas_lineage.py` (ou mode du module) — rejouable.
+
+**Intégration & livrables** :
+- [ ] (option) tâche Airflow finale `push_lineage_atlas` (BashOperator), non bloquante.
+- [ ] Capture du graphe lineage Atlas → figure gouvernance pour le rapport (Ch.4).
+- [ ] Runbook : section « Atlas » (install, démarrage, RAM vs CI) + doc technique FR.
+
+Charge estimée : ~1 j infra (install Atlas) + ~0,5-1 j code/test = **~1,5-2 j**.
 
 ### Phase DQ+ — Alignement sur le modèle DQ de la banque — À FAIRE
 Référence : `quality_dq_engine_results.csv` + `ACTIVITYCOMM.yaml` (framework DQ équipe DATA).
