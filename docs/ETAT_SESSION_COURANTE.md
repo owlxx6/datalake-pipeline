@@ -16,8 +16,9 @@ HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier parta
 ## RELIQUATS IMPORTANTS (à ne pas oublier)
 1. ✅ **Non-régression FAITE (2026-06-17)** : CREDIT_AMORT rejoué après les refactors Sonar →
    PASSED=176281 / WARNING=23719 / REJECTED=0 exact. Comportement inchangé confirmé.
-2. ✅ **GitHub origin poussé (2026-06-17)** : main à jour. Reste : pousser vers **GitLab local**
-   (depuis la VM — `docker start gitlab` d'abord, il est arrêté) pour déclencher un build Jenkins.
+2. ✅ **Remotes à jour + CI verte (2026-06-17)** : GitHub origin + GitLab local poussés (f6ccef1).
+   Build Jenkins **SUCCESS** (compile / YAML / SonarQube ANALYSIS SUCCESSFUL 24 fichiers / deploy DAG).
+   NB : stage compile ne couvre pas encore `jobs/governance/*.py` (Sonar oui) — élargir le glob Jenkinsfile.
 3. Sonar : fichiers pas encore re-scannés en détail (historization.py, gold/engine.py, config_loader.py,
    scripts diag/inspect/generate/simulate) — corriger si signalés.
 4. SÉCURITÉ : régénérer le token GitLab exposé `glpat-IVYf…` (visible dans jobs/.../config.xml + remote).
