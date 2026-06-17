@@ -40,7 +40,7 @@ HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier parta
 - Stack lourde sur 9,5 Go : GitLab(~3-4G)+Jenkins(~1G)+Sonar(~2G). Pour pousser, couper Sonar+Jenkins
   (`docker stop sonarqube-server jenkins-server`) le temps que GitLab serve, puis rallumer.
 - SonarQube sur **port 9001** (pas 9000). Attendre `status:UP` avant un build (sinon scan échoue « STARTING »).
-- Build : Jenkins http://ubuntu3:8081 (admin/admin2026) → datalake-pipeline → Build Now.
+- Build : Jenkins http://ubuntu3:8081 (user admin ; mot de passe = voir gestionnaire de secrets, non committé) → datalake-pipeline → Build Now.
 - Token Sonar pour l'API issues : My Account → Security → Generate ; `curl -u "$TOKEN:" .../api/issues/search`.
 
 ## Checklist post-reboot VM (ordre strict — cf. runbook)
