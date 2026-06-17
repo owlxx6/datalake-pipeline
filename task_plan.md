@@ -167,9 +167,9 @@ S-CLEAN nettoyage repo** (+ S5 métier, S6 rapport).
       · commit fa0e558 (run_dq scindé) à pousser + 1 dernier rebuild pour confirmer le compte d'issues
       · fichiers pas encore re-scannés en détail : historization.py, gold/engine.py, config_loader.py,
         scripts diag/inspect/generate/simulate — corriger si Sonar en signale
-      · ⚠️ NON-RÉGRESSION À FAIRE : après les refactors DQ d'engine.py, relancer CREDIT_AMORT
-        et vérifier PASSED=176281/WARNING=23719/REJECTED=0 (preuve comportement inchangé) —
-        nécessite HDFS+Metastore+Spark (session dédiée)
+      · [x] NON-RÉGRESSION OK (2026-06-17) : CREDIT_AMORT rejoué après les refactors Sonar →
+        PASSED=176281 / WARNING=23719 / REJECTED=0 **exact** (comportement inchangé prouvé).
+        SILVER 200000, ADV_CG_CRD_1/2 = 0 anomalie, run ~437s en local.
       · pousser tous les commits vers GitHub origin (owlxx6) — actuellement local + GitLab
 - [ ] SÉCURITÉ : régénérer le token GitLab exposé (glpat-IVYf…) + le mettre en credential
       (pas en clair dans l'URL du remote ni dans jobs/.../config.xml).

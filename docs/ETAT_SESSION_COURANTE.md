@@ -14,10 +14,9 @@ HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier parta
 - ⏳ Reste : S2 Power BI · S-CLEAN · S5 métier · S6 rapport
 
 ## RELIQUATS IMPORTANTS (à ne pas oublier)
-1. ⚠️ **Non-régression NON FAITE** après les refactors Sonar d'engine.py (run_dq, compute_dq_flags,
-   _qr_row, _check_condition, _check_description, audit script). À VÉRIFIER : run CREDIT_AMORT →
-   doit redonner **PASSED=176281 / WARNING=23719 / REJECTED=0**. Nécessite HDFS+Metastore+Spark.
-2. Pousser commits récents (ee14fc3→27c01c6) vers **GitLab local** (rebuild confirmation) ET **GitHub origin**.
+1. ✅ **Non-régression FAITE (2026-06-17)** : CREDIT_AMORT rejoué après les refactors Sonar →
+   PASSED=176281 / WARNING=23719 / REJECTED=0 exact. Comportement inchangé confirmé.
+2. Pousser commits récents vers **GitLab local** (rebuild confirmation) ET **GitHub origin** (60 commits d'avance).
 3. Sonar : fichiers pas encore re-scannés en détail (historization.py, gold/engine.py, config_loader.py,
    scripts diag/inspect/generate/simulate) — corriger si signalés.
 4. SÉCURITÉ : régénérer le token GitLab exposé `glpat-IVYf…` (visible dans jobs/.../config.xml + remote).
