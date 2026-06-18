@@ -172,4 +172,39 @@ Aucun code à écrire : on étend `configs/gold/credit_garantie.yaml`.
 5. Étendre la vue `v_kpi_credit` (ou nouvelles vues) avec les taux : couverture, risque net,
    utilisation, NPL, aging.
 
-⚠️ À confirmer avant build : champ `DATE_ECHEANCE` exact sur impayes_cdl (pour l'aging).
+---
+
+## 9. Annexe — vérification des sources (inspection données 2026-06-18)
+
+### impayes_cdl (1 597 242 lignes) — aging RÉSOLU ✅
+- Dates remplies à **100 %** : `DATE_MISE_IMPAYE`, `DATE_ECHEANCE`, `DATE_CREANCE`
+  (jusqu'au 2026-04-28). → aging calendaire = `date_arrete − DATE_MISE_IMPAYE`.
+- **`COD_STATUT_INCIDENT` = classification CDL réglementaire** (confirmée par `PRIORITE_STATUT`
+  croissante et `NAT_DECLASSEMENT` = motifs dont « Délai de séjour ») :
+
+  | Code | Priorité | Volume | Sens (à confirmer libellés RB/IM/FO) |
+  |--|--|--|--|
+  | RB | 10 | 1 508 957 | sain / régularisé |
+  | IM | 21 | 4 192 | impayé courant |
+  | PD | 30 | 2 759 | Pré-Douteux |
+  | DT | 31 | 3 772 | Douteux |
+  | CP | 60 | 77 557 | Compromis |
+
+- **NPL réglementaire (recommandé)** : `Σ encours[COD_STATUT_INCIDENT ∈ {PD,DT,CP}] / Σ encours`
+  — plus propre que `flag_cdl`. Aging fourni en 2 vues : calendaire + classe CDL.
+
+### Colonnes sources confirmées (pour les nouveaux faits)
+| Table | Colonnes utiles |
+|--|--|
+| garantie_detail | `MNT_TOTAL_GARANTIE`, `MNT_ACTUALISE`, `COD_TYP_GARANT`, `POURCENTAGE_GARANTIE`, `COD_STATUT_GARANTIE`, `IDF_NUM_CTR_GARANTIE` |
+| garantie_contrat | `IDF_NUM_CTR_GARANTIE`, **`IDF_REF_EXT_CREDIT`** (= credit_amort.IDF_NUM_DOSS) |
+| idce_autorisation | **`MNT_AUTO_TOT_MAD`** (autorisé), **`MNT_AUTO_DEB_MAD`** (débloqué/utilisé), `NUM_COMPTE`, `NUM_TIERS`, `COD_TYP_AUTO`, `COD_ETAT_AUTO` |
+| depassement | `MNT_DEPASSEMENT`, `NUM_COMPTE`, `DATE_ENTREE`, `COMPTE_GENERAL` (PK composite) |
+| tiers | `IDF_NUM_TIERS`, `RAISON_SOCIALE`, `NOM_USG_TIERS`, `COD_CATG_JUR`, `COD_ACTIVITE`, `COD_STATUT_TIERS` |
+| typologie | **`COD_MARCHE`** / `COD_SS_MARCHE` (= segment), via `IDF_NUM_TIERS` |
+
+### Limitation framework notée
+`build_dimension` ne supporte pas (encore) de jointure → le **segment** (`COD_MARCHE`, dans
+typologie) ne peut pas être ramené dans `dim_tiers` en pur YAML. Options : (a) enrichir le moteur
+Gold pour accepter un `joins` en dimension (amélioration déclarative), ou (b) ramener le segment
+via une jointure au niveau de l'OBT. En attendant, `dim_tiers` porte `COD_CATG_JUR` (segment grossier).

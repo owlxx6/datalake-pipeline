@@ -123,3 +123,78 @@ targets:
     select:
       taux_impaye: "coalesce(mnt_impaye_total, 0) / nullif(encours, 0)"
       poids_impaye_creance: "coalesce(mnt_impaye_total, 0) / nullif(mnt_credit, 0)"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # EXTENSION dashboards (2026-06-18) — colonnes vérifiées sur le Silver.
+  # Constellation : ces faits partagent les dimensions conformes existantes.
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # ── Dimension tiers (clients) — depuis TIERS SCD2, état courant ───────────
+  # NB segment fin (COD_MARCHE) = dans TYPOLOGIE ; build_dimension ne joint pas
+  # encore → on porte cod_catg_jur (segment grossier) en attendant l'enrichissement.
+  - name: dim_tiers
+    type: dimension
+    source: silver_credit_garantie.tiers
+    mode: scd2_current
+    key: [idf_num_tiers]
+    columns:
+      - idf_num_tiers
+      - raison_sociale
+      - nom_usg_tiers
+      - prenom_tiers
+      - cod_catg_jur        # segment grossier (PP / PM …)
+      - cod_activite
+      - cod_typ_tiers
+      - cod_statut_tiers
+
+  # ── Fait garanties (snapshot) ─────────────────────────────────────────────
+  # ⚠️ garantie_contrat lie garantie↔crédit (M:N possible) → l'ajout du lien crédit
+  # peut démultiplier les lignes : pour « valeur garanties » totale, agréger au grain
+  # garantie (idf_num_ctr_garantie). Le lien sert pour couverture/par-produit.
+  - name: fait_garanties
+    type: fact
+    source: silver_credit_garantie.garantie_detail
+    historisation: snapshot
+    grain: [idf_num_ctr_garantie, cod_typ_garant, date_arrete]
+    joins:
+      - with: silver_credit_garantie.garantie_contrat
+        match: {idf_num_ctr_garantie: idf_num_ctr_garantie}
+        select: [idf_ref_ext_credit]          # = credit_amort.idf_num_doss
+    columns:
+      - {src: idf_num_ctr_garantie, role: pk}
+      - {src: idf_ref_ext_credit, role: fk, ref: gdw_encours}
+      - {src: cod_typ_garant, role: attribute}      # type : hypothèque / caution / …
+      - {src: cod_nat_garantie, role: attribute}
+      - {src: cod_statut_garantie, role: attribute}
+      - {src: mnt_total_garantie, role: measure}
+      - {src: mnt_actualise, role: measure}
+      - {src: pourcentage_garantie, role: attribute}
+
+  # ── Fait autorisations (snapshot) ─────────────────────────────────────────
+  # taux d'utilisation = montant_utilise / montant_autorise (même table, en MAD)
+  - name: fait_autorisations
+    type: fact
+    source: silver_credit_garantie.idce_autorisation
+    historisation: snapshot
+    grain: [idf_ref_auto, num_compte, date_arrete]
+    columns:
+      - {src: idf_ref_auto, role: pk}
+      - {src: num_compte, role: fk, ref: bridge_image_contrat}   # = idf_ref_ext_ctr
+      - {src: num_tiers, role: fk, ref: dim_tiers}
+      - {src: cod_typ_auto, role: attribute}
+      - {src: cod_etat_auto, role: attribute}
+      - {src: mnt_auto_tot_mad, as: montant_autorise, role: measure}
+      - {src: mnt_auto_deb_mad, as: montant_utilise, role: measure}
+
+  # ── Fait dépassements (snapshot) ──────────────────────────────────────────
+  - name: fait_depassement
+    type: fact
+    source: silver_credit_garantie.depassement
+    historisation: snapshot
+    grain: [num_compte, date_entree, compte_general, date_arrete]
+    columns:
+      - {src: num_compte, role: fk, ref: bridge_image_contrat}
+      - {src: compte_general, role: attribute}
+      - {src: date_entree, role: attribute}
+      - {src: date_sortie, role: attribute}
+      - {src: mnt_depassement, role: measure}
