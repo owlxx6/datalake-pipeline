@@ -92,7 +92,9 @@ targets:
       - {src: num_compte, role: fk, ref: bridge_image_contrat}
       - {src: mnt_impayes_cdl, role: measure}
       - {src: mnt_creance, role: measure}
-      - {src: cod_statut_incident, role: attribute}
+      - {src: cod_statut_incident, role: attribute}   # classe CDL (RB/IM/PD/DT/CP)
+      - {src: date_mise_impaye, role: attribute}      # pour l'aging calendaire
+      - {src: date_echeance, role: attribute}
 
   # ── OBT : synthèse crédit (agrégats 1:N + dims aplaties) ───
   - name: gdw_synthese_credit
@@ -146,6 +148,19 @@ targets:
       - cod_activite
       - cod_typ_tiers
       - cod_statut_tiers
+
+  # ── Dimension pont portefeuille (tiers → agence) — pour « par agence » ────
+  # Relie le tiers à son guichet/agence (idf_num_gui → dim_organisation).
+  - name: dim_portefeuille
+    type: dimension
+    source: silver_credit_garantie.grc_portefeuille
+    mode: scd2_current
+    key: [idf_num_tiers]
+    columns:
+      - idf_num_tiers
+      - idf_num_gui        # → dim_organisation[idf_num_gui]
+      - idf_code_cc        # chargé de compte
+      - cod_typ_rattach
 
   # ── Fait garanties (snapshot) ─────────────────────────────────────────────
   # ⚠️ garantie_contrat lie garantie↔crédit (M:N possible) → l'ajout du lien crédit
