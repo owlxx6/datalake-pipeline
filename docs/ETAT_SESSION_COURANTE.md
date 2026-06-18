@@ -11,7 +11,10 @@ HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier parta
 - ✅ S4 : REJECTED documenté (flag, jamais suppression) ; Lot A entête fichier = perspective
 - ✅ S7 : gouvernance Atlas — lineage médaillon poussé & vérifié (46 datasets / 32 process,
   OBT = 27 rel/28 nœuds) ; module `jobs/governance/atlas_lineage.py` + runbook §9. Capture UI faite.
-- ⏳ Reste : S2 Power BI · S-CLEAN · S5 métier · S6 rapport
+- 🔄 S2 Power BI (en cours) : Gold étendu pour les 5 dashboards (dim_tiers + faits garanties/
+  autorisations/depassement, buildés VM) ; 11 CSV exportés → `exports/` (mode Import).
+  Reste : monter les dashboards sur Windows (DAX) ; option OBT+vue taux / segment COD_MARCHE.
+- ⏳ Reste : S-CLEAN · S5 métier · S6 rapport
 
 ## RELIQUATS IMPORTANTS (à ne pas oublier)
 1. ✅ **Non-régression FAITE (2026-06-17)** : CREDIT_AMORT rejoué après les refactors Sonar →

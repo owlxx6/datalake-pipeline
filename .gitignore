@@ -7,3 +7,5 @@ jenkins_data/
 *.db-journal
 # données bancaires échantillon
 echantillon/
+# exports CSV Gold pour Power BI (données bancaires — jamais committées)
+exports/
