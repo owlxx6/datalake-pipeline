@@ -176,6 +176,11 @@ Aucun code à écrire : on étend `configs/gold/credit_garantie.yaml`.
 
 ## 9. Annexe — vérification des sources (inspection données 2026-06-18)
 
+> **Cibles construites & validées VM (2026-06-18)** : `dim_tiers` 154 245 · `fait_garanties`
+> 253 900 · `fait_autorisations` 368 567 · `fait_depassement` 75 870 — volumes = sources Silver,
+> build Gold EXIT=0. Constellation opérationnelle pour les 5 dashboards.
+
+
 ### impayes_cdl (1 597 242 lignes) — aging RÉSOLU ✅
 - Dates remplies à **100 %** : `DATE_MISE_IMPAYE`, `DATE_ECHEANCE`, `DATE_CREANCE`
   (jusqu'au 2026-04-28). → aging calendaire = `date_arrete − DATE_MISE_IMPAYE`.
