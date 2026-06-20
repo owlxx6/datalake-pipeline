@@ -1,5 +1,5 @@
 {
-  "config": "{\"version\": \"5.43\", \"activeSectionIndex\": 0, \"settings\": {}}",
+  "config": "{\"version\": \"5.55\", \"themeCollection\": {\"baseTheme\": {\"name\": \"CY24SU10\"}}, \"activeSectionIndex\": 0, \"settings\": {\"useStylableVisualContainerHeader\": true, \"useNewFilterPaneExperience\": true}}",
   "layoutOptimization": 0,
   "sections": [
     {

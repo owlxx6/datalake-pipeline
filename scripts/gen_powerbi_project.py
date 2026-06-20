@@ -288,7 +288,16 @@ def report_json() -> str:
         "visualContainers": [], "config": "{}", "displayOption": 1,
         "width": 1280, "height": 720,
     } for i, (n, d) in enumerate(pages)]
-    cfg = {"version": "5.43", "activeSectionIndex": 0, "settings": {}}
+    # themeCollection OBLIGATOIRE : sans lui, le moteur de rendu plante
+    # (« Cannot read properties of undefined (reading 'customTheme') ») et aucun
+    # visuel ne peut être créé. baseTheme = thème intégré Power BI (fallback si inconnu).
+    cfg = {
+        "version": "5.55",
+        "themeCollection": {"baseTheme": {"name": "CY24SU10"}},
+        "activeSectionIndex": 0,
+        "settings": {"useStylableVisualContainerHeader": True,
+                     "useNewFilterPaneExperience": True},
+    }
     return json.dumps({
         "config": json.dumps(cfg),
         "layoutOptimization": 0,
