@@ -1,4 +1,4 @@
-﻿relationship rel_synth_tiers
+relationship rel_synth_tiers
 	fromColumn: gdw_synthese_credit.idf_num_tiers
 	toColumn: dim_tiers.idf_num_tiers
 

@@ -1,4 +1,4 @@
-﻿table dim_temps
+table dim_temps
 
 	column date_key
 		dataType: int64

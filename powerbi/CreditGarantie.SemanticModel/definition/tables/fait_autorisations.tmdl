@@ -1,4 +1,4 @@
-﻿table fait_autorisations
+table fait_autorisations
 
 	column idf_ref_auto
 		dataType: string

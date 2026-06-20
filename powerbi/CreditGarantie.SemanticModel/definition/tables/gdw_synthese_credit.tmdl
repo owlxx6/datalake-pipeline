@@ -1,4 +1,4 @@
-﻿table gdw_synthese_credit
+table gdw_synthese_credit
 
 	column idf_num_doss
 		dataType: string

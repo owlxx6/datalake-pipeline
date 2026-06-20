@@ -1,4 +1,4 @@
-﻿table fait_garanties
+table fait_garanties
 
 	column idf_num_ctr_garantie
 		dataType: string

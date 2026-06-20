@@ -1,4 +1,4 @@
-﻿table dim_produit
+table dim_produit
 
 	column idf_code_produit
 		dataType: string
