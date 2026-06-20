@@ -1,0 +1,6 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+
+	annotation PBI_QueryOrder = ["dim_temps", "dim_produit", "dim_organisation", "dim_tiers", "dim_portefeuille", "gdw_synthese_credit", "gdw_impayes", "fait_garanties", "fait_autorisations", "fait_depassement", "br_credit_garantie_quality_results"]

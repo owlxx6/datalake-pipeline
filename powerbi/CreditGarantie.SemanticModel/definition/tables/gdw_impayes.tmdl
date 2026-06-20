@@ -1,0 +1,99 @@
+table gdw_impayes
+
+	column idf_num_doss
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_doss
+
+		annotation SummarizationSetBy = Automatic
+
+	column idf_num_creance
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_creance
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_compte
+		dataType: string
+		summarizeBy: none
+		sourceColumn: num_compte
+
+		annotation SummarizationSetBy = Automatic
+
+	column mnt_impayes_cdl
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mnt_impayes_cdl
+
+		annotation SummarizationSetBy = Automatic
+
+	column mnt_creance
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mnt_creance
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_statut_incident
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_statut_incident
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_mise_impaye
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_mise_impaye
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_echeance
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_echeance
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_arrete
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_arrete
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Classe CDL' = SWITCH(gdw_impayes[cod_statut_incident], "PD","1-Pré-douteux", "DT","2-Douteux", "CP","3-Compromis", "IM","0-Impayé", "RB","Sain", BLANK())
+		dataType: string
+		summarizeBy: none
+
+	column 'Aging Jours' = DATEDIFF(gdw_impayes[date_mise_impaye], gdw_impayes[date_arrete], DAY)
+		dataType: int64
+		summarizeBy: none
+
+	column 'Tranche Aging' = SWITCH(TRUE(), ISBLANK(gdw_impayes[date_mise_impaye]), "Non daté", gdw_impayes[Aging Jours] <= 30, "0-30j", gdw_impayes[Aging Jours] <= 60, "30-60j", gdw_impayes[Aging Jours] <= 90, "60-90j", "90j+")
+		dataType: string
+		summarizeBy: none
+
+	partition gdw_impayes = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\gdw_impayes.csv"), [Delimiter=",", Columns=9, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Converted = Table.TransformColumns(Promoted, {
+				        {"mnt_impayes_cdl", each try Number.FromText(_, "en-US") otherwise null},
+				        {"mnt_creance", each try Number.FromText(_, "en-US") otherwise null},
+				        {"date_mise_impaye", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
+				        {"date_echeance", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
+				        {"date_arrete", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null}
+				    }),
+				    Typed = Table.TransformColumnTypes(Converted, {
+				        {"mnt_impayes_cdl", type number},
+				        {"mnt_creance", type number},
+				        {"date_mise_impaye", type date},
+				        {"date_echeance", type date},
+				        {"date_arrete", type date}
+				    })
+				in
+				    Typed

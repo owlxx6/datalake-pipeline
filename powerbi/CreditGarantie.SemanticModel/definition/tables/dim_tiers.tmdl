@@ -1,0 +1,66 @@
+table dim_tiers
+
+	column idf_num_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	column raison_sociale
+		dataType: string
+		summarizeBy: none
+		sourceColumn: raison_sociale
+
+		annotation SummarizationSetBy = Automatic
+
+	column nom_usg_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: nom_usg_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	column prenom_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: prenom_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_catg_jur
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_catg_jur
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_activite
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_activite
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_typ_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_typ_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_statut_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_statut_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_tiers = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\dim_tiers.csv"), [Delimiter=",", Columns=8, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
+				in
+				    Promoted

@@ -1,0 +1,76 @@
+table fait_autorisations
+
+	column idf_ref_auto
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_ref_auto
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_compte
+		dataType: string
+		summarizeBy: none
+		sourceColumn: num_compte
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: num_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_typ_auto
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_typ_auto
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_etat_auto
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_etat_auto
+
+		annotation SummarizationSetBy = Automatic
+
+	column montant_autorise
+		dataType: double
+		summarizeBy: none
+		sourceColumn: montant_autorise
+
+		annotation SummarizationSetBy = Automatic
+
+	column montant_utilise
+		dataType: double
+		summarizeBy: none
+		sourceColumn: montant_utilise
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_arrete
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_arrete
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fait_autorisations = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\fait_autorisations.csv"), [Delimiter=",", Columns=8, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Converted = Table.TransformColumns(Promoted, {
+				        {"montant_autorise", each try Number.FromText(Text.Replace(_, ",", "."), "en-US") otherwise null},
+				        {"montant_utilise", each try Number.FromText(Text.Replace(_, ",", "."), "en-US") otherwise null},
+				        {"date_arrete", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null}
+				    }),
+				    Typed = Table.TransformColumnTypes(Converted, {
+				        {"montant_autorise", type number},
+				        {"montant_utilise", type number},
+				        {"date_arrete", type date}
+				    })
+				in
+				    Typed

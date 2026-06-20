@@ -1,0 +1,202 @@
+table br_credit_garantie_quality_results
+
+	column alert_threshold_pct
+		dataType: double
+		summarizeBy: none
+		sourceColumn: alert_threshold_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column control_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: control_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_situation
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_situation
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	column domain
+		dataType: string
+		summarizeBy: none
+		sourceColumn: domain
+
+		annotation SummarizationSetBy = Automatic
+
+	column duration_seconds
+		dataType: double
+		summarizeBy: none
+		sourceColumn: duration_seconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column environment
+		dataType: string
+		summarizeBy: none
+		sourceColumn: environment
+
+		annotation SummarizationSetBy = Automatic
+
+	column error_message
+		dataType: string
+		summarizeBy: none
+		sourceColumn: error_message
+
+		annotation SummarizationSetBy = Automatic
+
+	column execution_date
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: execution_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column execution_id
+		dataType: string
+		summarizeBy: none
+		sourceColumn: execution_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column failure_rate_pct
+		dataType: double
+		summarizeBy: none
+		sourceColumn: failure_rate_pct
+
+		annotation SummarizationSetBy = Automatic
+
+	column field_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: field_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column layer
+		dataType: string
+		summarizeBy: none
+		sourceColumn: layer
+
+		annotation SummarizationSetBy = Automatic
+
+	column passed
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: passed
+
+		annotation SummarizationSetBy = Automatic
+
+	column passed_percentage
+		dataType: double
+		summarizeBy: none
+		sourceColumn: passed_percentage
+
+		annotation SummarizationSetBy = Automatic
+
+	column records_checked
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: records_checked
+
+		annotation SummarizationSetBy = Automatic
+
+	column records_failed
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: records_failed
+
+		annotation SummarizationSetBy = Automatic
+
+	column rule_code
+		dataType: string
+		summarizeBy: none
+		sourceColumn: rule_code
+
+		annotation SummarizationSetBy = Automatic
+
+	column rule_id
+		dataType: string
+		summarizeBy: none
+		sourceColumn: rule_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column rule_type
+		dataType: string
+		summarizeBy: none
+		sourceColumn: rule_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column severity
+		dataType: string
+		summarizeBy: none
+		sourceColumn: severity
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_name
+		dataType: string
+		summarizeBy: none
+		sourceColumn: table_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_partition_exists
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: table_partition_exists
+
+		annotation SummarizationSetBy = Automatic
+
+	partition br_credit_garantie_quality_results = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\br_credit_garantie_quality_results.csv"), [Delimiter=",", Columns=24, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Converted = Table.TransformColumns(Promoted, {
+				        {"alert_threshold_pct", each try Number.FromText(_, "en-US") otherwise null},
+				        {"date_situation", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
+				        {"duration_seconds", each try Number.FromText(_, "en-US") otherwise null},
+				        {"execution_date", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
+				        {"failure_rate_pct", each try Number.FromText(_, "en-US") otherwise null},
+				        {"passed", each if _ = null then null else Text.Lower(_) = "true"},
+				        {"passed_percentage", each try Number.FromText(_, "en-US") otherwise null},
+				        {"records_checked", each try Int64.From(_) otherwise null},
+				        {"records_failed", each try Int64.From(_) otherwise null},
+				        {"table_partition_exists", each if _ = null then null else Text.Lower(_) = "true"}
+				    }),
+				    Typed = Table.TransformColumnTypes(Converted, {
+				        {"alert_threshold_pct", type number},
+				        {"date_situation", type date},
+				        {"duration_seconds", type number},
+				        {"execution_date", type date},
+				        {"failure_rate_pct", type number},
+				        {"passed", type logical},
+				        {"passed_percentage", type number},
+				        {"records_checked", Int64.Type},
+				        {"records_failed", Int64.Type},
+				        {"table_partition_exists", type logical}
+				    })
+				in
+				    Typed

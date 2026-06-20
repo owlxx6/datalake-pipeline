@@ -1,0 +1,192 @@
+table gdw_synthese_credit
+
+	column idf_num_doss
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_doss
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_arrete
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_arrete
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_produit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_produit
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_compte_emprunteur
+		dataType: string
+		summarizeBy: none
+		sourceColumn: num_compte_emprunteur
+
+		annotation SummarizationSetBy = Automatic
+
+	column idf_num_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_accord
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_accord
+
+		annotation SummarizationSetBy = Automatic
+
+	column encours
+		dataType: double
+		summarizeBy: none
+		sourceColumn: encours
+
+		annotation SummarizationSetBy = Automatic
+
+	column mnt_credit
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mnt_credit
+
+		annotation SummarizationSetBy = Automatic
+
+	column tx_credit
+		dataType: double
+		summarizeBy: none
+		sourceColumn: tx_credit
+
+		annotation SummarizationSetBy = Automatic
+
+	column duree
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: duree
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_sit_doss
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_sit_doss
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_famille
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_famille
+
+		annotation SummarizationSetBy = Automatic
+
+	column lib_famille
+		dataType: string
+		summarizeBy: none
+		sourceColumn: lib_famille
+
+		annotation SummarizationSetBy = Automatic
+
+	column mnt_impaye_total
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mnt_impaye_total
+
+		annotation SummarizationSetBy = Automatic
+
+	column nb_creances_impayees
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: nb_creances_impayees
+
+		annotation SummarizationSetBy = Automatic
+
+	column flag_cdl
+		dataType: boolean
+		summarizeBy: none
+		sourceColumn: flag_cdl
+
+		annotation SummarizationSetBy = Automatic
+
+	measure 'Encours' = SUM(gdw_synthese_credit[encours])
+		formatString: #,0
+
+	measure 'Montant Crédit' = SUM(gdw_synthese_credit[mnt_credit])
+		formatString: #,0
+
+	measure 'Nombre Crédits' = DISTINCTCOUNT(gdw_synthese_credit[idf_num_doss])
+		formatString: #,0
+
+	measure 'Ticket Moyen' = DIVIDE([Montant Crédit], [Nombre Crédits])
+		formatString: #,0
+
+	measure 'Montant Impayés' = SUM(gdw_impayes[mnt_impayes_cdl])
+		formatString: #,0
+
+	measure 'Montant Créances' = SUM(gdw_impayes[mnt_creance])
+		formatString: #,0
+
+	measure 'Taux Impayé' = DIVIDE([Montant Impayés], [Encours])
+		formatString: 0.0%
+
+	measure 'Montant en Défaut' = CALCULATE([Encours], gdw_synthese_credit[flag_cdl] = TRUE())
+		formatString: #,0
+
+	measure 'NPL' = DIVIDE([Montant en Défaut], [Encours])
+		formatString: 0.0%
+
+	measure 'Valeur Garanties' = SUM(fait_garanties[mnt_total_garantie])
+		formatString: #,0
+
+	measure 'Taux Couverture' = DIVIDE([Valeur Garanties], [Encours])
+		formatString: 0.0%
+
+	measure 'Risque Net' = [Encours] - [Valeur Garanties]
+		formatString: #,0
+
+	measure 'Montant Autorisé' = SUM(fait_autorisations[montant_autorise])
+		formatString: #,0
+
+	measure 'Montant Utilisé' = SUM(fait_autorisations[montant_utilise])
+		formatString: #,0
+
+	measure 'Taux Utilisation' = DIVIDE([Montant Utilisé], [Montant Autorisé])
+		formatString: 0.0%
+
+	measure 'Montant Dépassement' = SUM(fait_depassement[mnt_depassement])
+		formatString: #,0
+
+	partition gdw_synthese_credit = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\gdw_synthese_credit.csv"), [Delimiter=",", Columns=16, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Converted = Table.TransformColumns(Promoted, {
+				        {"date_arrete", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
+				        {"date_accord", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
+				        {"encours", each try Number.FromText(_, "en-US") otherwise null},
+				        {"mnt_credit", each try Number.FromText(_, "en-US") otherwise null},
+				        {"tx_credit", each try Number.FromText(_, "en-US") otherwise null},
+				        {"duree", each try Int64.From(_) otherwise null},
+				        {"mnt_impaye_total", each try Number.FromText(_, "en-US") otherwise null},
+				        {"nb_creances_impayees", each try Int64.From(_) otherwise null},
+				        {"flag_cdl", each if _ = null then null else Text.Lower(_) = "true"}
+				    }),
+				    Typed = Table.TransformColumnTypes(Converted, {
+				        {"date_arrete", type date},
+				        {"date_accord", type date},
+				        {"encours", type number},
+				        {"mnt_credit", type number},
+				        {"tx_credit", type number},
+				        {"duree", Int64.Type},
+				        {"mnt_impaye_total", type number},
+				        {"nb_creances_impayees", Int64.Type},
+				        {"flag_cdl", type logical}
+				    })
+				in
+				    Typed

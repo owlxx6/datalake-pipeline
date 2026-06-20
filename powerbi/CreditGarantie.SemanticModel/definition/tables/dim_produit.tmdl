@@ -1,0 +1,80 @@
+table dim_produit
+
+	column idf_code_produit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_code_produit
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_sop
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_sop
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_activite
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_activite
+
+		annotation SummarizationSetBy = Automatic
+
+	column lib_activite
+		dataType: string
+		summarizeBy: none
+		sourceColumn: lib_activite
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_famille
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_famille
+
+		annotation SummarizationSetBy = Automatic
+
+	column lib_famille
+		dataType: string
+		summarizeBy: none
+		sourceColumn: lib_famille
+
+		annotation SummarizationSetBy = Automatic
+
+	column prod_commercial
+		dataType: string
+		summarizeBy: none
+		sourceColumn: prod_commercial
+
+		annotation SummarizationSetBy = Automatic
+
+	column lib_produit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: lib_produit
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_usage
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_usage
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_typ_produit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_typ_produit
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_produit = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\dim_produit.csv"), [Delimiter=",", Columns=10, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
+				in
+				    Promoted

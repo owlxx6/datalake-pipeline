@@ -1,0 +1,27 @@
+relationship rel_synth_tiers
+	fromColumn: gdw_synthese_credit.idf_num_tiers
+	toColumn: dim_tiers.idf_num_tiers
+
+relationship rel_synth_temps
+	fromColumn: gdw_synthese_credit.date_accord
+	toColumn: dim_temps.date
+
+relationship rel_impayes_synth
+	fromColumn: gdw_impayes.idf_num_doss
+	toColumn: gdw_synthese_credit.idf_num_doss
+
+relationship rel_garanties_synth
+	fromColumn: fait_garanties.idf_ref_ext_credit
+	toColumn: gdw_synthese_credit.idf_num_doss
+
+relationship rel_auto_tiers
+	fromColumn: fait_autorisations.num_tiers
+	toColumn: dim_tiers.idf_num_tiers
+
+relationship rel_synth_portefeuille
+	fromColumn: gdw_synthese_credit.idf_num_tiers
+	toColumn: dim_portefeuille.idf_num_tiers
+
+relationship rel_portef_org
+	fromColumn: dim_portefeuille.idf_num_gui
+	toColumn: dim_organisation.idf_num_gui

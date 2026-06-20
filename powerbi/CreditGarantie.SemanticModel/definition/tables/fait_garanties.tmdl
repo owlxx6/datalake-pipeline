@@ -1,0 +1,85 @@
+table fait_garanties
+
+	column idf_num_ctr_garantie
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_ctr_garantie
+
+		annotation SummarizationSetBy = Automatic
+
+	column idf_ref_ext_credit
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_ref_ext_credit
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_typ_garant
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_typ_garant
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_nat_garantie
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_nat_garantie
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_statut_garantie
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_statut_garantie
+
+		annotation SummarizationSetBy = Automatic
+
+	column mnt_total_garantie
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mnt_total_garantie
+
+		annotation SummarizationSetBy = Automatic
+
+	column mnt_actualise
+		dataType: double
+		summarizeBy: none
+		sourceColumn: mnt_actualise
+
+		annotation SummarizationSetBy = Automatic
+
+	column pourcentage_garantie
+		dataType: double
+		summarizeBy: none
+		sourceColumn: pourcentage_garantie
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_arrete
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date_arrete
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fait_garanties = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\fait_garanties.csv"), [Delimiter=",", Columns=9, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Converted = Table.TransformColumns(Promoted, {
+				        {"mnt_total_garantie", each try Number.FromText(_, "en-US") otherwise null},
+				        {"mnt_actualise", each try Number.FromText(_, "en-US") otherwise null},
+				        {"pourcentage_garantie", each try Number.FromText(_, "en-US") otherwise null},
+				        {"date_arrete", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null}
+				    }),
+				    Typed = Table.TransformColumnTypes(Converted, {
+				        {"mnt_total_garantie", type number},
+				        {"mnt_actualise", type number},
+				        {"pourcentage_garantie", type number},
+				        {"date_arrete", type date}
+				    })
+				in
+				    Typed

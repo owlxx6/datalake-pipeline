@@ -1,0 +1,39 @@
+table dim_portefeuille
+
+	column idf_num_tiers
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_tiers
+
+		annotation SummarizationSetBy = Automatic
+
+	column idf_num_gui
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_num_gui
+
+		annotation SummarizationSetBy = Automatic
+
+	column idf_code_cc
+		dataType: string
+		summarizeBy: none
+		sourceColumn: idf_code_cc
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_typ_rattach
+		dataType: string
+		summarizeBy: none
+		sourceColumn: cod_typ_rattach
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_portefeuille = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\dim_portefeuille.csv"), [Delimiter=",", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Deduped = Table.Distinct(Promoted, {"idf_num_tiers"})
+				in
+				    Deduped

@@ -1,0 +1,75 @@
+table dim_temps
+
+	column date_key
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column date
+		dataType: dateTime
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column jour
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: jour
+
+		annotation SummarizationSetBy = Automatic
+
+	column mois
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: mois
+
+		annotation SummarizationSetBy = Automatic
+
+	column trimestre
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: trimestre
+
+		annotation SummarizationSetBy = Automatic
+
+	column annee
+		dataType: int64
+		summarizeBy: none
+		sourceColumn: annee
+
+		annotation SummarizationSetBy = Automatic
+
+	column lib_mois
+		dataType: string
+		summarizeBy: none
+		sourceColumn: lib_mois
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_temps = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\datalake\exports\dim_temps.csv"), [Delimiter=",", Columns=7, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    Converted = Table.TransformColumns(Promoted, {
+				        {"date_key", each try Int64.From(_) otherwise null},
+				        {"date", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
+				        {"jour", each try Int64.From(_) otherwise null},
+				        {"mois", each try Int64.From(_) otherwise null},
+				        {"trimestre", each try Int64.From(_) otherwise null},
+				        {"annee", each try Int64.From(_) otherwise null}
+				    }),
+				    Typed = Table.TransformColumnTypes(Converted, {
+				        {"date_key", Int64.Type},
+				        {"date", type date},
+				        {"jour", Int64.Type},
+				        {"mois", Int64.Type},
+				        {"trimestre", Int64.Type},
+				        {"annee", Int64.Type}
+				    })
+				in
+				    Typed

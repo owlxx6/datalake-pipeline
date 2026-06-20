@@ -1,0 +1,61 @@
+{
+  "config": "{\"version\": \"5.43\", \"activeSectionIndex\": 0, \"settings\": {}}",
+  "layoutOptimization": 0,
+  "sections": [
+    {
+      "name": "d1",
+      "displayName": "D1 - Pilotage",
+      "filters": "[]",
+      "ordinal": 0,
+      "visualContainers": [],
+      "config": "{}",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "d2",
+      "displayName": "D2 - Risque & Impayés",
+      "filters": "[]",
+      "ordinal": 1,
+      "visualContainers": [],
+      "config": "{}",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "d3",
+      "displayName": "D3 - Production",
+      "filters": "[]",
+      "ordinal": 2,
+      "visualContainers": [],
+      "config": "{}",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "d4",
+      "displayName": "D4 - Autorisations",
+      "filters": "[]",
+      "ordinal": 3,
+      "visualContainers": [],
+      "config": "{}",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720
+    },
+    {
+      "name": "d5",
+      "displayName": "D5 - Garanties",
+      "filters": "[]",
+      "ordinal": 4,
+      "visualContainers": [],
+      "config": "{}",
+      "displayOption": 1,
+      "width": 1280,
+      "height": 720
+    }
+  ]
+}
