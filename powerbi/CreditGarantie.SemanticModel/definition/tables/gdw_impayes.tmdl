@@ -1,4 +1,4 @@
-table gdw_impayes
+﻿table gdw_impayes
 
 	column idf_num_doss
 		dataType: string

@@ -1,4 +1,4 @@
-table dim_organisation
+﻿table dim_organisation
 
 	column idf_num_gui
 		dataType: string

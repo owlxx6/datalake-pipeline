@@ -297,7 +297,11 @@ def report_json() -> str:
 
 def write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    # TMDL DOIT être en UTF-8 *avec BOM* (prérequis Power BI ; sans BOM => erreur de
+    # décodage à l'ouverture). Les fichiers JSON (.pbip/.pbism/.pbir/.platform/.json)
+    # restent en UTF-8 sans BOM (convention Power BI, parseurs JSON sensibles au BOM).
+    encoding = "utf-8-sig" if path.suffix == ".tmdl" else "utf-8"
+    path.write_text(content, encoding=encoding)
     print(f"  ✓ {path}")
 
 

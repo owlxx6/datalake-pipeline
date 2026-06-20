@@ -1,4 +1,4 @@
-table br_credit_garantie_quality_results
+﻿table br_credit_garantie_quality_results
 
 	column alert_threshold_pct
 		dataType: double

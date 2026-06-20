@@ -1,4 +1,4 @@
-table dim_portefeuille
+﻿table dim_portefeuille
 
 	column idf_num_tiers
 		dataType: string

@@ -1,4 +1,4 @@
-table dim_tiers
+﻿table dim_tiers
 
 	column idf_num_tiers
 		dataType: string
