@@ -67,7 +67,7 @@
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents("C:\datalake\exports\fait_garanties.csv"), [Delimiter=",", Columns=9, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\datalake\exports\fait_garanties.csv"), [Delimiter=",", Columns=9, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
 				    Converted = Table.TransformColumns(Promoted, {
 				        {"mnt_total_garantie", each try Number.FromText(_, "en-US") otherwise null},

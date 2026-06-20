@@ -144,7 +144,7 @@
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents("C:\datalake\exports\dim_organisation.csv"), [Delimiter=",", Columns=20, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\datalake\exports\dim_organisation.csv"), [Delimiter=",", Columns=20, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
 				in
 				    Promoted

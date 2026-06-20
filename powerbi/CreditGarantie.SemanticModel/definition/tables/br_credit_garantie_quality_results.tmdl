@@ -172,7 +172,7 @@
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents("C:\datalake\exports\br_credit_garantie_quality_results.csv"), [Delimiter=",", Columns=24, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\datalake\exports\br_credit_garantie_quality_results.csv"), [Delimiter=",", Columns=24, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
 				    Converted = Table.TransformColumns(Promoted, {
 				        {"alert_threshold_pct", each try Number.FromText(_, "en-US") otherwise null},

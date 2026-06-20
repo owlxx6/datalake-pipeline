@@ -32,7 +32,7 @@
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents("C:\datalake\exports\dim_portefeuille.csv"), [Delimiter=",", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\datalake\exports\dim_portefeuille.csv"), [Delimiter=",", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
 				    Deduped = Table.Distinct(Promoted, {"idf_num_tiers"})
 				in

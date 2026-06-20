@@ -164,7 +164,7 @@
 		mode: import
 		source =
 				let
-				    Source = Csv.Document(File.Contents("C:\datalake\exports\gdw_synthese_credit.csv"), [Delimiter=",", Columns=16, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\datalake\exports\gdw_synthese_credit.csv"), [Delimiter=",", Columns=16, Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
 				    Converted = Table.TransformColumns(Promoted, {
 				        {"date_arrete", each try #date(Number.FromText(Text.Start(_,4)), Number.FromText(Text.Middle(_,5,2)), Number.FromText(Text.Middle(_,8,2))) otherwise null},
