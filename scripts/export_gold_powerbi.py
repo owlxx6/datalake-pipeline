@@ -19,6 +19,10 @@ from pyspark.sql import SparkSession
 ROOT = Path(__file__).resolve().parents[1]
 # Table d'audit DQ (pour le dashboard Data Quality)
 EXTRA = ["silver_credit_garantie.BR_CREDIT_GARANTIE_QUALITY_RESULTS"]
+# Cibles non exportées car redondantes pour Power BI (évite les doublons) :
+#  - gdw_encours   : ses colonnes sont déjà dans l'OBT gdw_synthese_credit
+#  - v_kpi_credit  : ratios = mesures DAX côté Power BI, pas une table à importer
+EXCLUDE = {"gdw_encours", "v_kpi_credit"}
 
 
 def main() -> None:
@@ -29,7 +33,8 @@ def main() -> None:
 
     cfg = yaml.safe_load(open(args.config, encoding="utf-8"))
     db = cfg.get("database", "gold_credit_garantie")
-    tables = [f"{db}.{t['name']}" for t in cfg["targets"]] + EXTRA
+    tables = [f"{db}.{t['name']}" for t in cfg["targets"]
+              if t["name"] not in EXCLUDE] + EXTRA
 
     spark = (
         SparkSession.builder.appName("EXPORT_gold_powerbi")

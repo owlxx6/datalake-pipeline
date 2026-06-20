@@ -11,9 +11,13 @@ HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier parta
 - ✅ S4 : REJECTED documenté (flag, jamais suppression) ; Lot A entête fichier = perspective
 - ✅ S7 : gouvernance Atlas — lineage médaillon poussé & vérifié (46 datasets / 32 process,
   OBT = 27 rel/28 nœuds) ; module `jobs/governance/atlas_lineage.py` + runbook §9. Capture UI faite.
-- 🔄 S2 Power BI (en cours) : Gold étendu pour les 5 dashboards (dim_tiers + faits garanties/
-  autorisations/depassement, buildés VM) ; 11 CSV exportés → `exports/` (mode Import).
-  Reste : monter les dashboards sur Windows (DAX) ; option OBT+vue taux / segment COD_MARCHE.
+- 🔄 S2 Power BI (data PRÊTE — 2026-06-20) : Gold étendu + reconstruit pour les 5 dashboards.
+  Cibles buildées : dim_tiers, dim_portefeuille (pont tiers→agence), faits garanties/autorisations/
+  depassement, gdw_impayes enrichi (date_mise_impaye + date_echeance pour aging calendaire).
+  Export propre `exports/` = 11 CSV **sans doublon** (gdw_encours + v_kpi_credit exclus via EXCLUDE
+  dans `scripts/export_gold_powerbi.py`). Guide `docs/guide_powerbi_credit_garantie.md` à jour
+  (relations dim_portefeuille→dim_organisation, DAX aging calendaire + par classe CDL, visuels D1-D5).
+  Reste (manuel, PC Windows) : monter les 5 dashboards en suivant le guide ; option segment COD_MARCHE.
 - ⏳ Reste : S-CLEAN · S5 métier · S6 rapport
 
 ## RELIQUATS IMPORTANTS (à ne pas oublier)
@@ -31,6 +35,8 @@ HEAD main = `27c01c6`. Tout committé côté Mac (repo canonique). Dossier parta
 - Lake sanity 23/23 OK · OBT gdw_synthese_credit : 200000, famille_renseignee 198981, flag_cdl 96474
 - Silver dims SCD2 v1 : tiers 154245 · image_contrat 158322 · grc 151528 · typologie 154249 · asal 4464 · pops 1226 · org 762
 - Faits : credit_amort 200000 · impayes_cdl 1597242 · depassement 75870 · garantie_detail 253900 · garantie_contrat 258473 · idce_autorisation 368567
+- Gold buildé (2026-06-20, arrêté 2026-05-31) : gdw_synthese_credit 200000 · gdw_impayes 1597242 (+ aging) ·
+  dim_tiers 154245 · dim_portefeuille 151528 · dim_produit 1226 · dim_organisation 762 · dim_temps 3653
 
 ## Topologie repos (IMPORTANT)
 - Repo canonique = ce dossier (Mac, origin GitHub owlxx6) — contient code + CI (Jenkinsfile, docker-compose,
@@ -56,11 +62,16 @@ nohup hive --service metastore > ~/logs/metastore.log 2>&1 &   # port 9083 (requ
 # Airflow (si besoin) : 1 SEUL scheduler + webserver --port 8090 depuis /home/hadoop, venv activé
 ```
 
-## S2 Power BI — à anticiper
-Power BI Desktop = Windows-only (ni Mac ni VM Ubuntu). Plan : (1) démarrer un **Spark Thrift Server**
-sur la VM (port 10000) exposant le Gold en SQL ; (2) Power BI sur machine Windows (EAI) → ODBC →
-dashboards KPI (OBT) + Data Quality Dashboard (QUALITY_RESULTS). Mon rôle = endpoint SQL + requêtes ;
-dashboards = manuel.
+## S2 Power BI — approche retenue (mode Import, pas de live)
+Power BI Desktop = Windows-only. Choix POC : **mode Import** (CSV statiques), pas de Thrift Server.
+Pipeline : build Gold (VM) → `scripts/export_gold_powerbi.py` → CSV dans `exports/` → transfert PC
+Windows → import + DAX (cf. `docs/guide_powerbi_credit_garantie.md`). `exports/` = dossier de
+transfert (gitignoré, effacé/recréé à chaque export) ; emporter le guide séparément.
+
+## VM — incident 2026-06-20 (résolu)
+Crash après MAJ VirtualBox (saved-state VGA corrompu) → discardstate + cold boot. Boots suivants
+figés (segfault `finit_module` au chargement module noyau). Disque SAIN (fstab propre, 0 unité en
+échec). Résolu par un `reboot` propre depuis recovery ; Guest Additions OK (dossier partagé monté).
 
 ## Prochaine action au choix
-S2 (préparer Thrift Server + pack requêtes) · Non-régression (rallumer HDFS+Spark, run CREDIT_AMORT) · S-CLEAN.
+Monter les dashboards (Windows) · S-CLEAN · S5 métier · S6 rapport.
