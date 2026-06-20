@@ -9,3 +9,4 @@ jenkins_data/
 echantillon/
 # exports CSV Gold pour Power BI (données bancaires — jamais committées)
 exports/
+.DS_Store
