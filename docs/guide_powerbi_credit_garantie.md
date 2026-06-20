@@ -58,21 +58,21 @@ Power BI Desktop → **Obtenir les données → Texte/CSV** → importer les 11 
 ## 2. Mesures DAX (à coller — *Nouvelle mesure*)
 
 ```DAX
-Encours          = SUM(gdw_synthese_credit[encours])
+Encours Total    = SUM(gdw_synthese_credit[encours])
 Montant Crédit   = SUM(gdw_synthese_credit[mnt_credit])
 Nombre Crédits   = DISTINCTCOUNT(gdw_synthese_credit[idf_num_doss])
 Ticket Moyen     = DIVIDE([Montant Crédit], [Nombre Crédits])
 
 Montant Impayés  = SUM(gdw_impayes[mnt_impayes_cdl])
 Montant Créances = SUM(gdw_impayes[mnt_creance])
-Taux Impayé      = DIVIDE([Montant Impayés], [Encours])
+Taux Impayé      = DIVIDE([Montant Impayés], [Encours Total])
 
-Montant en Défaut = CALCULATE([Encours], gdw_synthese_credit[flag_cdl] = TRUE())
-NPL              = DIVIDE([Montant en Défaut], [Encours])
+Montant en Défaut = CALCULATE([Encours Total], gdw_synthese_credit[flag_cdl] = TRUE())
+NPL              = DIVIDE([Montant en Défaut], [Encours Total])
 
 Valeur Garanties = SUM(fait_garanties[mnt_total_garantie])
-Taux Couverture  = DIVIDE([Valeur Garanties], [Encours])
-Risque Net       = [Encours] - [Valeur Garanties]
+Taux Couverture  = DIVIDE([Valeur Garanties], [Encours Total])
+Risque Net       = [Encours Total] - [Valeur Garanties]
 
 Montant Autorisé = SUM(fait_autorisations[montant_autorise])
 Montant Utilisé  = SUM(fait_autorisations[montant_utilise])
@@ -109,9 +109,9 @@ Tranche Aging = SWITCH(TRUE(),
 ## 3. Visuels par dashboard
 
 ### D1 — Pilotage Crédit Consolidé
-- Cartes : `[Encours]`, `[Montant Impayés]`, `[Valeur Garanties]`, `[Risque Net]`
-- Courbe : `[Encours]` & `[Montant Impayés]` par `dim_temps[mois]` (tendance)
-- Camembert : `[Encours]` par `dim_produit[lib_famille]`
+- Cartes : `[Encours Total]`, `[Montant Impayés]`, `[Valeur Garanties]`, `[Risque Net]`
+- Courbe : `[Encours Total]` & `[Montant Impayés]` par `dim_temps[mois]` (tendance)
+- Camembert : `[Encours Total]` par `dim_produit[lib_famille]`
 - Table : `dim_tiers[raison_sociale]` × `[Montant en Défaut]` (tri desc → Top clients à risque)
 
 ### D2 — Suivi Risque & Impayés
@@ -125,7 +125,7 @@ Tranche Aging = SWITCH(TRUE(),
 - Cartes : `[Nombre Crédits]`, `[Montant Crédit]`, `[Ticket Moyen]`
 - Histogramme : `[Montant Crédit]` par `dim_temps[mois]` (production mensuelle, via date_accord)
 - Barres : `[Montant Crédit]` par `dim_produit[lib_famille]`
-- Barres : `[Montant Crédit]` (ou `[Encours]`) par `dim_organisation[lib_court_gui]` (= **par agence**,
+- Barres : `[Montant Crédit]` (ou `[Encours Total]`) par `dim_organisation[lib_court_gui]` (= **par agence**,
   via la chaîne `dim_portefeuille`) ; à défaut, par `dim_portefeuille[idf_num_gui]` (code guichet)
 
 ### D4 — Suivi des Autorisations
@@ -137,7 +137,7 @@ Tranche Aging = SWITCH(TRUE(),
 - Cartes : `[Valeur Garanties]`, `[Taux Couverture]`, `[Risque Net]`
 - Camembert : `[Valeur Garanties]` par `fait_garanties[cod_typ_garant]` (hypothèque/caution/…)
 - Barres : `[Valeur Garanties]` par `dim_produit[lib_famille]` (garanties par produit)
-- Nuage de points : `[Valeur Garanties]` vs `[Encours]` par dossier (couverture vs encours)
+- Nuage de points : `[Valeur Garanties]` vs `[Encours Total]` par dossier (couverture vs encours)
 
 ### Bonus — Dashboard Data Quality (`br_credit_garantie_quality_results`)
 - Cartes : nb règles `PASSED` / `WARNING` / `REJECTED` (mesures `COUNTROWS` filtrées sur `status`)

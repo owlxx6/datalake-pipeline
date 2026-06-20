@@ -110,18 +110,19 @@ RELATIONSHIPS = [
 
 # ── Mesures DAX (toutes portées par gdw_synthese_credit) ───────────────────────
 MEASURES = [
-    ("Encours", "SUM(gdw_synthese_credit[encours])", "#,0"),
+    # NB : nom != colonne 'encours' (Power BI casse-insensible -> conflit mesure/colonne)
+    ("Encours Total", "SUM(gdw_synthese_credit[encours])", "#,0"),
     ("Montant Crédit", "SUM(gdw_synthese_credit[mnt_credit])", "#,0"),
     ("Nombre Crédits", "DISTINCTCOUNT(gdw_synthese_credit[idf_num_doss])", "#,0"),
     ("Ticket Moyen", "DIVIDE([Montant Crédit], [Nombre Crédits])", "#,0"),
     ("Montant Impayés", "SUM(gdw_impayes[mnt_impayes_cdl])", "#,0"),
     ("Montant Créances", "SUM(gdw_impayes[mnt_creance])", "#,0"),
-    ("Taux Impayé", "DIVIDE([Montant Impayés], [Encours])", "0.0%"),
-    ("Montant en Défaut", "CALCULATE([Encours], gdw_synthese_credit[flag_cdl] = TRUE())", "#,0"),
-    ("NPL", "DIVIDE([Montant en Défaut], [Encours])", "0.0%"),
+    ("Taux Impayé", "DIVIDE([Montant Impayés], [Encours Total])", "0.0%"),
+    ("Montant en Défaut", "CALCULATE([Encours Total], gdw_synthese_credit[flag_cdl] = TRUE())", "#,0"),
+    ("NPL", "DIVIDE([Montant en Défaut], [Encours Total])", "0.0%"),
     ("Valeur Garanties", "SUM(fait_garanties[mnt_total_garantie])", "#,0"),
-    ("Taux Couverture", "DIVIDE([Valeur Garanties], [Encours])", "0.0%"),
-    ("Risque Net", "[Encours] - [Valeur Garanties]", "#,0"),
+    ("Taux Couverture", "DIVIDE([Valeur Garanties], [Encours Total])", "0.0%"),
+    ("Risque Net", "[Encours Total] - [Valeur Garanties]", "#,0"),
     ("Montant Autorisé", "SUM(fait_autorisations[montant_autorise])", "#,0"),
     ("Montant Utilisé", "SUM(fait_autorisations[montant_utilise])", "#,0"),
     ("Taux Utilisation", "DIVIDE([Montant Utilisé], [Montant Autorisé])", "0.0%"),

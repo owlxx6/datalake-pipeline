@@ -112,7 +112,7 @@ table gdw_synthese_credit
 
 		annotation SummarizationSetBy = Automatic
 
-	measure 'Encours' = SUM(gdw_synthese_credit[encours])
+	measure 'Encours Total' = SUM(gdw_synthese_credit[encours])
 		formatString: #,0
 
 	measure 'Montant Crédit' = SUM(gdw_synthese_credit[mnt_credit])
@@ -130,22 +130,22 @@ table gdw_synthese_credit
 	measure 'Montant Créances' = SUM(gdw_impayes[mnt_creance])
 		formatString: #,0
 
-	measure 'Taux Impayé' = DIVIDE([Montant Impayés], [Encours])
+	measure 'Taux Impayé' = DIVIDE([Montant Impayés], [Encours Total])
 		formatString: 0.0%
 
-	measure 'Montant en Défaut' = CALCULATE([Encours], gdw_synthese_credit[flag_cdl] = TRUE())
+	measure 'Montant en Défaut' = CALCULATE([Encours Total], gdw_synthese_credit[flag_cdl] = TRUE())
 		formatString: #,0
 
-	measure 'NPL' = DIVIDE([Montant en Défaut], [Encours])
+	measure 'NPL' = DIVIDE([Montant en Défaut], [Encours Total])
 		formatString: 0.0%
 
 	measure 'Valeur Garanties' = SUM(fait_garanties[mnt_total_garantie])
 		formatString: #,0
 
-	measure 'Taux Couverture' = DIVIDE([Valeur Garanties], [Encours])
+	measure 'Taux Couverture' = DIVIDE([Valeur Garanties], [Encours Total])
 		formatString: 0.0%
 
-	measure 'Risque Net' = [Encours] - [Valeur Garanties]
+	measure 'Risque Net' = [Encours Total] - [Valeur Garanties]
 		formatString: #,0
 
 	measure 'Montant Autorisé' = SUM(fait_autorisations[montant_autorise])
