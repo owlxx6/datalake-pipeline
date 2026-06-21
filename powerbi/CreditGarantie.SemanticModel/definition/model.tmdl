@@ -2,5 +2,43 @@ model Model
 	culture: en-US
 	defaultPowerBIDataSourceVersion: powerBI_V3
 	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
 
-	annotation PBI_QueryOrder = ["dim_temps", "dim_produit", "dim_organisation", "dim_tiers", "dim_portefeuille", "gdw_synthese_credit", "gdw_impayes", "fait_garanties", "fait_autorisations", "fait_depassement", "br_credit_garantie_quality_results"]
+annotation PBI_QueryOrder = ["dim_temps","dim_produit","dim_organisation","dim_tiers","dim_portefeuille","gdw_synthese_credit","gdw_impayes","fait_garanties","fait_autorisations","fait_depassement","br_credit_garantie_quality_results","tendance_simulee","recouvrement","kpi_simules","funnel_octroi"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table br_credit_garantie_quality_results
+ref table dim_organisation
+ref table dim_portefeuille
+ref table dim_produit
+ref table dim_temps
+ref table dim_tiers
+ref table fait_autorisations
+ref table fait_depassement
+ref table fait_garanties
+ref table gdw_impayes
+ref table gdw_synthese_credit
+ref table DateTableTemplate_20d73ec7-d4cf-469c-a5d9-47002e2df6a2
+ref table LocalDateTable_85797ae8-8f8c-4c7d-9c81-182956afb1ed
+ref table LocalDateTable_b81880c3-119d-4857-8489-11be0c0315f7
+ref table LocalDateTable_c9322f5a-dbb2-4d24-b12b-224b7a6e5946
+ref table LocalDateTable_910057f5-cfe6-4362-be01-8823f461bc9a
+ref table LocalDateTable_57063cff-7e5c-40ad-9b77-fe6b8c9790f3
+ref table LocalDateTable_78630023-073a-4e1f-af71-7fdaabbb3def
+ref table LocalDateTable_946fc91a-2066-423e-8607-b14b7ab2abf7
+ref table LocalDateTable_6e652d8c-74e4-44ed-b505-f321dbd96aaa
+ref table LocalDateTable_a84fdbcc-87d8-48d3-a1a1-85f700c377cc
+ref table LocalDateTable_be883712-4ebc-4d2c-a155-d4beada33368
+ref table LocalDateTable_840c7790-ac51-499c-b831-cac77f6f1cdb
+ref table LocalDateTable_db9afe80-6020-419a-8f01-31225c85d909
+ref table tendance_simulee
+ref table LocalDateTable_3377b74d-e5b2-4ab1-b630-715ebe25e310
+ref table recouvrement
+ref table kpi_simules
+ref table funnel_octroi
+

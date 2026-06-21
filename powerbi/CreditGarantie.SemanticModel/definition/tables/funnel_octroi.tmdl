@@ -1,0 +1,49 @@
+table funnel_octroi
+	lineageTag: 9259f979-1931-4159-9fea-ceb4ec5c44ca
+
+	column ordre
+		dataType: int64
+		formatString: 0
+		lineageTag: d580f4ea-35fd-4ff3-918e-223ccbd3e9e0
+		summarizeBy: sum
+		sourceColumn: ordre
+
+		annotation SummarizationSetBy = Automatic
+
+	column etape
+		dataType: string
+		lineageTag: 0dc7b0dc-9106-4e21-899c-2cc9bd20fed9
+		summarizeBy: none
+		sourceColumn: etape
+
+		annotation SummarizationSetBy = Automatic
+
+	column montant
+		dataType: int64
+		formatString: 0
+		lineageTag: 4654a6ef-49e6-4337-8491-c57b9ad5029f
+		summarizeBy: sum
+		sourceColumn: montant
+
+		annotation SummarizationSetBy = Automatic
+
+	column type
+		dataType: string
+		lineageTag: e7387d2a-885f-40fe-8ec9-ce111b064340
+		summarizeBy: none
+		sourceColumn: type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition funnel_octroi = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\dlp\powerbi\funnel_octroi.csv"),[Delimiter=",", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"En-têtes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Type modifié" = Table.TransformColumnTypes(#"En-têtes promus",{{"ordre", Int64.Type}, {"etape", type text}, {"montant", Int64.Type}, {"type", type text}})
+				in
+				    #"Type modifié"
+
+	annotation PBI_ResultType = Table
+

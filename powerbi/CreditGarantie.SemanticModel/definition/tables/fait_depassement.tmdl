@@ -1,7 +1,9 @@
 table fait_depassement
+	lineageTag: 0597b54b-c00d-4f1a-8600-26d08bdfe4d6
 
 	column num_compte
 		dataType: string
+		lineageTag: 988940e2-bd5b-4ddc-9316-66d27bbd1362
 		summarizeBy: none
 		sourceColumn: num_compte
 
@@ -9,6 +11,7 @@ table fait_depassement
 
 	column compte_general
 		dataType: string
+		lineageTag: aaf26f12-8fcd-4fcf-a09a-8a671e07eb4b
 		summarizeBy: none
 		sourceColumn: compte_general
 
@@ -16,31 +19,59 @@ table fait_depassement
 
 	column date_entree
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: e259a049-4231-4eed-a533-355e58d36fc2
 		summarizeBy: none
 		sourceColumn: date_entree
 
+		variation Variation
+			isDefault
+			relationship: 25efd601-241c-4021-a6a3-e39f1b8646f5
+			defaultHierarchy: LocalDateTable_57063cff-7e5c-40ad-9b77-fe6b8c9790f3.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column date_sortie
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3adad756-2c36-4434-a098-62677e1f7fba
 		summarizeBy: none
 		sourceColumn: date_sortie
 
+		variation Variation
+			isDefault
+			relationship: 086fc686-9518-4b99-8763-aa9277e5acb7
+			defaultHierarchy: LocalDateTable_78630023-073a-4e1f-af71-7fdaabbb3def.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column mnt_depassement
 		dataType: double
-		summarizeBy: none
+		lineageTag: 97f9996d-2e1b-4a4b-9cfb-ce4f09f616f4
+		summarizeBy: sum
 		sourceColumn: mnt_depassement
 
 		annotation SummarizationSetBy = Automatic
 
 	column date_arrete
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3468ba50-d3f0-42ca-b6ab-59ca09911a5e
 		summarizeBy: none
 		sourceColumn: date_arrete
 
+		variation Variation
+			isDefault
+			relationship: 7ea6ad1a-5c90-43ab-8220-ae28add4aefe
+			defaultHierarchy: LocalDateTable_946fc91a-2066-423e-8607-b14b7ab2abf7.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	partition fait_depassement = m
 		mode: import
@@ -62,3 +93,4 @@ table fait_depassement
 				    })
 				in
 				    Typed
+

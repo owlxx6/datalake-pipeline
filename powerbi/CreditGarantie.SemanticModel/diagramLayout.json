@@ -1,0 +1,206 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 427.46118769051554
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 1155.5882507435276,
+            "y": 542.25837257558373
+          },
+          "nodeIndex": "br_credit_garantie_quality_results",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 921.58825074352762,
+            "y": 285.853262477243
+          },
+          "nodeIndex": "dim_organisation",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 637.39848587090682,
+            "y": 559.5704419680103
+          },
+          "nodeIndex": "dim_portefeuille",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1439.5882507435276,
+            "y": 542.25837257558373
+          },
+          "nodeIndex": "dim_produit",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 350.30770281763057,
+            "y": 1086.5167451511675
+          },
+          "nodeIndex": "dim_temps",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 63.268927631307406,
+            "y": 431.7237276457488
+          },
+          "nodeIndex": "dim_tiers",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 50,
+            "y": -50
+          },
+          "nodeIndex": "fait_autorisations",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1723.5882507435276,
+            "y": 580.25837257558373
+          },
+          "nodeIndex": "fait_depassement",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 63.2705848342182,
+            "y": 878.37017055416186
+          },
+          "nodeIndex": "fait_garanties",
+          "size": {
+            "height": 296,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 637.36084450391957,
+            "y": 907.97105760043962
+          },
+          "nodeIndex": "gdw_impayes",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 350.31408357494706,
+            "y": 709.46118769051554
+          },
+          "nodeIndex": "gdw_synthese_credit",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1957.5882507435276,
+            "y": 604.25837257558373
+          },
+          "nodeIndex": "tendance_simulee",
+          "nodeLineageTag": "60dd4cc6-512e-487d-abcf-8730f4366ce9",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2191.5882507435276,
+            "y": 616.25837257558373
+          },
+          "nodeIndex": "recouvrement",
+          "nodeLineageTag": "63ee7e8f-b70a-4cdf-8920-2a86ed86fa91",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2425.5882507435276,
+            "y": 628.25837257558373
+          },
+          "nodeIndex": "kpi_simules",
+          "nodeLineageTag": "e545eb47-09b0-4581-af64-3c70682092ea",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2659.5882507435276,
+            "y": 604.25837257558373
+          },
+          "nodeIndex": "funnel_octroi",
+          "nodeLineageTag": "9259f979-1931-4159-9fea-ceb4ec5c44ca",
+          "size": {
+            "height": 176,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "Toutes les tables",
+      "zoomValue": 100,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "Toutes les tables",
+  "defaultDiagram": "Toutes les tables"
+}

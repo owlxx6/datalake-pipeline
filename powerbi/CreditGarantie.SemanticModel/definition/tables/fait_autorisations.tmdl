@@ -1,7 +1,9 @@
 table fait_autorisations
+	lineageTag: 8c8e5ce0-2d80-43bb-adf5-dde845633c2a
 
 	column idf_ref_auto
 		dataType: string
+		lineageTag: 57a68343-88f0-4145-aaf8-a4a4e5321d01
 		summarizeBy: none
 		sourceColumn: idf_ref_auto
 
@@ -9,6 +11,7 @@ table fait_autorisations
 
 	column num_compte
 		dataType: string
+		lineageTag: 5ce7ff23-6d33-4215-aa70-3822683c9e3e
 		summarizeBy: none
 		sourceColumn: num_compte
 
@@ -16,6 +19,7 @@ table fait_autorisations
 
 	column num_tiers
 		dataType: string
+		lineageTag: d5a0a2ff-0c87-48d2-a861-a060016224b2
 		summarizeBy: none
 		sourceColumn: num_tiers
 
@@ -23,6 +27,7 @@ table fait_autorisations
 
 	column cod_typ_auto
 		dataType: string
+		lineageTag: b599204a-6c49-40f3-bd82-f5ecc7183a7e
 		summarizeBy: none
 		sourceColumn: cod_typ_auto
 
@@ -30,6 +35,7 @@ table fait_autorisations
 
 	column cod_etat_auto
 		dataType: string
+		lineageTag: c529d8ee-c97c-4552-b7ab-d7b4bded761f
 		summarizeBy: none
 		sourceColumn: cod_etat_auto
 
@@ -37,24 +43,35 @@ table fait_autorisations
 
 	column montant_autorise
 		dataType: double
-		summarizeBy: none
+		lineageTag: bf677e48-8943-4c16-8a98-06a48b90a805
+		summarizeBy: sum
 		sourceColumn: montant_autorise
 
 		annotation SummarizationSetBy = Automatic
 
 	column montant_utilise
 		dataType: double
-		summarizeBy: none
+		lineageTag: 98151257-f1a2-4d08-a79b-349c682fa6ab
+		summarizeBy: sum
 		sourceColumn: montant_utilise
 
 		annotation SummarizationSetBy = Automatic
 
 	column date_arrete
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 6808c3a0-7f7f-4440-80b2-761d55c15074
 		summarizeBy: none
 		sourceColumn: date_arrete
 
+		variation Variation
+			isDefault
+			relationship: 9393c9c3-7348-493d-a4f8-fc0f84f0d4cb
+			defaultHierarchy: LocalDateTable_910057f5-cfe6-4362-be01-8823f461bc9a.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	partition fait_autorisations = m
 		mode: import
@@ -74,3 +91,4 @@ table fait_autorisations
 				    })
 				in
 				    Typed
+

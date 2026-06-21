@@ -1,7 +1,9 @@
 table dim_organisation
+	lineageTag: d1a8b583-558b-4497-8def-11c1da9f91af
 
 	column idf_num_gui
 		dataType: string
+		lineageTag: a5478404-7600-4e19-872c-b14f9420aac9
 		summarizeBy: none
 		sourceColumn: idf_num_gui
 
@@ -9,6 +11,7 @@ table dim_organisation
 
 	column idf_num_bur
 		dataType: string
+		lineageTag: 8004e33f-ba18-49ba-8363-82e65ea210f3
 		summarizeBy: none
 		sourceColumn: idf_num_bur
 
@@ -16,6 +19,7 @@ table dim_organisation
 
 	column cod_fed
 		dataType: string
+		lineageTag: 82634d1f-4fd8-4aff-89ef-205209fc8d28
 		summarizeBy: none
 		sourceColumn: cod_fed
 
@@ -23,6 +27,7 @@ table dim_organisation
 
 	column lib_fed_court
 		dataType: string
+		lineageTag: 373a0658-90f9-495d-9b53-5ff3590b21a7
 		summarizeBy: none
 		sourceColumn: lib_fed_court
 
@@ -30,6 +35,7 @@ table dim_organisation
 
 	column cod_bqe
 		dataType: string
+		lineageTag: a1dacc58-a390-4989-866f-2671343e1e1d
 		summarizeBy: none
 		sourceColumn: cod_bqe
 
@@ -37,6 +43,7 @@ table dim_organisation
 
 	column lib_bqe
 		dataType: string
+		lineageTag: ccfde05f-f304-497f-bf99-9ad0574f6b6c
 		summarizeBy: none
 		sourceColumn: lib_bqe
 
@@ -44,6 +51,7 @@ table dim_organisation
 
 	column lib_typ_dir
 		dataType: string
+		lineageTag: 042c8def-53d5-4db6-8c7a-375529ea58e6
 		summarizeBy: none
 		sourceColumn: lib_typ_dir
 
@@ -51,6 +59,7 @@ table dim_organisation
 
 	column num_dir
 		dataType: string
+		lineageTag: 0f2c5eed-7053-4b90-8b22-bffd2c0281a3
 		summarizeBy: none
 		sourceColumn: num_dir
 
@@ -58,6 +67,7 @@ table dim_organisation
 
 	column lib_dir_court
 		dataType: string
+		lineageTag: ae62f399-7b21-4e0f-b189-88d1764ea230
 		summarizeBy: none
 		sourceColumn: lib_dir_court
 
@@ -65,6 +75,7 @@ table dim_organisation
 
 	column lib_typ_grp
 		dataType: string
+		lineageTag: 30760f18-a74a-4237-989c-3bc57931b746
 		summarizeBy: none
 		sourceColumn: lib_typ_grp
 
@@ -72,6 +83,7 @@ table dim_organisation
 
 	column num_grp
 		dataType: string
+		lineageTag: 617a5fc6-16ab-4376-a0d7-68558f935fe3
 		summarizeBy: none
 		sourceColumn: num_grp
 
@@ -79,6 +91,7 @@ table dim_organisation
 
 	column lib_grp_court
 		dataType: string
+		lineageTag: d6b96c05-287a-4664-b1b3-04f1cf3a631a
 		summarizeBy: none
 		sourceColumn: lib_grp_court
 
@@ -86,6 +99,7 @@ table dim_organisation
 
 	column lib_court_gui
 		dataType: string
+		lineageTag: f10e1110-afd8-4daa-b2cb-4f1ba0f990f6
 		summarizeBy: none
 		sourceColumn: lib_court_gui
 
@@ -93,6 +107,7 @@ table dim_organisation
 
 	column lib_long_gui
 		dataType: string
+		lineageTag: 797c8f09-eb3f-4b36-a964-6796432c98c3
 		summarizeBy: none
 		sourceColumn: lib_long_gui
 
@@ -100,6 +115,7 @@ table dim_organisation
 
 	column lib_bur
 		dataType: string
+		lineageTag: 68041c4e-9eef-4594-8148-09018ee409ff
 		summarizeBy: none
 		sourceColumn: lib_bur
 
@@ -107,6 +123,7 @@ table dim_organisation
 
 	column typ_bur
 		dataType: string
+		lineageTag: f0135e3a-8ef3-4c41-9a87-21a6035c0ea1
 		summarizeBy: none
 		sourceColumn: typ_bur
 
@@ -114,6 +131,7 @@ table dim_organisation
 
 	column cod_ecv_bur
 		dataType: string
+		lineageTag: 19d9dcaf-940d-4f3d-94ad-8c4542c8fec5
 		summarizeBy: none
 		sourceColumn: cod_ecv_bur
 
@@ -121,6 +139,7 @@ table dim_organisation
 
 	column nom_vil_bur
 		dataType: string
+		lineageTag: 59c039d3-620b-4fb2-a34d-32c9e519dbcf
 		summarizeBy: none
 		sourceColumn: nom_vil_bur
 
@@ -128,6 +147,7 @@ table dim_organisation
 
 	column code_post_bur
 		dataType: string
+		lineageTag: 6c1ec488-bae1-445b-a13f-03ec2beac8e8
 		summarizeBy: none
 		sourceColumn: code_post_bur
 
@@ -135,6 +155,7 @@ table dim_organisation
 
 	column code_reg_eco
 		dataType: string
+		lineageTag: 6644655f-32e9-4af2-99dd-05db23e69940
 		summarizeBy: none
 		sourceColumn: code_reg_eco
 
@@ -148,3 +169,4 @@ table dim_organisation
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
 				in
 				    Promoted
+

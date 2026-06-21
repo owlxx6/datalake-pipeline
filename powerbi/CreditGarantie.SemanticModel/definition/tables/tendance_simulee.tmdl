@@ -1,0 +1,57 @@
+table tendance_simulee
+	lineageTag: 60dd4cc6-512e-487d-abcf-8730f4366ce9
+
+	column date_arrete
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a450987c-1299-4827-884b-aba968f09f6e
+		summarizeBy: none
+		sourceColumn: date_arrete
+
+		variation Variation
+			isDefault
+			relationship: 7619f713-a019-4ec7-9099-700e506fcf4d
+			defaultHierarchy: LocalDateTable_3377b74d-e5b2-4ab1-b630-715ebe25e310.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column encours
+		dataType: int64
+		formatString: 0
+		lineageTag: 48d80f25-3e36-48a7-a857-553df12ec1bb
+		summarizeBy: sum
+		sourceColumn: encours
+
+		annotation SummarizationSetBy = Automatic
+
+	column impayes
+		dataType: int64
+		formatString: 0
+		lineageTag: c239a902-4b49-444f-b27f-96b371bc8918
+		summarizeBy: sum
+		sourceColumn: impayes
+
+		annotation SummarizationSetBy = Automatic
+
+	column type
+		dataType: string
+		lineageTag: 7fff593b-b529-4627-8564-4f33aa6da938
+		summarizeBy: none
+		sourceColumn: type
+
+		annotation SummarizationSetBy = Automatic
+
+	partition tendance_simulee = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\dlp\powerbi\tendance_simulee.csv"),[Delimiter=",", Columns=4, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"En-têtes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Type modifié" = Table.TransformColumnTypes(#"En-têtes promus",{{"date_arrete", type date}, {"encours", Int64.Type}, {"impayes", Int64.Type}, {"type", type text}})
+				in
+				    #"Type modifié"
+
+	annotation PBI_ResultType = Table
+

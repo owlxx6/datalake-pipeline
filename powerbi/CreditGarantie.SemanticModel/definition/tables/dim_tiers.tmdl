@@ -1,7 +1,9 @@
 table dim_tiers
+	lineageTag: 84401171-57d8-4ad2-8121-c509bdc88998
 
 	column idf_num_tiers
 		dataType: string
+		lineageTag: 7d4b2ea0-b142-409f-a282-dba43a91773d
 		summarizeBy: none
 		sourceColumn: idf_num_tiers
 
@@ -9,6 +11,7 @@ table dim_tiers
 
 	column raison_sociale
 		dataType: string
+		lineageTag: faa02fed-e99b-4479-a816-400dba9dc278
 		summarizeBy: none
 		sourceColumn: raison_sociale
 
@@ -16,6 +19,7 @@ table dim_tiers
 
 	column nom_usg_tiers
 		dataType: string
+		lineageTag: 27674516-c0b7-4a26-a1fe-dcf687556b72
 		summarizeBy: none
 		sourceColumn: nom_usg_tiers
 
@@ -23,6 +27,7 @@ table dim_tiers
 
 	column prenom_tiers
 		dataType: string
+		lineageTag: 389171fb-ff18-4a82-a267-55bf9010ec0b
 		summarizeBy: none
 		sourceColumn: prenom_tiers
 
@@ -30,6 +35,7 @@ table dim_tiers
 
 	column cod_catg_jur
 		dataType: string
+		lineageTag: 2d55dd15-a049-44d8-b515-0c4cdcf204f2
 		summarizeBy: none
 		sourceColumn: cod_catg_jur
 
@@ -37,6 +43,7 @@ table dim_tiers
 
 	column cod_activite
 		dataType: string
+		lineageTag: e42234df-756a-4761-84a4-ccd157a55d7b
 		summarizeBy: none
 		sourceColumn: cod_activite
 
@@ -44,6 +51,7 @@ table dim_tiers
 
 	column cod_typ_tiers
 		dataType: string
+		lineageTag: 9f866c39-d307-4b74-bca0-a58754dafce1
 		summarizeBy: none
 		sourceColumn: cod_typ_tiers
 
@@ -51,6 +59,7 @@ table dim_tiers
 
 	column cod_statut_tiers
 		dataType: string
+		lineageTag: a1148e80-3176-4aec-b7bc-2becbd10578d
 		summarizeBy: none
 		sourceColumn: cod_statut_tiers
 
@@ -64,3 +73,4 @@ table dim_tiers
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
 				in
 				    Promoted
+

@@ -1,14 +1,17 @@
 table br_credit_garantie_quality_results
+	lineageTag: e9f64730-93b3-40c3-873c-c514f84e61a8
 
 	column alert_threshold_pct
 		dataType: double
-		summarizeBy: none
+		lineageTag: e3f8454f-5746-4d16-8a5b-539fcfa407ef
+		summarizeBy: sum
 		sourceColumn: alert_threshold_pct
 
 		annotation SummarizationSetBy = Automatic
 
 	column control_type
 		dataType: string
+		lineageTag: aea93b32-9255-497f-9ac8-88662f21fafe
 		summarizeBy: none
 		sourceColumn: control_type
 
@@ -16,13 +19,23 @@ table br_credit_garantie_quality_results
 
 	column date_situation
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 767e6298-f9fc-495d-83ec-45c3a23ce970
 		summarizeBy: none
 		sourceColumn: date_situation
 
+		variation Variation
+			isDefault
+			relationship: dd9aaf06-b56c-48a5-b30a-e1bc86a2ea5f
+			defaultHierarchy: LocalDateTable_85797ae8-8f8c-4c7d-9c81-182956afb1ed.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column description
 		dataType: string
+		lineageTag: fa5d1b42-1eb1-49b9-b57a-cf3cf5787e91
 		summarizeBy: none
 		sourceColumn: description
 
@@ -30,6 +43,7 @@ table br_credit_garantie_quality_results
 
 	column domain
 		dataType: string
+		lineageTag: 714dae3e-057b-4471-bdd5-f6ddda4142d0
 		summarizeBy: none
 		sourceColumn: domain
 
@@ -37,13 +51,15 @@ table br_credit_garantie_quality_results
 
 	column duration_seconds
 		dataType: double
-		summarizeBy: none
+		lineageTag: c6d9f0a8-1a07-4d61-b471-f1ddfab6bf5b
+		summarizeBy: sum
 		sourceColumn: duration_seconds
 
 		annotation SummarizationSetBy = Automatic
 
 	column environment
 		dataType: string
+		lineageTag: a7c88bbf-58fb-4c0d-87b5-1f2279451fb0
 		summarizeBy: none
 		sourceColumn: environment
 
@@ -51,6 +67,7 @@ table br_credit_garantie_quality_results
 
 	column error_message
 		dataType: string
+		lineageTag: 8a10ceac-956c-4c81-af0b-37ca1e79d323
 		summarizeBy: none
 		sourceColumn: error_message
 
@@ -58,13 +75,23 @@ table br_credit_garantie_quality_results
 
 	column execution_date
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 81db372f-ac26-4118-9936-41c204db924b
 		summarizeBy: none
 		sourceColumn: execution_date
 
+		variation Variation
+			isDefault
+			relationship: 59279aaa-116e-40fa-9fca-28f0b646c117
+			defaultHierarchy: LocalDateTable_b81880c3-119d-4857-8489-11be0c0315f7.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column execution_id
 		dataType: string
+		lineageTag: 22e06089-9e4d-4541-bd59-b791abc9cb78
 		summarizeBy: none
 		sourceColumn: execution_id
 
@@ -72,13 +99,15 @@ table br_credit_garantie_quality_results
 
 	column failure_rate_pct
 		dataType: double
-		summarizeBy: none
+		lineageTag: ea0962bf-ef37-4740-81b2-075bc6afdf57
+		summarizeBy: sum
 		sourceColumn: failure_rate_pct
 
 		annotation SummarizationSetBy = Automatic
 
 	column field_name
 		dataType: string
+		lineageTag: 238a578d-d0c1-455e-aa63-2722d049982c
 		summarizeBy: none
 		sourceColumn: field_name
 
@@ -86,6 +115,7 @@ table br_credit_garantie_quality_results
 
 	column layer
 		dataType: string
+		lineageTag: 772138c9-d116-443b-857b-b3b931631694
 		summarizeBy: none
 		sourceColumn: layer
 
@@ -93,6 +123,7 @@ table br_credit_garantie_quality_results
 
 	column passed
 		dataType: boolean
+		lineageTag: f7c92f40-5fd8-4fd6-9419-cda23b4c0ee7
 		summarizeBy: none
 		sourceColumn: passed
 
@@ -100,27 +131,31 @@ table br_credit_garantie_quality_results
 
 	column passed_percentage
 		dataType: double
-		summarizeBy: none
+		lineageTag: 315a271c-e997-4813-99c4-92b1ee945935
+		summarizeBy: sum
 		sourceColumn: passed_percentage
 
 		annotation SummarizationSetBy = Automatic
 
 	column records_checked
 		dataType: int64
-		summarizeBy: none
+		lineageTag: ccadeb22-c400-4f78-b526-ad2b23a84e90
+		summarizeBy: sum
 		sourceColumn: records_checked
 
 		annotation SummarizationSetBy = Automatic
 
 	column records_failed
 		dataType: int64
-		summarizeBy: none
+		lineageTag: cff42a00-200e-4d85-ba71-0c92c474ee11
+		summarizeBy: sum
 		sourceColumn: records_failed
 
 		annotation SummarizationSetBy = Automatic
 
 	column rule_code
 		dataType: string
+		lineageTag: 589f2aef-8496-41fe-bb01-0ce5940df78c
 		summarizeBy: none
 		sourceColumn: rule_code
 
@@ -128,6 +163,7 @@ table br_credit_garantie_quality_results
 
 	column rule_id
 		dataType: string
+		lineageTag: 5099f111-c65e-48a2-9978-237a92393782
 		summarizeBy: none
 		sourceColumn: rule_id
 
@@ -135,6 +171,7 @@ table br_credit_garantie_quality_results
 
 	column rule_type
 		dataType: string
+		lineageTag: 3d9cb3ec-221b-4d3b-8540-f634f83c300a
 		summarizeBy: none
 		sourceColumn: rule_type
 
@@ -142,6 +179,7 @@ table br_credit_garantie_quality_results
 
 	column severity
 		dataType: string
+		lineageTag: 22724074-b51e-458b-b4f9-a96fa5840e2d
 		summarizeBy: none
 		sourceColumn: severity
 
@@ -149,6 +187,7 @@ table br_credit_garantie_quality_results
 
 	column status
 		dataType: string
+		lineageTag: cc610a60-7abb-4cbe-aef6-66e0405c3e99
 		summarizeBy: none
 		sourceColumn: status
 
@@ -156,6 +195,7 @@ table br_credit_garantie_quality_results
 
 	column table_name
 		dataType: string
+		lineageTag: 9c658183-a365-49fe-84ec-bc98918c816c
 		summarizeBy: none
 		sourceColumn: table_name
 
@@ -163,6 +203,7 @@ table br_credit_garantie_quality_results
 
 	column table_partition_exists
 		dataType: boolean
+		lineageTag: a7582cdc-9435-4dee-bcb7-b67b237bd27d
 		summarizeBy: none
 		sourceColumn: table_partition_exists
 
@@ -200,3 +241,4 @@ table br_credit_garantie_quality_results
 				    })
 				in
 				    Typed
+

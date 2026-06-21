@@ -1,7 +1,9 @@
 table fait_garanties
+	lineageTag: 3f1c86bc-b715-4348-8add-857ff11edca4
 
 	column idf_num_ctr_garantie
 		dataType: string
+		lineageTag: ecb1d561-3fd6-4c5f-8478-356e9c8474e1
 		summarizeBy: none
 		sourceColumn: idf_num_ctr_garantie
 
@@ -9,6 +11,7 @@ table fait_garanties
 
 	column idf_ref_ext_credit
 		dataType: string
+		lineageTag: ea109d6a-d4e8-4a2c-a4a2-04f646da0f12
 		summarizeBy: none
 		sourceColumn: idf_ref_ext_credit
 
@@ -16,6 +19,7 @@ table fait_garanties
 
 	column cod_typ_garant
 		dataType: string
+		lineageTag: 9f9759d6-e633-48e4-b150-03cadb94a259
 		summarizeBy: none
 		sourceColumn: cod_typ_garant
 
@@ -23,6 +27,7 @@ table fait_garanties
 
 	column cod_nat_garantie
 		dataType: string
+		lineageTag: b224ba21-babf-4409-885a-9c281ab00508
 		summarizeBy: none
 		sourceColumn: cod_nat_garantie
 
@@ -30,6 +35,7 @@ table fait_garanties
 
 	column cod_statut_garantie
 		dataType: string
+		lineageTag: 0f4dcd62-24d6-497c-9ff8-23e66192dba5
 		summarizeBy: none
 		sourceColumn: cod_statut_garantie
 
@@ -37,31 +43,43 @@ table fait_garanties
 
 	column mnt_total_garantie
 		dataType: double
-		summarizeBy: none
+		lineageTag: 81e397cf-978c-4c59-976e-a647e8954e2f
+		summarizeBy: sum
 		sourceColumn: mnt_total_garantie
 
 		annotation SummarizationSetBy = Automatic
 
 	column mnt_actualise
 		dataType: double
-		summarizeBy: none
+		lineageTag: 5a5127bd-b189-491a-9e09-77308ed2baa4
+		summarizeBy: sum
 		sourceColumn: mnt_actualise
 
 		annotation SummarizationSetBy = Automatic
 
 	column pourcentage_garantie
 		dataType: double
-		summarizeBy: none
+		lineageTag: 60da03c7-29e0-4663-9f5e-ae8a21a75806
+		summarizeBy: sum
 		sourceColumn: pourcentage_garantie
 
 		annotation SummarizationSetBy = Automatic
 
 	column date_arrete
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 7ba159d8-6595-47cc-b373-3e2aa271698b
 		summarizeBy: none
 		sourceColumn: date_arrete
 
+		variation Variation
+			isDefault
+			relationship: e8bb6802-6cf2-4b57-92ba-77122619d02c
+			defaultHierarchy: LocalDateTable_6e652d8c-74e4-44ed-b505-f321dbd96aaa.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	partition fait_garanties = m
 		mode: import
@@ -83,3 +101,4 @@ table fait_garanties
 				    })
 				in
 				    Typed
+

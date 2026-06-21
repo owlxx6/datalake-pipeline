@@ -1,7 +1,9 @@
 table dim_portefeuille
+	lineageTag: 8b1b0f55-5be0-45c9-a99b-c1417ea1d4ad
 
 	column idf_num_tiers
 		dataType: string
+		lineageTag: bb3d3fbe-6786-40ce-aac5-b8395ca05474
 		summarizeBy: none
 		sourceColumn: idf_num_tiers
 
@@ -9,6 +11,7 @@ table dim_portefeuille
 
 	column idf_num_gui
 		dataType: string
+		lineageTag: d14be05a-7253-4a53-8458-83bca2219882
 		summarizeBy: none
 		sourceColumn: idf_num_gui
 
@@ -16,6 +19,7 @@ table dim_portefeuille
 
 	column idf_code_cc
 		dataType: string
+		lineageTag: 136e6558-cb16-4697-9bd1-4043aa40bd10
 		summarizeBy: none
 		sourceColumn: idf_code_cc
 
@@ -23,6 +27,7 @@ table dim_portefeuille
 
 	column cod_typ_rattach
 		dataType: string
+		lineageTag: 785f3e3f-69a8-47e7-807d-cb1401c053e1
 		summarizeBy: none
 		sourceColumn: cod_typ_rattach
 
@@ -37,3 +42,4 @@ table dim_portefeuille
 				    Deduped = Table.Distinct(Promoted, {"idf_num_tiers"})
 				in
 				    Deduped
+

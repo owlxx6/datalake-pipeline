@@ -1,7 +1,9 @@
 table gdw_impayes
+	lineageTag: cde62ca8-8c21-4192-8d49-601ac6258d67
 
 	column idf_num_doss
 		dataType: string
+		lineageTag: c80f5c6a-6569-4611-8de2-34ac4761717a
 		summarizeBy: none
 		sourceColumn: idf_num_doss
 
@@ -9,6 +11,7 @@ table gdw_impayes
 
 	column idf_num_creance
 		dataType: string
+		lineageTag: 99b30192-e724-41f6-9dd0-352cb2e5cade
 		summarizeBy: none
 		sourceColumn: idf_num_creance
 
@@ -16,6 +19,7 @@ table gdw_impayes
 
 	column num_compte
 		dataType: string
+		lineageTag: 8bf4c9bd-10d5-4656-a295-58d621c8525a
 		summarizeBy: none
 		sourceColumn: num_compte
 
@@ -23,20 +27,23 @@ table gdw_impayes
 
 	column mnt_impayes_cdl
 		dataType: double
-		summarizeBy: none
+		lineageTag: 50adab1f-d7fb-4004-84ed-b41e239e4257
+		summarizeBy: sum
 		sourceColumn: mnt_impayes_cdl
 
 		annotation SummarizationSetBy = Automatic
 
 	column mnt_creance
 		dataType: double
-		summarizeBy: none
+		lineageTag: e3d23e87-1ee7-4810-a6be-f895409fa188
+		summarizeBy: sum
 		sourceColumn: mnt_creance
 
 		annotation SummarizationSetBy = Automatic
 
 	column cod_statut_incident
 		dataType: string
+		lineageTag: 1324ff35-05ad-438b-b15e-e486f79df07f
 		summarizeBy: none
 		sourceColumn: cod_statut_incident
 
@@ -44,35 +51,67 @@ table gdw_impayes
 
 	column date_mise_impaye
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 11a4a580-2df1-494f-839d-488f07480960
 		summarizeBy: none
 		sourceColumn: date_mise_impaye
 
+		variation Variation
+			isDefault
+			relationship: ba1d5a78-1e36-4900-96e6-3237cda839de
+			defaultHierarchy: LocalDateTable_a84fdbcc-87d8-48d3-a1a1-85f700c377cc.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column date_echeance
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 27f48316-6d3f-42cf-9445-e047e1041847
 		summarizeBy: none
 		sourceColumn: date_echeance
 
+		variation Variation
+			isDefault
+			relationship: 8a4cead4-ea3d-4c64-b146-cca6fe3541e6
+			defaultHierarchy: LocalDateTable_be883712-4ebc-4d2c-a155-d4beada33368.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column date_arrete
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 3937bb39-9edf-4df4-b219-78678d303217
 		summarizeBy: none
 		sourceColumn: date_arrete
 
+		variation Variation
+			isDefault
+			relationship: 98a5692e-fd2b-4610-8370-e961abadc8e2
+			defaultHierarchy: LocalDateTable_840c7790-ac51-499c-b831-cac77f6f1cdb.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column 'Classe CDL' = SWITCH(gdw_impayes[cod_statut_incident], "PD","1-Pré-douteux", "DT","2-Douteux", "CP","3-Compromis", "IM","0-Impayé", "RB","Sain", BLANK())
 		dataType: string
+		lineageTag: a2ea0fc6-8535-44c4-826d-62c3467e877a
 		summarizeBy: none
 
 	column 'Aging Jours' = DATEDIFF(gdw_impayes[date_mise_impaye], gdw_impayes[date_arrete], DAY)
 		dataType: int64
-		summarizeBy: none
+		lineageTag: a6e133b4-e279-4313-bd4c-1a76969fa0af
+		summarizeBy: sum
+
+		annotation SummarizationSetBy = Automatic
 
 	column 'Tranche Aging' = SWITCH(TRUE(), ISBLANK(gdw_impayes[date_mise_impaye]), "Non daté", gdw_impayes[Aging Jours] <= 30, "0-30j", gdw_impayes[Aging Jours] <= 60, "30-60j", gdw_impayes[Aging Jours] <= 90, "60-90j", "90j+")
 		dataType: string
+		lineageTag: a449d809-c134-4525-8220-4dc2f60c811f
 		summarizeBy: none
 
 	partition gdw_impayes = m
@@ -97,3 +136,4 @@ table gdw_impayes
 				    })
 				in
 				    Typed
+

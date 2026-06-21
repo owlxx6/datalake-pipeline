@@ -1,49 +1,65 @@
 table dim_temps
+	lineageTag: be642f88-008c-40ab-8f3f-61ad1bca73a7
 
 	column date_key
 		dataType: int64
-		summarizeBy: none
+		lineageTag: b2441fa7-1dae-4b19-8033-f3f4ed1c02d0
+		summarizeBy: sum
 		sourceColumn: date_key
 
 		annotation SummarizationSetBy = Automatic
 
 	column date
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: f619c63f-961b-4a67-8764-157b5e6dcc42
 		summarizeBy: none
 		sourceColumn: date
 
+		variation Variation
+			isDefault
+			relationship: 0a87a881-4edd-4ba2-8cea-9a523d53c870
+			defaultHierarchy: LocalDateTable_c9322f5a-dbb2-4d24-b12b-224b7a6e5946.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column jour
 		dataType: int64
-		summarizeBy: none
+		lineageTag: b19545a2-e574-4a3d-a337-b7f9595e1895
+		summarizeBy: sum
 		sourceColumn: jour
 
 		annotation SummarizationSetBy = Automatic
 
 	column mois
 		dataType: int64
-		summarizeBy: none
+		lineageTag: a480ea95-36fd-4a46-a552-36be2d1cdcb9
+		summarizeBy: sum
 		sourceColumn: mois
 
 		annotation SummarizationSetBy = Automatic
 
 	column trimestre
 		dataType: int64
-		summarizeBy: none
+		lineageTag: bf73b803-9dcc-4142-9a8a-108ddf9abc5f
+		summarizeBy: sum
 		sourceColumn: trimestre
 
 		annotation SummarizationSetBy = Automatic
 
 	column annee
 		dataType: int64
-		summarizeBy: none
+		lineageTag: 5f754f0f-0277-4d22-a2cf-14a2954b1356
+		summarizeBy: sum
 		sourceColumn: annee
 
 		annotation SummarizationSetBy = Automatic
 
 	column lib_mois
 		dataType: string
+		lineageTag: 5df31b1a-9125-47b8-96ec-9d5041179fe6
 		summarizeBy: none
 		sourceColumn: lib_mois
 
@@ -73,3 +89,4 @@ table dim_temps
 				    })
 				in
 				    Typed
+

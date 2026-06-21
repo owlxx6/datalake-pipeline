@@ -1,0 +1,42 @@
+table recouvrement
+	lineageTag: 63ee7e8f-b70a-4cdf-8920-2a86ed86fa91
+
+	column nbr_impayes
+		dataType: int64
+		formatString: 0
+		lineageTag: 4d982da1-dfe0-4eb9-84b8-70f03d36db28
+		summarizeBy: sum
+		sourceColumn: nbr_impayes
+
+		annotation SummarizationSetBy = Automatic
+
+	column nbr_imp_non_reg
+		dataType: int64
+		formatString: 0
+		lineageTag: 762c9470-52fa-424d-9f45-14e2768a5630
+		summarizeBy: sum
+		sourceColumn: nbr_imp_non_reg
+
+		annotation SummarizationSetBy = Automatic
+
+	column nbr_regularises
+		dataType: int64
+		formatString: 0
+		lineageTag: 50ca8cbc-caca-4578-9dbb-af112149f4db
+		summarizeBy: sum
+		sourceColumn: nbr_regularises
+
+		annotation SummarizationSetBy = Automatic
+
+	partition recouvrement = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\Alienware\Desktop\dlp\powerbi\recouvrement.csv"),[Delimiter=",", Columns=3, Encoding=1252, QuoteStyle=QuoteStyle.None]),
+				    #"En-têtes promus" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Type modifié" = Table.TransformColumnTypes(#"En-têtes promus",{{"nbr_impayes", Int64.Type}, {"nbr_imp_non_reg", Int64.Type}, {"nbr_regularises", Int64.Type}})
+				in
+				    #"Type modifié"
+
+	annotation PBI_ResultType = Table
+

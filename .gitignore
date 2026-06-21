@@ -10,3 +10,8 @@ echantillon/
 # exports CSV Gold pour Power BI (données bancaires — jamais committées)
 exports/
 .DS_Store
+# Power BI — fichiers locaux & cache de données (contient la donnée importée — jamais committé)
+.pbi/
+*.abf
+*.pbix
+*- Copie.csv

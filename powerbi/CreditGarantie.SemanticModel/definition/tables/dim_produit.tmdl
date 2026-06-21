@@ -1,7 +1,9 @@
 table dim_produit
+	lineageTag: 7c509c61-4c92-42c9-b6c0-69dc8fe3445d
 
 	column idf_code_produit
 		dataType: string
+		lineageTag: f23333ab-e5ff-4abe-be0b-99125539434d
 		summarizeBy: none
 		sourceColumn: idf_code_produit
 
@@ -9,6 +11,7 @@ table dim_produit
 
 	column cod_sop
 		dataType: string
+		lineageTag: 5a63639d-7544-475c-9013-d0e7a22e0a43
 		summarizeBy: none
 		sourceColumn: cod_sop
 
@@ -16,6 +19,7 @@ table dim_produit
 
 	column cod_activite
 		dataType: string
+		lineageTag: 11210c48-7479-48cf-83f6-480906edeb87
 		summarizeBy: none
 		sourceColumn: cod_activite
 
@@ -23,6 +27,7 @@ table dim_produit
 
 	column lib_activite
 		dataType: string
+		lineageTag: 6aa17029-9163-4065-8fbb-f2be37013b38
 		summarizeBy: none
 		sourceColumn: lib_activite
 
@@ -30,6 +35,7 @@ table dim_produit
 
 	column cod_famille
 		dataType: string
+		lineageTag: 53e830cc-db2f-4007-95d1-e960cb0da6af
 		summarizeBy: none
 		sourceColumn: cod_famille
 
@@ -37,6 +43,7 @@ table dim_produit
 
 	column lib_famille
 		dataType: string
+		lineageTag: 1a8b263b-bb7d-447c-91a4-37ef1f14e179
 		summarizeBy: none
 		sourceColumn: lib_famille
 
@@ -44,6 +51,7 @@ table dim_produit
 
 	column prod_commercial
 		dataType: string
+		lineageTag: 7e5be0cf-bbc5-4d12-ae35-2ab51377601a
 		summarizeBy: none
 		sourceColumn: prod_commercial
 
@@ -51,6 +59,7 @@ table dim_produit
 
 	column lib_produit
 		dataType: string
+		lineageTag: 3e8e8f09-22b9-4b3e-934d-e2801e71d0b9
 		summarizeBy: none
 		sourceColumn: lib_produit
 
@@ -58,6 +67,7 @@ table dim_produit
 
 	column cod_usage
 		dataType: string
+		lineageTag: 2753b7d4-c4b0-4738-ba77-0f7025ae2afe
 		summarizeBy: none
 		sourceColumn: cod_usage
 
@@ -65,6 +75,7 @@ table dim_produit
 
 	column cod_typ_produit
 		dataType: string
+		lineageTag: f3a84e19-6155-4453-be5b-131af61254a5
 		summarizeBy: none
 		sourceColumn: cod_typ_produit
 
@@ -78,3 +89,4 @@ table dim_produit
 				    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true])
 				in
 				    Promoted
+

@@ -25,3 +25,69 @@ relationship rel_synth_portefeuille
 relationship rel_portef_org
 	fromColumn: dim_portefeuille.idf_num_gui
 	toColumn: dim_organisation.idf_num_gui
+
+relationship dd9aaf06-b56c-48a5-b30a-e1bc86a2ea5f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: br_credit_garantie_quality_results.date_situation
+	toColumn: LocalDateTable_85797ae8-8f8c-4c7d-9c81-182956afb1ed.Date
+
+relationship 59279aaa-116e-40fa-9fca-28f0b646c117
+	joinOnDateBehavior: datePartOnly
+	fromColumn: br_credit_garantie_quality_results.execution_date
+	toColumn: LocalDateTable_b81880c3-119d-4857-8489-11be0c0315f7.Date
+
+relationship 0a87a881-4edd-4ba2-8cea-9a523d53c870
+	joinOnDateBehavior: datePartOnly
+	fromColumn: dim_temps.date
+	toColumn: LocalDateTable_c9322f5a-dbb2-4d24-b12b-224b7a6e5946.Date
+
+relationship 9393c9c3-7348-493d-a4f8-fc0f84f0d4cb
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fait_autorisations.date_arrete
+	toColumn: LocalDateTable_910057f5-cfe6-4362-be01-8823f461bc9a.Date
+
+relationship 25efd601-241c-4021-a6a3-e39f1b8646f5
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fait_depassement.date_entree
+	toColumn: LocalDateTable_57063cff-7e5c-40ad-9b77-fe6b8c9790f3.Date
+
+relationship 086fc686-9518-4b99-8763-aa9277e5acb7
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fait_depassement.date_sortie
+	toColumn: LocalDateTable_78630023-073a-4e1f-af71-7fdaabbb3def.Date
+
+relationship 7ea6ad1a-5c90-43ab-8220-ae28add4aefe
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fait_depassement.date_arrete
+	toColumn: LocalDateTable_946fc91a-2066-423e-8607-b14b7ab2abf7.Date
+
+relationship e8bb6802-6cf2-4b57-92ba-77122619d02c
+	joinOnDateBehavior: datePartOnly
+	fromColumn: fait_garanties.date_arrete
+	toColumn: LocalDateTable_6e652d8c-74e4-44ed-b505-f321dbd96aaa.Date
+
+relationship ba1d5a78-1e36-4900-96e6-3237cda839de
+	joinOnDateBehavior: datePartOnly
+	fromColumn: gdw_impayes.date_mise_impaye
+	toColumn: LocalDateTable_a84fdbcc-87d8-48d3-a1a1-85f700c377cc.Date
+
+relationship 8a4cead4-ea3d-4c64-b146-cca6fe3541e6
+	joinOnDateBehavior: datePartOnly
+	fromColumn: gdw_impayes.date_echeance
+	toColumn: LocalDateTable_be883712-4ebc-4d2c-a155-d4beada33368.Date
+
+relationship 98a5692e-fd2b-4610-8370-e961abadc8e2
+	joinOnDateBehavior: datePartOnly
+	fromColumn: gdw_impayes.date_arrete
+	toColumn: LocalDateTable_840c7790-ac51-499c-b831-cac77f6f1cdb.Date
+
+relationship 735b1e0b-48d0-489b-a3a8-d4dfd6d18c5f
+	joinOnDateBehavior: datePartOnly
+	fromColumn: gdw_synthese_credit.date_arrete
+	toColumn: LocalDateTable_db9afe80-6020-419a-8f01-31225c85d909.Date
+
+relationship 7619f713-a019-4ec7-9099-700e506fcf4d
+	joinOnDateBehavior: datePartOnly
+	fromColumn: tendance_simulee.date_arrete
+	toColumn: LocalDateTable_3377b74d-e5b2-4ab1-b630-715ebe25e310.Date
+

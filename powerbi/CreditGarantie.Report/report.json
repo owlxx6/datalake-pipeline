@@ -1,61 +1,420 @@
 {
-  "config": "{\"version\": \"5.55\", \"themeCollection\": {\"baseTheme\": {\"name\": \"CY24SU10\"}}, \"activeSectionIndex\": 0, \"settings\": {\"useStylableVisualContainerHeader\": true, \"useNewFilterPaneExperience\": true}}",
+  "config": "{\"version\":\"5.73\",\"themeCollection\":{\"baseTheme\":{\"name\":\"CY26SU05\",\"version\":{\"visual\":\"2.9.0\",\"report\":\"3.3.0\",\"page\":\"2.3.1\"},\"type\":2},\"customTheme\":{\"name\":\"AccessibleNeutral\",\"version\":{\"visual\":\"2.10.0\",\"report\":\"3.4.0\",\"page\":\"2.3.1\"},\"type\":2}},\"activeSectionIndex\":4,\"linguisticSchemaSyncVersion\":2,\"settings\":{\"useStylableVisualContainerHeader\":true,\"useNewFilterPaneExperience\":true,\"useEnhancedTooltips\":false},\"objects\":{\"outspacePane\":[{\"properties\":{\"expanded\":{\"expr\":{\"Literal\":{\"Value\":\"false\"}}}}}]}}",
   "layoutOptimization": 0,
+  "resourcePackages": [
+    {
+      "resourcePackage": {
+        "disabled": false,
+        "items": [
+          {
+            "name": "AccessibleNeutral",
+            "path": "BuiltInThemes/AccessibleNeutral.json",
+            "type": 201
+          },
+          {
+            "name": "CY26SU05",
+            "path": "BaseThemes/CY26SU05.json",
+            "type": 202
+          }
+        ],
+        "name": "SharedResources",
+        "type": 2
+      }
+    }
+  ],
   "sections": [
     {
-      "name": "d1",
+      "config": "{}",
       "displayName": "D1 - Pilotage",
-      "filters": "[]",
-      "ordinal": 0,
-      "visualContainers": [],
-      "config": "{}",
       "displayOption": 1,
-      "width": 1280,
-      "height": 720
+      "filters": "[]",
+      "height": 720.00,
+      "name": "d1",
+      "visualContainers": [
+        {
+          "config": "{\"name\":\"19e15221420c7ce98904\",\"layouts\":[{\"id\":0,\"position\":{\"x\":298.5714285714286,\"y\":1.4285714285714286,\"z\":1000,\"width\":322.8571428571429,\"height\":110,\"tabOrder\":1000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Montant Impayés\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Impayés\"},\"Name\":\"gdw_synthese_credit.Montant Impayés\",\"NativeReferenceName\":\"Montant Impayés\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Impayés\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 110.00,
+          "width": 322.86,
+          "x": 298.57,
+          "y": 1.43,
+          "z": 1000.00
+        },
+        {
+          "config": "{\"name\":\"2acf3c6de434908261b3\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":474.28571428571433,\"z\":5000,\"width\":424.28571428571433,\"height\":245.71428571428572,\"tabOrder\":5000}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"gdw_synthese_credit.Montant en Défaut\"},{\"queryRef\":\"dim_tiers.raison_sociale\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0},{\"Name\":\"d\",\"Entity\":\"dim_tiers\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant en Défaut\"},\"Name\":\"gdw_synthese_credit.Montant en Défaut\",\"NativeReferenceName\":\"Montant en Défaut\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"d\"}},\"Property\":\"raison_sociale\"},\"Name\":\"dim_tiers.raison_sociale\",\"NativeReferenceName\":\"raison_sociale\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant en Défaut\"}}}]},\"objects\":{},\"vcObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Top Clients a risque '\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"italic\":{\"expr\":{\"Literal\":{\"Value\":\"false\"}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"heading\":{\"expr\":{\"Literal\":{\"Value\":\"'Normal'\"}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}}}}]}}}",
+          "filters": "[]",
+          "height": 245.71,
+          "width": 424.29,
+          "x": 0.00,
+          "y": 474.29,
+          "z": 5000.00
+        },
+        {
+          "config": "{\"name\":\"823b1dc53dc2ea5690ca\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":115.71428571428572,\"z\":4000,\"width\":1280,\"height\":341.42857142857144,\"tabOrder\":4000}}],\"singleVisual\":{\"visualType\":\"pieChart\",\"projections\":{\"Category\":[{\"queryRef\":\"gdw_synthese_credit.lib_famille\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Encours Total\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"lib_famille\"},\"Name\":\"gdw_synthese_credit.lib_famille\",\"NativeReferenceName\":\"lib_famille\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Encours Total\"},\"Name\":\"gdw_synthese_credit.Encours Total\",\"NativeReferenceName\":\"Encours Total\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Encours Total\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Répartition de l''encours par famille'\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 341.43,
+          "width": 1280.00,
+          "x": 0.00,
+          "y": 115.71,
+          "z": 4000.00
+        },
+        {
+          "config": "{\"name\":\"a5a98e4c74d4399aeab8\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":1.4285714285714286,\"z\":0,\"width\":310,\"height\":110,\"tabOrder\":0}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Encours Total\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Encours Total\"},\"Name\":\"gdw_synthese_credit.Encours Total\",\"NativeReferenceName\":\"Encours Total\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Encours Total\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 110.00,
+          "width": 310.00,
+          "x": 0.00,
+          "y": 1.43,
+          "z": 0.00
+        },
+        {
+          "config": "{\"name\":\"afe59dfa0288d6a4da42\",\"layouts\":[{\"id\":0,\"position\":{\"x\":607.1428571428572,\"y\":1.4285714285714286,\"z\":2000,\"width\":351.42857142857144,\"height\":110,\"tabOrder\":2000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Valeur Garanties\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"},\"Name\":\"gdw_synthese_credit.Valeur Garanties\",\"NativeReferenceName\":\"Valeur Garanties\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 110.00,
+          "width": 351.43,
+          "x": 607.14,
+          "y": 1.43,
+          "z": 2000.00
+        },
+        {
+          "config": "{\"name\":\"cca36adb83c3aac55c90\",\"layouts\":[{\"id\":0,\"position\":{\"x\":424.28571428571433,\"y\":474.28571428571433,\"z\":6000,\"width\":855.7142857142858,\"height\":245.71428571428572,\"tabOrder\":6000}}],\"singleVisual\":{\"visualType\":\"lineChart\",\"projections\":{\"Y\":[{\"queryRef\":\"Sum(tendance_simulee.encours)\"},{\"queryRef\":\"Sum(tendance_simulee.impayes)\"}],\"Category\":[{\"queryRef\":\"tendance_simulee.date_arrete\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"t\",\"Entity\":\"tendance_simulee\",\"Type\":0}],\"Select\":[{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"encours\"}},\"Function\":0},\"Name\":\"Sum(tendance_simulee.encours)\",\"NativeReferenceName\":\"encours\"},{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"impayes\"}},\"Function\":0},\"Name\":\"Sum(tendance_simulee.impayes)\",\"NativeReferenceName\":\"impayes\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"date_arrete\"},\"Name\":\"tendance_simulee.date_arrete\",\"NativeReferenceName\":\"date_arrete\"}],\"OrderBy\":[{\"Direction\":1,\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"date_arrete\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Encours vs Impayés'\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 245.71,
+          "width": 855.71,
+          "x": 424.29,
+          "y": 474.29,
+          "z": 6000.00
+        },
+        {
+          "config": "{\"name\":\"db7ae1573c8129608064\",\"layouts\":[{\"id\":0,\"position\":{\"x\":944.2857142857143,\"y\":1.4285714285714286,\"z\":3000,\"width\":335.7142857142857,\"height\":110,\"tabOrder\":3000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Risque Net\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Risque Net\"},\"Name\":\"gdw_synthese_credit.Risque Net\",\"NativeReferenceName\":\"Risque Net\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Risque Net\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 110.00,
+          "width": 335.71,
+          "x": 944.29,
+          "y": 1.43,
+          "z": 3000.00
+        }
+      ],
+      "width": 1280.00
     },
     {
-      "name": "d2",
+      "config": "{}",
       "displayName": "D2 - Risque & Impayés",
+      "displayOption": 1,
       "filters": "[]",
+      "height": 720.00,
+      "name": "d2",
       "ordinal": 1,
-      "visualContainers": [],
-      "config": "{}",
-      "displayOption": 1,
-      "width": 1280,
-      "height": 720
+      "visualContainers": [
+        {
+          "config": "{\"name\":\"114283822e8de1a709c5\",\"layouts\":[{\"id\":0,\"position\":{\"x\":627.1428571428572,\"y\":0,\"z\":2000,\"width\":314.2857142857143,\"height\":121.42857142857143,\"tabOrder\":2000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Montant en Défaut\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant en Défaut\"},\"Name\":\"gdw_synthese_credit.Montant en Défaut\",\"NativeReferenceName\":\"Montant en Défaut\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant en Défaut\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 121.43,
+          "width": 314.29,
+          "x": 627.14,
+          "y": 0.00,
+          "z": 2000.00
+        },
+        {
+          "config": "{\"name\":\"151f3d1d1b40587e026d\",\"layouts\":[{\"id\":0,\"position\":{\"x\":640,\"y\":121.42857142857143,\"z\":4000,\"width\":640,\"height\":194.2857142857143,\"tabOrder\":4000}}],\"singleVisual\":{\"visualType\":\"columnChart\",\"projections\":{\"Category\":[{\"queryRef\":\"gdw_impayes.Tranche Aging\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Montant Impayés\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_impayes\",\"Type\":0},{\"Name\":\"g1\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Tranche Aging\"},\"Name\":\"gdw_impayes.Tranche Aging\",\"NativeReferenceName\":\"Tranche Aging\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g1\"}},\"Property\":\"Montant Impayés\"},\"Name\":\"gdw_synthese_credit.Montant Impayés\",\"NativeReferenceName\":\"Montant Impayés\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g1\"}},\"Property\":\"Montant Impayés\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Aging calendaire des impayés '\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 194.29,
+          "width": 640.00,
+          "x": 640.00,
+          "y": 121.43,
+          "z": 4000.00
+        },
+        {
+          "config": "{\"name\":\"3b3e6b16d8a930d42ebd\",\"layouts\":[{\"id\":0,\"position\":{\"x\":305.7142857142857,\"y\":0,\"z\":1000,\"width\":334.28571428571433,\"height\":121.42857142857143,\"tabOrder\":1000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.NPL\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"NPL\"},\"Name\":\"gdw_synthese_credit.NPL\",\"NativeReferenceName\":\"NPL\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"NPL\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 121.43,
+          "width": 334.29,
+          "x": 305.71,
+          "y": 0.00,
+          "z": 1000.00
+        },
+        {
+          "config": "{\"name\":\"474e3a2284e402001067\",\"layouts\":[{\"id\":0,\"position\":{\"x\":361.42857142857144,\"y\":315.7142857142857,\"z\":7000,\"width\":918.5714285714287,\"height\":235.71428571428572,\"tabOrder\":7000}}],\"singleVisual\":{\"visualType\":\"lineChart\",\"projections\":{\"Category\":[{\"queryRef\":\"tendance_simulee.date_arrete\",\"active\":true}],\"Y\":[{\"queryRef\":\"Sum(tendance_simulee.impayes)\"},{\"queryRef\":\"Sum(tendance_simulee.encours)\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"t\",\"Entity\":\"tendance_simulee\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"date_arrete\"},\"Name\":\"tendance_simulee.date_arrete\",\"NativeReferenceName\":\"date_arrete\"},{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"impayes\"}},\"Function\":0},\"Name\":\"Sum(tendance_simulee.impayes)\",\"NativeReferenceName\":\"impayes\"},{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"encours\"}},\"Function\":0},\"Name\":\"Sum(tendance_simulee.encours)\",\"NativeReferenceName\":\"encours\"}],\"OrderBy\":[{\"Direction\":1,\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"t\"}},\"Property\":\"date_arrete\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Evolution des impayés '\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"12D\"}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}}}}]}}}",
+          "filters": "[]",
+          "height": 235.71,
+          "width": 918.57,
+          "x": 361.43,
+          "y": 315.71,
+          "z": 7000.00
+        },
+        {
+          "config": "{\"name\":\"498f40aaea60c614194a\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":0,\"z\":0,\"width\":320,\"height\":121.42857142857143,\"tabOrder\":0}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Taux Impayé\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Taux Impayé\"},\"Name\":\"gdw_synthese_credit.Taux Impayé\",\"NativeReferenceName\":\"Taux Impayé\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Taux Impayé\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 121.43,
+          "width": 320.00,
+          "x": 0.00,
+          "y": 0.00,
+          "z": 0.00
+        },
+        {
+          "config": "{\"name\":\"723cabd31cc036dd3110\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":121.42857142857143,\"z\":3000,\"width\":640,\"height\":172.85714285714286,\"tabOrder\":3000}}],\"singleVisual\":{\"visualType\":\"columnChart\",\"projections\":{\"Category\":[{\"queryRef\":\"gdw_impayes.Classe CDL\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Montant Impayés\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_impayes\",\"Type\":0},{\"Name\":\"g1\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Classe CDL\"},\"Name\":\"gdw_impayes.Classe CDL\",\"NativeReferenceName\":\"Classe CDL\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g1\"}},\"Property\":\"Montant Impayés\"},\"Name\":\"gdw_synthese_credit.Montant Impayés\",\"NativeReferenceName\":\"Montant Impayés\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g1\"}},\"Property\":\"Montant Impayés\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Impayés par classe CDL'\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}}}}]}}}",
+          "filters": "[]",
+          "height": 172.86,
+          "width": 640.00,
+          "x": 0.00,
+          "y": 121.43,
+          "z": 3000.00
+        },
+        {
+          "config": "{\"name\":\"925e39bd3665bd5d4600\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":551.4285714285714,\"z\":6000,\"width\":1280,\"height\":168.57142857142858,\"tabOrder\":6000}}],\"singleVisual\":{\"visualType\":\"pivotTable\",\"projections\":{\"Rows\":[{\"queryRef\":\"dim_tiers.cod_catg_jur\",\"active\":true}],\"Columns\":[{\"queryRef\":\"gdw_synthese_credit.lib_famille\",\"active\":true}],\"Values\":[{\"queryRef\":\"gdw_synthese_credit.Taux Impayé\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"d\",\"Entity\":\"dim_tiers\",\"Type\":0},{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"d\"}},\"Property\":\"cod_catg_jur\"},\"Name\":\"dim_tiers.cod_catg_jur\",\"NativeReferenceName\":\"cod_catg_jur\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"lib_famille\"},\"Name\":\"gdw_synthese_credit.lib_famille\",\"NativeReferenceName\":\"lib_famille\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Taux Impayé\"},\"Name\":\"gdw_synthese_credit.Taux Impayé\",\"NativeReferenceName\":\"Taux Impayé\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"d\"}},\"Property\":\"cod_catg_jur\"}}}]},\"objects\":{\"columnWidth\":[{\"properties\":{\"value\":{\"expr\":{\"Literal\":{\"Value\":\"225D\"}}}},\"selector\":{\"metadata\":\"dim_tiers.cod_catg_jur\"}}],\"columnHeaders\":[{\"properties\":{}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Matrice Risque: Segment x Produit'\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 168.57,
+          "width": 1280.00,
+          "x": 0.00,
+          "y": 551.43,
+          "z": 6000.00
+        },
+        {
+          "config": "{\"name\":\"ac6c249ce5e8d099b085\",\"layouts\":[{\"id\":0,\"position\":{\"x\":931.4285714285714,\"y\":0,\"z\":8000,\"width\":348.5714285714286,\"height\":121.42857142857143,\"tabOrder\":8000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"Sum(kpi_simules.taux_recouvrement)\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"k\",\"Entity\":\"kpi_simules\",\"Type\":0}],\"Select\":[{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"k\"}},\"Property\":\"Taux recouvrement\"}},\"Function\":0},\"Name\":\"Sum(kpi_simules.taux_recouvrement)\",\"NativeReferenceName\":\"Taux recouvrement\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"k\"}},\"Property\":\"Taux recouvrement\"}},\"Function\":0}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 121.43,
+          "width": 348.57,
+          "x": 931.43,
+          "y": 0.00,
+          "z": 8000.00
+        },
+        {
+          "config": "{\"name\":\"e0790c6b1896973477de\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":315.7142857142857,\"z\":5000,\"width\":361.42857142857144,\"height\":235.71428571428572,\"tabOrder\":5000}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"gdw_impayes.idf_num_creance\"},{\"queryRef\":\"gdw_synthese_credit.Montant Créances\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_impayes\",\"Type\":0},{\"Name\":\"g1\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"idf_num_creance\"},\"Name\":\"gdw_impayes.idf_num_creance\",\"NativeReferenceName\":\"idf_num_creance\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g1\"}},\"Property\":\"Montant Créances\"},\"Name\":\"gdw_synthese_credit.Montant Créances\",\"NativeReferenceName\":\"Montant Créances\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g1\"}},\"Property\":\"Montant Créances\"}}}]},\"objects\":{\"columnWidth\":[{\"properties\":{\"value\":{\"expr\":{\"Literal\":{\"Value\":\"151.82229155543683D\"}}}},\"selector\":{\"metadata\":\"gdw_synthese_credit.Montant Créances\"}},{\"properties\":{\"value\":{\"expr\":{\"Literal\":{\"Value\":\"183.99999389219857D\"}}}},\"selector\":{\"metadata\":\"gdw_impayes.idf_num_creance\"}}],\"columnHeaders\":[{\"properties\":{}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Top Créances en Défaut'\"}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"12D\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}}}}]}}}",
+          "filters": "[]",
+          "height": 235.71,
+          "width": 361.43,
+          "x": 0.00,
+          "y": 315.71,
+          "z": 5000.00
+        }
+      ],
+      "width": 1280.00
     },
     {
-      "name": "d3",
+      "config": "{}",
       "displayName": "D3 - Production",
+      "displayOption": 1,
       "filters": "[]",
+      "height": 720.00,
+      "name": "d3",
       "ordinal": 2,
-      "visualContainers": [],
-      "config": "{}",
-      "displayOption": 1,
-      "width": 1280,
-      "height": 720
+      "visualContainers": [
+        {
+          "config": "{\"name\":\"0002297cab900d47e64e\",\"layouts\":[{\"id\":0,\"position\":{\"x\":921.4285714285714,\"y\":0,\"z\":6000,\"width\":358.5714285714286,\"height\":104.28571428571429,\"tabOrder\":6000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"Sum(kpi_simules.taux_acceptation)\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"k\",\"Entity\":\"kpi_simules\",\"Type\":0}],\"Select\":[{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"k\"}},\"Property\":\"Taux D'acceptation\"}},\"Function\":0},\"Name\":\"Sum(kpi_simules.taux_acceptation)\",\"NativeReferenceName\":\"Taux D'acceptation\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"k\"}},\"Property\":\"Taux D'acceptation\"}},\"Function\":0}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"''\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 104.29,
+          "width": 358.57,
+          "x": 921.43,
+          "y": 0.00,
+          "z": 6000.00
+        },
+        {
+          "config": "{\"name\":\"20f8b8cf40320cd10e08\",\"layouts\":[{\"id\":0,\"position\":{\"x\":605.7142857142858,\"y\":1.4285714285714286,\"z\":1000,\"width\":327.14285714285717,\"height\":102.85714285714286,\"tabOrder\":1000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Ticket Moyen\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Ticket Moyen\"},\"Name\":\"gdw_synthese_credit.Ticket Moyen\",\"NativeReferenceName\":\"Ticket Moyen\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Ticket Moyen\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 102.86,
+          "width": 327.14,
+          "x": 605.71,
+          "y": 1.43,
+          "z": 1000.00
+        },
+        {
+          "config": "{\"name\":\"245862f965add7699324\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":104.28571428571429,\"z\":3000,\"width\":404.28571428571433,\"height\":615.7142857142858,\"tabOrder\":3000}}],\"singleVisual\":{\"visualType\":\"clusteredColumnChart\",\"projections\":{\"Category\":[{\"queryRef\":\"gdw_synthese_credit.lib_famille\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Montant Crédit\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"lib_famille\"},\"Name\":\"gdw_synthese_credit.lib_famille\",\"NativeReferenceName\":\"lib_famille1\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Crédit\"},\"Name\":\"gdw_synthese_credit.Montant Crédit\",\"NativeReferenceName\":\"Montant Crédit\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Crédit\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Production par famille'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 615.71,
+          "width": 404.29,
+          "x": 0.00,
+          "y": 104.29,
+          "z": 3000.00
+        },
+        {
+          "config": "{\"name\":\"3d65d1b5d0d184906d05\",\"layouts\":[{\"id\":0,\"position\":{\"x\":315.7142857142857,\"y\":0,\"z\":0,\"width\":301.42857142857144,\"height\":104.28571428571429,\"tabOrder\":0}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Montant Crédit\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Crédit\"},\"Name\":\"gdw_synthese_credit.Montant Crédit\",\"NativeReferenceName\":\"Montant Crédit\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Crédit\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 104.29,
+          "width": 301.43,
+          "x": 315.71,
+          "y": 0.00,
+          "z": 0.00
+        },
+        {
+          "config": "{\"name\":\"43c2b3d90137e1ddc894\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":0,\"z\":2000,\"width\":325.7142857142857,\"height\":104.28571428571429,\"tabOrder\":2000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Nombre Crédits\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Nombre Crédits\"},\"Name\":\"gdw_synthese_credit.Nombre Crédits\",\"NativeReferenceName\":\"Nombre Crédits\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Nombre Crédits\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 104.29,
+          "width": 325.71,
+          "x": 0.00,
+          "y": 0.00,
+          "z": 2000.00
+        },
+        {
+          "config": "{\"name\":\"8a234333bd2ec86e03e6\",\"layouts\":[{\"id\":0,\"position\":{\"x\":842.8571428571429,\"y\":104.28571428571429,\"z\":5000,\"width\":437.14285714285717,\"height\":615.7142857142858,\"tabOrder\":5000}}],\"singleVisual\":{\"visualType\":\"clusteredColumnChart\",\"projections\":{\"Category\":[{\"queryRef\":\"dim_organisation.lib_court_gui\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Encours Total\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"d\",\"Entity\":\"dim_organisation\",\"Type\":0},{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"d\"}},\"Property\":\"lib_court_gui\"},\"Name\":\"dim_organisation.lib_court_gui\",\"NativeReferenceName\":\"lib_court_gui\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Encours Total\"},\"Name\":\"gdw_synthese_credit.Encours Total\",\"NativeReferenceName\":\"Encours Total\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Encours Total\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Encours par agence'\"}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 615.71,
+          "width": 437.14,
+          "x": 842.86,
+          "y": 104.29,
+          "z": 5000.00
+        },
+        {
+          "config": "{\"name\":\"f781947f5750b77e9c96\",\"layouts\":[{\"id\":0,\"position\":{\"x\":420,\"y\":104.28571428571429,\"z\":4000,\"width\":438.5714285714286,\"height\":615.7142857142858,\"tabOrder\":4000}}],\"singleVisual\":{\"visualType\":\"clusteredColumnChart\",\"projections\":{\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Montant Crédit\"}],\"Category\":[{\"queryRef\":\"gdw_synthese_credit.Année Accord\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Crédit\"},\"Name\":\"gdw_synthese_credit.Montant Crédit\",\"NativeReferenceName\":\"Montant Crédit\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Année Accord\"},\"Name\":\"gdw_synthese_credit.Année Accord\",\"NativeReferenceName\":\"Année Accord\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Crédit\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Production par année d''accord'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 615.71,
+          "width": 438.57,
+          "x": 420.00,
+          "y": 104.29,
+          "z": 4000.00
+        }
+      ],
+      "width": 1280.00
     },
     {
-      "name": "d4",
+      "config": "{}",
       "displayName": "D4 - Autorisations",
-      "filters": "[]",
-      "ordinal": 3,
-      "visualContainers": [],
-      "config": "{}",
       "displayOption": 1,
-      "width": 1280,
-      "height": 720
+      "filters": "[]",
+      "height": 720.00,
+      "name": "d4",
+      "ordinal": 3,
+      "visualContainers": [
+        {
+          "config": "{\"name\":\"1503bd84e6c2a892c0ea\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":0,\"z\":0,\"width\":310,\"height\":150,\"tabOrder\":0}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Montant Autorisé\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Autorisé\"},\"Name\":\"gdw_synthese_credit.Montant Autorisé\",\"NativeReferenceName\":\"Montant Autorisé\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Autorisé\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 150.00,
+          "width": 310.00,
+          "x": 0.00,
+          "y": 0.00,
+          "z": 0.00
+        },
+        {
+          "config": "{\"name\":\"30d9a48577035c787198\",\"layouts\":[{\"id\":0,\"position\":{\"x\":600,\"y\":0,\"z\":2000,\"width\":352.8571428571429,\"height\":150,\"tabOrder\":2000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Taux Utilisation\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Taux Utilisation\"},\"Name\":\"gdw_synthese_credit.Taux Utilisation\",\"NativeReferenceName\":\"Taux Utilisation\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Taux Utilisation\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 150.00,
+          "width": 352.86,
+          "x": 600.00,
+          "y": 0.00,
+          "z": 2000.00
+        },
+        {
+          "config": "{\"name\":\"43f2406653bc0482117b\",\"layouts\":[{\"id\":0,\"position\":{\"x\":300,\"y\":0,\"z\":1000,\"width\":310,\"height\":150,\"tabOrder\":1000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Montant Utilisé\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Utilisé\"},\"Name\":\"gdw_synthese_credit.Montant Utilisé\",\"NativeReferenceName\":\"Montant Utilisé\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Utilisé\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 150.00,
+          "width": 310.00,
+          "x": 300.00,
+          "y": 0.00,
+          "z": 1000.00
+        },
+        {
+          "config": "{\"name\":\"469729f804541c893401\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":150,\"z\":4000,\"width\":610,\"height\":360,\"tabOrder\":4000}}],\"singleVisual\":{\"visualType\":\"clusteredColumnChart\",\"projections\":{\"Category\":[{\"queryRef\":\"fait_autorisations.cod_typ_auto\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Montant Autorisé\"},{\"queryRef\":\"gdw_synthese_credit.Montant Utilisé\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"f\",\"Entity\":\"fait_autorisations\",\"Type\":0},{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"f\"}},\"Property\":\"cod_typ_auto\"},\"Name\":\"fait_autorisations.cod_typ_auto\",\"NativeReferenceName\":\"cod_typ_auto\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Autorisé\"},\"Name\":\"gdw_synthese_credit.Montant Autorisé\",\"NativeReferenceName\":\"Montant Autorisé\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Utilisé\"},\"Name\":\"gdw_synthese_credit.Montant Utilisé\",\"NativeReferenceName\":\"Montant Utilisé\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Autorisé\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"' Autorisé vs Utilisé par type'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 360.00,
+          "width": 610.00,
+          "x": 0.00,
+          "y": 150.00,
+          "z": 4000.00
+        },
+        {
+          "config": "{\"name\":\"4f11274a5217acaa75a5\",\"layouts\":[{\"id\":0,\"position\":{\"x\":627.1428571428572,\"y\":510.00000000000006,\"z\":8000,\"width\":645.7142857142858,\"height\":194.2857142857143,\"tabOrder\":8000}}],\"singleVisual\":{\"visualType\":\"funnel\",\"projections\":{\"Category\":[{\"queryRef\":\"funnel_octroi.etape\",\"active\":true}],\"Y\":[{\"queryRef\":\"Sum(funnel_octroi.montant)\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"f\",\"Entity\":\"funnel_octroi\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"f\"}},\"Property\":\"etape\"},\"Name\":\"funnel_octroi.etape\",\"NativeReferenceName\":\"etape\"},{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"f\"}},\"Property\":\"montant\"}},\"Function\":0},\"Name\":\"Sum(funnel_octroi.montant)\",\"NativeReferenceName\":\"montant\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Aggregation\":{\"Expression\":{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"f\"}},\"Property\":\"montant\"}},\"Function\":0}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Processus de Crédit'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 194.29,
+          "width": 645.71,
+          "x": 627.14,
+          "y": 510.00,
+          "z": 8000.00
+        },
+        {
+          "config": "{\"name\":\"60265bc3407d06310cd9\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":510.00000000000006,\"z\":5000,\"width\":627.1428571428572,\"height\":210,\"tabOrder\":5000}}],\"singleVisual\":{\"visualType\":\"tableEx\",\"projections\":{\"Values\":[{\"queryRef\":\"fait_depassement.num_compte\"},{\"queryRef\":\"gdw_synthese_credit.Montant Dépassement\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"f\",\"Entity\":\"fait_depassement\",\"Type\":0},{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"f\"}},\"Property\":\"num_compte\"},\"Name\":\"fait_depassement.num_compte\",\"NativeReferenceName\":\"num_compte\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Dépassement\"},\"Name\":\"gdw_synthese_credit.Montant Dépassement\",\"NativeReferenceName\":\"Montant Dépassement\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Dépassement\"}}}]},\"objects\":{\"columnWidth\":[{\"properties\":{\"value\":{\"expr\":{\"Literal\":{\"Value\":\"385.3852809424211D\"}}}},\"selector\":{\"metadata\":\"gdw_synthese_credit.Montant Dépassement\"}},{\"properties\":{\"value\":{\"expr\":{\"Literal\":{\"Value\":\"160.24999956796634D\"}}}},\"selector\":{\"metadata\":\"fait_depassement.num_compte\"}}],\"columnHeaders\":[{\"properties\":{}}]},\"vcObjects\":{\"title\":[{\"properties\":{\"show\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Dépassements'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 210.00,
+          "width": 627.14,
+          "x": 0.00,
+          "y": 510.00,
+          "z": 5000.00
+        },
+        {
+          "config": "{\"name\":\"6830e29caada00d521ae\",\"layouts\":[{\"id\":0,\"position\":{\"x\":938.5714285714287,\"y\":0,\"z\":3000,\"width\":334.28571428571433,\"height\":150,\"tabOrder\":3000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Montant Dépassement\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Dépassement\"},\"Name\":\"gdw_synthese_credit.Montant Dépassement\",\"NativeReferenceName\":\"Montant Dépassement\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Dépassement\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 150.00,
+          "width": 334.29,
+          "x": 938.57,
+          "y": 0.00,
+          "z": 3000.00
+        },
+        {
+          "config": "{\"name\":\"7b4c4bdc5ca4bb46696d\",\"layouts\":[{\"id\":0,\"position\":{\"x\":610,\"y\":150,\"z\":6000,\"width\":662.8571428571429,\"height\":360,\"tabOrder\":6000}}],\"singleVisual\":{\"visualType\":\"clusteredColumnChart\",\"projections\":{\"Category\":[{\"queryRef\":\"dim_tiers.cod_catg_jur\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Montant Autorisé\"},{\"queryRef\":\"gdw_synthese_credit.Montant Utilisé\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"d\",\"Entity\":\"dim_tiers\",\"Type\":0},{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"d\"}},\"Property\":\"cod_catg_jur\"},\"Name\":\"dim_tiers.cod_catg_jur\",\"NativeReferenceName\":\"cod_catg_jur\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Autorisé\"},\"Name\":\"gdw_synthese_credit.Montant Autorisé\",\"NativeReferenceName\":\"Montant Autorisé\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Utilisé\"},\"Name\":\"gdw_synthese_credit.Montant Utilisé\",\"NativeReferenceName\":\"Montant Utilisé\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Montant Autorisé\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"' Autorisé vs Utilisé par segment'\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 360.00,
+          "width": 662.86,
+          "x": 610.00,
+          "y": 150.00,
+          "z": 6000.00
+        }
+      ],
+      "width": 1280.00
     },
     {
-      "name": "d5",
-      "displayName": "D5 - Garanties",
-      "filters": "[]",
-      "ordinal": 4,
-      "visualContainers": [],
       "config": "{}",
+      "displayName": "D5 - Garanties",
       "displayOption": 1,
-      "width": 1280,
-      "height": 720
+      "filters": "[]",
+      "height": 720.00,
+      "name": "d5",
+      "ordinal": 4,
+      "visualContainers": [
+        {
+          "config": "{\"name\":\"1ff6467187e01c20826a\",\"layouts\":[{\"id\":0,\"position\":{\"x\":414.28571428571433,\"y\":0,\"z\":2000,\"width\":425.7142857142857,\"height\":144.2857142857143,\"tabOrder\":2000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Taux Couverture\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Taux Couverture\"},\"Name\":\"gdw_synthese_credit.Taux Couverture\",\"NativeReferenceName\":\"Taux Couverture\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Taux Couverture\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 144.29,
+          "width": 425.71,
+          "x": 414.29,
+          "y": 0.00,
+          "z": 2000.00
+        },
+        {
+          "config": "{\"name\":\"2d9f625748d0cd058db9\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":0,\"z\":0,\"width\":424.28571428571433,\"height\":144.2857142857143,\"tabOrder\":0}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Valeur Garanties\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"},\"Name\":\"gdw_synthese_credit.Valeur Garanties\",\"NativeReferenceName\":\"Valeur Garanties\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 144.29,
+          "width": 424.29,
+          "x": 0.00,
+          "y": 0.00,
+          "z": 0.00
+        },
+        {
+          "config": "{\"name\":\"78073e75539573050608\",\"layouts\":[{\"id\":0,\"position\":{\"x\":620,\"y\":144.2857142857143,\"z\":4000,\"width\":660,\"height\":307.14285714285717,\"tabOrder\":4000}}],\"singleVisual\":{\"visualType\":\"clusteredColumnChart\",\"projections\":{\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Valeur Garanties\"}],\"Category\":[{\"queryRef\":\"gdw_synthese_credit.lib_famille\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"},\"Name\":\"gdw_synthese_credit.Valeur Garanties\",\"NativeReferenceName\":\"Valeur Garanties\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"lib_famille\"},\"Name\":\"gdw_synthese_credit.lib_famille\",\"NativeReferenceName\":\"lib_famille\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Guaranties par famille'\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 307.14,
+          "width": 660.00,
+          "x": 620.00,
+          "y": 144.29,
+          "z": 4000.00
+        },
+        {
+          "config": "{\"name\":\"8a8c5cad1c2ce166baa8\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":144.2857142857143,\"z\":3000,\"width\":620,\"height\":307.14285714285717,\"tabOrder\":3000}}],\"singleVisual\":{\"visualType\":\"pieChart\",\"projections\":{\"Category\":[{\"queryRef\":\"fait_garanties.cod_typ_garant\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Valeur Garanties\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"f\",\"Entity\":\"fait_garanties\",\"Type\":0},{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"f\"}},\"Property\":\"cod_typ_garant\"},\"Name\":\"fait_garanties.cod_typ_garant\",\"NativeReferenceName\":\"cod_typ_garant\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"},\"Name\":\"gdw_synthese_credit.Valeur Garanties\",\"NativeReferenceName\":\"Valeur Garanties\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"}}}]},\"hasDefaultSort\":true,\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Répartition des garanties par type'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 307.14,
+          "width": 620.00,
+          "x": 0.00,
+          "y": 144.29,
+          "z": 3000.00
+        },
+        {
+          "config": "{\"name\":\"ad95c8f9b04311ded7de\",\"layouts\":[{\"id\":0,\"position\":{\"x\":0,\"y\":451.42857142857144,\"z\":6000,\"width\":1280,\"height\":268.5714285714286,\"tabOrder\":6000}}],\"singleVisual\":{\"visualType\":\"scatterChart\",\"projections\":{\"X\":[{\"queryRef\":\"gdw_synthese_credit.Encours Total\",\"active\":true}],\"Y\":[{\"queryRef\":\"gdw_synthese_credit.Valeur Garanties\"}],\"Category\":[{\"queryRef\":\"gdw_synthese_credit.idf_num_doss\",\"active\":true}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Encours Total\"},\"Name\":\"gdw_synthese_credit.Encours Total\",\"NativeReferenceName\":\"Encours Total\"},{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Valeur Garanties\"},\"Name\":\"gdw_synthese_credit.Valeur Garanties\",\"NativeReferenceName\":\"Valeur Garanties\"},{\"Column\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"idf_num_doss\"},\"Name\":\"gdw_synthese_credit.idf_num_doss\",\"NativeReferenceName\":\"idf_num_doss\"}]},\"vcObjects\":{\"title\":[{\"properties\":{\"text\":{\"expr\":{\"Literal\":{\"Value\":\"'Couverture vs Encours par dossier'\"}}},\"fontSize\":{\"expr\":{\"Literal\":{\"Value\":\"11D\"}}},\"bold\":{\"expr\":{\"Literal\":{\"Value\":\"true\"}}},\"fontColor\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":0,\"Percent\":0}}}}},\"background\":{\"solid\":{\"color\":{\"expr\":{\"ThemeDataColor\":{\"ColorId\":1,\"Percent\":0}}}}},\"alignment\":{\"expr\":{\"Literal\":{\"Value\":\"'center'\"}}}}}]}}}",
+          "filters": "[]",
+          "height": 268.57,
+          "width": 1280.00,
+          "x": 0.00,
+          "y": 451.43,
+          "z": 6000.00
+        },
+        {
+          "config": "{\"name\":\"dbb4311fba4a09a4864e\",\"layouts\":[{\"id\":0,\"position\":{\"x\":828.5714285714287,\"y\":0,\"z\":1000,\"width\":451.42857142857144,\"height\":144.2857142857143,\"tabOrder\":1000}}],\"singleVisual\":{\"visualType\":\"cardVisual\",\"projections\":{\"Data\":[{\"queryRef\":\"gdw_synthese_credit.Risque Net\"}]},\"prototypeQuery\":{\"Version\":2,\"From\":[{\"Name\":\"g\",\"Entity\":\"gdw_synthese_credit\",\"Type\":0}],\"Select\":[{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Risque Net\"},\"Name\":\"gdw_synthese_credit.Risque Net\",\"NativeReferenceName\":\"Risque Net\"}],\"OrderBy\":[{\"Direction\":2,\"Expression\":{\"Measure\":{\"Expression\":{\"SourceRef\":{\"Source\":\"g\"}},\"Property\":\"Risque Net\"}}}]},\"hasDefaultSort\":true}}",
+          "filters": "[]",
+          "height": 144.29,
+          "width": 451.43,
+          "x": 828.57,
+          "y": 0.00,
+          "z": 1000.00
+        }
+      ],
+      "width": 1280.00
     }
-  ]
+  ],
+  "theme": "AccessibleNeutral"
 }

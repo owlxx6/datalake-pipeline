@@ -1,7 +1,73 @@
 table gdw_synthese_credit
+	lineageTag: b7d54a85-5a4f-46e3-8b1c-1351f2ba58a1
+
+	measure 'Encours Total' = SUM(gdw_synthese_credit[encours])
+		formatString: #,0
+		lineageTag: 28bf438e-06de-4f2f-b4e2-c38defd16d27
+
+	measure 'Montant Crédit' = SUM(gdw_synthese_credit[mnt_credit])
+		formatString: #,0
+		lineageTag: c1315217-4fdc-43c5-8b76-5bfb6b826caa
+
+	measure 'Nombre Crédits' = DISTINCTCOUNT(gdw_synthese_credit[idf_num_doss])
+		formatString: #,0
+		lineageTag: a4b0d555-f128-4cfc-8e36-0da7a84b1b3a
+
+	measure 'Ticket Moyen' = DIVIDE([Montant Crédit], [Nombre Crédits])
+		formatString: #,0
+		lineageTag: aba82c71-562f-413c-a4da-9a2072924987
+
+	measure 'Montant Impayés' = SUM(gdw_impayes[mnt_impayes_cdl])
+		formatString: #,0
+		lineageTag: 44ccdf7c-f667-47e0-95f8-cd6af645acc5
+
+	measure 'Montant Créances' = SUM(gdw_impayes[mnt_creance])
+		formatString: #,0
+		lineageTag: 7756e463-e9cc-4949-a4c6-29a06a36fed0
+
+	measure 'Taux Impayé' = DIVIDE([Montant Impayés], [Encours Total])
+		formatString: 0.0%
+		lineageTag: b2d2ab95-f6df-427a-ac6a-ec476c48f4d3
+
+	measure 'Montant en Défaut' = CALCULATE([Encours Total], gdw_synthese_credit[flag_cdl] = TRUE())
+		formatString: #,0
+		lineageTag: 3ebbb2a0-8d7d-4de8-9c90-54380cd000c9
+
+	measure NPL = DIVIDE([Montant en Défaut], [Encours Total])
+		formatString: 0.0%
+		lineageTag: 3b4109f8-40b3-42a4-a3ca-c4e8da687b9d
+
+	measure 'Valeur Garanties' = SUM(fait_garanties[mnt_total_garantie])
+		formatString: #,0
+		lineageTag: 509527eb-69ec-4996-8a11-17df55b87069
+
+	measure 'Taux Couverture' = DIVIDE([Valeur Garanties], [Encours Total])
+		formatString: 0.0%
+		lineageTag: af0ccccc-8ea0-48a2-9c56-49cf2134faca
+
+	measure 'Risque Net' = [Encours Total] - [Valeur Garanties]
+		formatString: #,0
+		lineageTag: d9efb417-1adf-4b29-a0ba-9a5efa607cdb
+
+	measure 'Montant Autorisé' = SUM(fait_autorisations[montant_autorise])
+		formatString: #,0
+		lineageTag: e3e5da10-6a57-4646-b63e-05e15367d015
+
+	measure 'Montant Utilisé' = SUM(fait_autorisations[montant_utilise])
+		formatString: #,0
+		lineageTag: a5666561-0859-4066-85c7-aa9c94e41358
+
+	measure 'Taux Utilisation' = DIVIDE([Montant Utilisé], [Montant Autorisé])
+		formatString: 0.0%
+		lineageTag: 843288fa-9e21-4d72-b367-e68d4bc62947
+
+	measure 'Montant Dépassement' = SUM(fait_depassement[mnt_depassement])
+		formatString: #,0
+		lineageTag: c92698ae-d8a4-4867-aaf4-5780189853d5
 
 	column idf_num_doss
 		dataType: string
+		lineageTag: b8f9da38-181b-4105-b9b5-fcea99d89abb
 		summarizeBy: none
 		sourceColumn: idf_num_doss
 
@@ -9,13 +75,23 @@ table gdw_synthese_credit
 
 	column date_arrete
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: a2f3266f-7a3e-4cfd-9e56-cec56dd52b85
 		summarizeBy: none
 		sourceColumn: date_arrete
 
+		variation Variation
+			isDefault
+			relationship: 735b1e0b-48d0-489b-a3a8-d4dfd6d18c5f
+			defaultHierarchy: LocalDateTable_db9afe80-6020-419a-8f01-31225c85d909.'Date Hierarchy'
+
 		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
 
 	column cod_produit
 		dataType: string
+		lineageTag: 4b806f00-8de1-4f07-a8e3-489d8f062763
 		summarizeBy: none
 		sourceColumn: cod_produit
 
@@ -23,6 +99,7 @@ table gdw_synthese_credit
 
 	column num_compte_emprunteur
 		dataType: string
+		lineageTag: a11c0207-8199-42d4-b29c-0dd8e27bdbf4
 		summarizeBy: none
 		sourceColumn: num_compte_emprunteur
 
@@ -30,6 +107,7 @@ table gdw_synthese_credit
 
 	column idf_num_tiers
 		dataType: string
+		lineageTag: 614f71d0-1de3-4779-be45-a94d8161ae9b
 		summarizeBy: none
 		sourceColumn: idf_num_tiers
 
@@ -37,41 +115,50 @@ table gdw_synthese_credit
 
 	column date_accord
 		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 51189cde-628d-4c96-b392-f4ed7111401a
 		summarizeBy: none
 		sourceColumn: date_accord
 
 		annotation SummarizationSetBy = Automatic
 
+		annotation UnderlyingDateTimeDataType = Date
+
 	column encours
 		dataType: double
-		summarizeBy: none
+		lineageTag: db910494-e17c-458a-95bf-3cdec6ea9a34
+		summarizeBy: sum
 		sourceColumn: encours
 
 		annotation SummarizationSetBy = Automatic
 
 	column mnt_credit
 		dataType: double
-		summarizeBy: none
+		lineageTag: d9c965bf-126b-4e75-8ec8-d9ae4455239c
+		summarizeBy: sum
 		sourceColumn: mnt_credit
 
 		annotation SummarizationSetBy = Automatic
 
 	column tx_credit
 		dataType: double
-		summarizeBy: none
+		lineageTag: 0939a579-60e4-4f58-8d71-fea2670fd81c
+		summarizeBy: sum
 		sourceColumn: tx_credit
 
 		annotation SummarizationSetBy = Automatic
 
 	column duree
 		dataType: int64
-		summarizeBy: none
+		lineageTag: f42ffafe-7de4-44d2-bc95-38663f02270e
+		summarizeBy: sum
 		sourceColumn: duree
 
 		annotation SummarizationSetBy = Automatic
 
 	column cod_sit_doss
 		dataType: string
+		lineageTag: 31af7e5e-6c68-499d-9217-9d90a22d648f
 		summarizeBy: none
 		sourceColumn: cod_sit_doss
 
@@ -79,6 +166,7 @@ table gdw_synthese_credit
 
 	column cod_famille
 		dataType: string
+		lineageTag: 3d868b3d-e82d-4f05-8122-5299ef2a48dd
 		summarizeBy: none
 		sourceColumn: cod_famille
 
@@ -86,6 +174,7 @@ table gdw_synthese_credit
 
 	column lib_famille
 		dataType: string
+		lineageTag: 2c3e14ea-8ab3-40f4-be69-f6681e100f5a
 		summarizeBy: none
 		sourceColumn: lib_famille
 
@@ -93,72 +182,34 @@ table gdw_synthese_credit
 
 	column mnt_impaye_total
 		dataType: double
-		summarizeBy: none
+		lineageTag: a4d28c3f-8bbb-475b-8d5a-e2bdee9a041d
+		summarizeBy: sum
 		sourceColumn: mnt_impaye_total
 
 		annotation SummarizationSetBy = Automatic
 
 	column nb_creances_impayees
 		dataType: int64
-		summarizeBy: none
+		lineageTag: 043ba86e-9a1e-4b37-89af-9395629106f2
+		summarizeBy: sum
 		sourceColumn: nb_creances_impayees
 
 		annotation SummarizationSetBy = Automatic
 
 	column flag_cdl
 		dataType: boolean
+		lineageTag: 65624fa8-5657-45d8-a0cb-d0eeab0d8180
 		summarizeBy: none
 		sourceColumn: flag_cdl
 
 		annotation SummarizationSetBy = Automatic
 
-	measure 'Encours Total' = SUM(gdw_synthese_credit[encours])
-		formatString: #,0
+	column 'Année Accord' = YEAR(gdw_synthese_credit[date_accord])
+		formatString: 0
+		lineageTag: b4c5b985-e45a-436e-a6a7-1dd0c6e3dc49
+		summarizeBy: sum
 
-	measure 'Montant Crédit' = SUM(gdw_synthese_credit[mnt_credit])
-		formatString: #,0
-
-	measure 'Nombre Crédits' = DISTINCTCOUNT(gdw_synthese_credit[idf_num_doss])
-		formatString: #,0
-
-	measure 'Ticket Moyen' = DIVIDE([Montant Crédit], [Nombre Crédits])
-		formatString: #,0
-
-	measure 'Montant Impayés' = SUM(gdw_impayes[mnt_impayes_cdl])
-		formatString: #,0
-
-	measure 'Montant Créances' = SUM(gdw_impayes[mnt_creance])
-		formatString: #,0
-
-	measure 'Taux Impayé' = DIVIDE([Montant Impayés], [Encours Total])
-		formatString: 0.0%
-
-	measure 'Montant en Défaut' = CALCULATE([Encours Total], gdw_synthese_credit[flag_cdl] = TRUE())
-		formatString: #,0
-
-	measure 'NPL' = DIVIDE([Montant en Défaut], [Encours Total])
-		formatString: 0.0%
-
-	measure 'Valeur Garanties' = SUM(fait_garanties[mnt_total_garantie])
-		formatString: #,0
-
-	measure 'Taux Couverture' = DIVIDE([Valeur Garanties], [Encours Total])
-		formatString: 0.0%
-
-	measure 'Risque Net' = [Encours Total] - [Valeur Garanties]
-		formatString: #,0
-
-	measure 'Montant Autorisé' = SUM(fait_autorisations[montant_autorise])
-		formatString: #,0
-
-	measure 'Montant Utilisé' = SUM(fait_autorisations[montant_utilise])
-		formatString: #,0
-
-	measure 'Taux Utilisation' = DIVIDE([Montant Utilisé], [Montant Autorisé])
-		formatString: 0.0%
-
-	measure 'Montant Dépassement' = SUM(fait_depassement[mnt_depassement])
-		formatString: #,0
+		annotation SummarizationSetBy = Automatic
 
 	partition gdw_synthese_credit = m
 		mode: import
@@ -190,3 +241,4 @@ table gdw_synthese_credit
 				    })
 				in
 				    Typed
+
