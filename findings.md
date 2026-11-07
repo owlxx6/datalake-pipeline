@@ -93,3 +93,85 @@ Param sheets (non-tables) : CODE_EVNT, CODE_TRANSA_GEST.
 - `dq_severity_max` : NULL si PASSED, sinon CRITICAL > HIGH > MEDIUM > LOW
 - Iceberg DQ tables : **append-only strict**, audit cumulatif (filtrer par `execution_id` pour le dernier run)
 - 2 tables DQ Iceberg : LOG_PIPELINE + QUALITY_RESULTS (LOGS_REJECTED supprimée)
+
+## 2026-06-08 — Architecture réelle du projet (fournie par Taha, diagramme "Architecture DATALAKE")
+Image : `docs/rapport/figures/architecture_datalake.png` → figure clé du Chapitre 3 (Conception).
+Plateforme **Cloudera** (Data Lake on-prem), traitement **batch** (pas de temps réel).
+
+### Sources (gauche)
+- Sources non-structurées + semi-structurées.
+- Bloc **SOP** (systèmes sources opérationnels) : IDCHAB, IDCE, Evolan, BTA,
+  Système comptable, CDL, Dépassements.
+- Acheminement legacy : **SAP Data Services** + dépôt **SFTP "SOP"** (systèmes sources/consommateurs).
+
+### Ingestion
+- **Apache NiFi** (connecteurs Java + ingestion des nouvelles sources) — **SEUL outil d'ingestion utilisé**.
+- (Le 2ᵉ bloc d'ingestion du schéma n'a PAS été utilisé — correction Taha.)
+
+### Orchestration
+- **Apache Airflow**.
+
+### Traitement
+- **Apache Spark (PySpark)** : "Transformation with Spark", étapes clean & normalize (Bronze→Silver)
+  et aggregate (Silver→Gold).
+- **JupyterLab + Spark** pour l'équipe Data Science.
+
+### Stockage (HDFS, médaillon en Apache Iceberg)
+- **Bronze (Landing Zone)** : brut/Parquet, Iceberg.
+- **Silver** : Hive + Iceberg (données nettoyées/normalisées).
+- **Gold** : Hive + Iceberg (agrégats).
+- **Datamart** : **Apache Impala** + Iceberg.
+- Couche **Data Quality** entre Spark et le stockage.
+
+### Gouvernance & sécurité (Cloudera SDX)
+- **Apache Ranger** (administration & sécurité) ↔ TagSync ↔ **Apache Atlas** (gouvernance,
+  documentation, metadata store).
+- **BoA Active Directory + Kerberos (KDC)** → sync user group → Ranger.
+- **Cloudera Manager** (monitoring + logs applicatifs).
+- **Grafana** → Alertes (Email ou SNMP).
+
+### CI/CD
+- **Nexus Repo**, **GitLab** (repository), **Jenkins**.
+
+### Visualisation / BI
+- Schéma montre **Tableau** MAIS Taha utilise **Power BI** (correction) → Data Quality Dashboard
+  + Data Visualisation.
+
+### Corrections Taha (à respecter dans tout le rapport)
+1. Ingestion = **NiFi uniquement**.
+2. Visualisation = **Power BI** (pas Tableau).
+
+### Existant (avant le Data Lake) — confirmé par Taha (2026-06-08)
+- L'ancien existant Crédit-Garantie reposait sur **SAP** (extraction/ETL via **SAP Data Services**).
+- Le projet vise à moderniser/standardiser cette exploitation vers un Data Lake Cloudera (médaillon).
+- Systèmes sources (bloc SOP) : IDCHAB, IDCE, Evolan, BTA, Système comptable, CDL, Dépassements.
+- Base du Chapitre 2 (Existant) : présentation SAP + limites documentées (pas de Golden Source,
+  pas de Data Lineage, doublons/incohérences, traitements manuels, pas d'archi unifiée médaillon).
+
+## 2026-06-08 — Périmètre RÉALISÉ vs CIBLE pour le Chapitre 4 (confirmé Taha)
+Source chiffres : docs/ETAT_PROJET_2026-06-07.md (arrêté réel 2026-05-31). NE PAS utiliser
+les pilotes de mai (TIERS 1000/46, IMAGE_CONTRAT 250/248 = périmés).
+
+### RÉALISÉ (validé sur la VM)
+- **Ingestion → Bronze → Silver : 12 tables industrialisées** (run 2026-05-31). Exemples :
+  credit_amort 200 000 ; impayes_cdl 1 700 767 ; tiers 154 245 ; image_contrat 158 322 ;
+  grc_portefeuille 151 528 ; typologie 154 249 ; pops 1 226 ; asal 4 464 (+ depassement,
+  garantie_detail, idce_autorisation, garantie_contrat).
+- **Moteur DQ 3 états** PASSED/WARNING/REJECTED + audit Iceberg LOG_PIPELINE / QUALITY_RESULTS.
+- **Historisation** : point d'entrée historize() → snapshot (faits, date_arrete) /
+  SCD2 (dimensions). **6 dimensions SCD2 hash** (valid_from/valid_to/is_current/version/row_hash),
+  activées par flag YAML : pops, asal, image_contrat, grc_portefeuille, tiers, typologie.
+  Difficulté résolue : NPE Iceberg 1.3.1 (copy-on-write) → write_silver_scd2 reconstruit l'état
+  100% en DataFrame puis createOrReplace.
+- **Couche Gold (moteur déclaratif config-driven, 4 cibles : date/dimension/fact/obt)** —
+  prouvée arrêté 2026-05-31 : dim_temps (4 018 j), dim_produit (1 226, SCD2 état courant),
+  gdw_encours (200 000, **jointure as-of** tiers gelé 199 981/200 000 sans fan-out),
+  gdw_impayes (1 700 767), **OBT gdw_synthese_credit** (200 000, agrégat 1:N + dérivé
+  flag_cdl = 96 474 CDL).
+
+### CIBLE / PERSPECTIVES (PAS réalisé)
+- Airflow (DAG squelette d'avril non aligné, jamais exécuté ; runs = spark-submit manuels).
+- Atlas / Ranger (aucune implémentation, seulement dans les docs de plan).
+- Datamart Impala. Power BI (Gold prêt à brancher, rien fait). CI/CD.
+- Reste : fix padding codes (cod_produit paddé ≠ idf_code_produit → cod_famille NULL en OBT),
+  détection de variation inter-arrêtés (N vs N-1), dimension ORG (table à venir).

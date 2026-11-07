@@ -15,3 +15,7 @@ exports/
 *.abf
 *.pbix
 *- Copie.csv
+
+# Fichiers locaux générés
+derby.log
+datalake_lib.zip

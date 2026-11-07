@@ -134,3 +134,189 @@ Priorités : CREDIT_AMORT, IMPAYES_CDL, GARANTIE_DETAIL, IDCE_AUTORISATION, TYPO
 - Note : TIERS et IMAGE_CONTRAT existants ont été écrasés ; les règles métier finement tunées (filter_condition PP/PM) ne sont plus présentes — à réajouter manuellement si besoin.
 
 Prochaine étape : Phase 4 — couche Gold (détection de variation par famille).
+
+## 2026-06-08 — Phase R : démarrage rédaction rapport PFE (EMSI)
+- Analysé : guide de rédaction EMSI (A4, TNR 12, interligne 1.5, 60-100 p.) + rapport
+  camarade EL FATIHI Salma (même sujet, même entreprise EAI/BOA, même encadrant Kilani).
+- Décisions (Taha) : titre « Conception et mise en œuvre d'une plateforme DATA standardisée… »,
+  dédicace générique sans noms, campus **EMSI Rabat**, ordre **Étude→Existant→Conception→Réalisation**.
+- Méthode : édition XML directe du DOCX Salma (unpack/edit/repack zipfile) pour garder la
+  mise en page. Front matter fait : titre, HABBOU Taha Yassine, Mr Mohammed Redouane (EMSI),
+  KILANI Rida conservé, EMSI Rabat, dédicace générique. Validé via textutil.
+- Règle de contenu : NE RIEN INVENTER ; chapitres techniques depuis le VRAI projet
+  (Iceberg, SCD2 6 dims, moteur Gold déclaratif, DQ, Atlas/Ranger) — pas le stack Salma.
+- Outils locaux : pas de LibreOffice (rendu PDF KO), pas de lxml (validateur pack.py KO),
+  pas de npm docx global. Word installé. Repack manuel zipfile + contrôle textutil.
+- Prochaine étape : corps 5→4 chapitres. Ch.1 Étude + Ch.2 Existant adaptés de Salma
+  (même entreprise) ; Ch.3 Conception + Ch.4 Réalisation depuis task_plan/findings/code.
+
+## 2026-06-08 (suite) — Chapitre 1 (Étude) adapté + intro restructurée
+- Heading « Chapitre 1 : Contexte général » → « Chapitre 1 : Étude du projet » (heading + TOC).
+- Section méthodologie SCRUM réécrite proprement (supprimé le bleed « 10 Chapitre 1… »,
+  phrase complétée) + intégration des dates de stage : 05/02/2026 → 30/06/2026 (~5 mois).
+- 1.2.4 « Top Employer » : accents cassés (PDF paste) réparés — été/certifiée/cinquième/
+  année/consécutive/récompenser l'engagement/bien-être/développement des compétences.
+- Intro générale : liste des chapitres 5→4 (Étude / Existant / Conception / Réalisation),
+  entrée « Chapitre 5 » supprimée ; stack technique alignée sur le vrai projet
+  (Apache Iceberg via Hive Metastore + Atlas/Ranger, au lieu du « Hive » de Salma).
+- Repack zipfile + contrôle textutil : OK. Figures EAI (logos, organigramme, Top Employer)
+  conservées et réutilisables (même entreprise).
+- Reste Ch.1 (option) : ajouter une « Conclusion du chapitre ».
+- Prochaine étape : Ch.2 Existant (existant EAI + état de l'art Big Data/médaillon).
+
+## 2026-06-08 (suite) — Chapitre 2 (Existant) rédigé + injecté
+- Contenu validé par Taha puis injecté dans le DOCX (38 paragraphes) avant la Conclusion.
+- Titres en styles Titre1 (chapitre) / Titre2 / Titre3 → apparaîtront dans la TOC après
+  mise à jour du champ (F9). Numérotation manuelle (2.1→2.4) pour ne pas perturber la
+  numérotation auto du Ch.1.
+- Existant = SAP / SAP Data Services (sources : IDCHAB, IDCE, Evolan, BTA, système comptable,
+  CDL, Dépassements) + limites documentées. État de l'art : Big Data/Hadoop, DW vs Data Lake,
+  médaillon, Apache Iceberg, gouvernance (Atlas/Ranger) + qualité.
+- 2 placeholders [FIGURE ICI] : (1) DW vs Data Lake, (2) médaillon B/S/G.
+- Références : à regrouper dans une bibliographie GLOBALE en fin de rapport (pas par chapitre).
+- Reste avant Ch.3 : validation Taha + visuels. Ch.3 utilisera figures/architecture_datalake.png.
+
+## 2026-06-08 (suite) — Chapitre 3 (Conception) rédigé + patché + injecté
+- Brouillon Ch.3 proposé ; Taha a renvoyé 4 patchs (corrige 2 erreurs factuelles + lève
+  l'ambiguïté cible/réalisé). Patchs appliqués puis injection dans le DOCX (Titre1/2/3 + 2
+  tableaux Word : choix techno, faits Gold).
+- Corrections clés : §3.5 framework à MOTEURS (Bronze→Silver engine, Gold engine) + capacités
+  transverses (config_loader/quality/historization/normalization/audit) ; 7 contrôles DQ réels :
+  not_null, unique, in_list, max_length, regex, date_valid, date_range ; statuts PASSED/WARNING/
+  REJECTED ; tables audit LOG_PIPELINE + QUALITY_RESULTS. §3.2/§3.4 : Cloudera/Impala = cible,
+  POC requête Spark SQL sur Iceberg. §3.3.3 : base silver_credit_garantie, dimensions SCD2 non
+  partitionnées.
+- Incident corrigé : 3 '&' bruts ('clean & normalize', 'Audit & journalisation', 'Gouvernance
+  & sécurité') cassaient le XML → remplacés par &amp;. Leçon : échapper & dans le texte injecté.
+- §3.6 (Gold) vient de modele_gold_credit_garantie.md (gdw_* / 6 dims / OBT) → à éventuellement
+  vérifier côté Taha.
+- Prochaine étape : Ch.4 Réalisation (runs réels, DQ, historisation, orchestration, restitution).
+
+## 2026-06-08 (suite) — Chapitre 4 (Réalisation) patché + injecté → 4 chapitres complets
+- Brouillon Ch.4 → Taha a renvoyé 2 corrections factuelles + 4 chiffres :
+  (1) Spark en MODE LOCAL (pas YARN — les logs local[*] le prouvent) ; (2) normalisation
+  CODÉE MAIS INERTE → présentée en point d'extension/perspectives (cohérent avec §4.7).
+  Chiffres Silver complétés : idce_autorisation 368 567, garantie_contrat 258 473,
+  garantie_detail 253 900, depassement 75 870.
+- Injection OK (Titre1/2/3 + 2 tableaux). Ajout esc() dans les helpers → plus de risque de '&' brut.
+- ÉTAT : les 4 chapitres (Étude / Existant / Conception / Réalisation) sont dans le DOCX,
+  ordre correct, avant la Conclusion Générale. Réalisé vs cible clairement séparés.
+- Reste : conclusion générale, résumé/abstract/ملخص, bibliographie globale, figures, MAJ TOC.
+
+## 2026-06-08 (fin) — Front/back matter complétés → rapport textuellement complet
+- Conclusion générale injectée (titre + 6 paragraphes), saut de page de Salma corrigé.
+- Résumés : Abstract EN + Résumé FR (dans les placeholders existants) + ملخص AR (RTL, bidi)
+  inséré avant le Glossaire. Mots-clés FR/EN/AR.
+  Incident : placeholders avaient un espace insécable (\xa0) avant « : » → motifs regex robustes
+  (\s*:[^<]*) au lieu d'espace normal. Leçon notée.
+- Bibliographie : 9 sources officielles (Hadoop, Spark, Iceberg, NiFi, Airflow, Atlas, Ranger,
+  Databricks médaillon, Cloudera) ; placeholders [1]/[2]/[3] + hints de mise en forme supprimés.
+- ÉTAT : RAPPORT TEXTUELLEMENT COMPLET. Reste = figures (placeholders [FIGURE ICI]), MAJ champs
+  Word (TOC + listes), vérif page de garde, glossaire optionnel.
+
+## 2026-06-08 (correctifs) — « contenu illisible » + pages vierges + titres + TOC
+- CAUSE « contenu illisible » Word : mon zip manuel incluait les fichiers macOS .DS_Store
+  (unpacked/.DS_Store, unpacked/word/.DS_Store) — parties non déclarées → rejet. FIX : repack
+  exclut .DS_Store + suppression dans l'arbre. (Leçon : toujours exclure .DS_Store du repack.)
+- PAGES VIERGES 26-32 : Salma avait laissé **150 paragraphes vides** entre la fin du Ch.1
+  (figure SCRUM) et le Ch.2. Supprimés par strip arrière sûr (régex sans imbrication de w:p).
+  Bugs évités : (a) régex naïve <w:p>.*?</w:p> casse sur les <w:p> imbriqués des zones de texte
+  (figure SCRUM) ; (b) test de vide via '<w:r' faux positif car <w:rPr> contient « <w:r ».
+  → détecter le vide via présence de <w:t>/<w:drawing>/<mc:AlternateContent>, pas <w:r>.
+- TITRES DE CHAPITRES : saut de page ajouté après les titres Ch.2/3/4 → chaque titre seul sur
+  sa page, comme le Ch.1.
+- SOMMAIRE : <w:updateFields w:val="true"/> ajouté à settings.xml → Word propose/actualise les
+  champs (TOC + listes) à l'ouverture.
+- Sécurité : restauration de document.xml depuis le DOCX intact après un write cassé ; désormais
+  ET.fromstring(s) valide EN MÉMOIRE avant tout write.
+
+## 2026-06-09 — Figures : 6/8 insérées
+- Embarquement d'images dans le DOCX (rels rId100/rId101, media/image11.png + image12.jpeg,
+  namespaces a/pic déclarés inline, EMU calculés depuis sips). Repack exclut .DS_Store.
+- Figure 9 : DW vs Data Lake (tableau natif). Figure 10 : médaillon B/S/G (tableau coloré).
+- Figure 11 : architecture DATALAKE (image fournie). Figure 12 : config DQ déclarative (YAML réel pops).
+- Figure 13 : modèle Gold/constellation (image docs/diagram jointure.jpeg).
+- Figure 14 : descripteur YAML de table (extrait réel pops.yaml).
+- RESTE 2 placeholders (données VM requises) : #7 §4.4 QUALITY_RESULTS (PASSED/WARNING/REJECTED),
+  #8 §4.6 gdw_synthese_credit / flag_cdl.
+- Note : numérotation figures manuelle (9→14) ; la « Liste des figures » à vérifier après MAJ
+  des champs dans Word.
+
+## 2026-06-10 — Data pack reçu + figures 15/16 + glossaire
+- docs/REPORT_DATA_PACK.md fourni par Taha (534 l.) : stack exacte (Spark 3.4.0 local, Iceberg
+  1.3.1, HMS, HDFS ubuntu3, 9.5Go), framework dans jobs/ (PAS datalake_lib), 7 types DQ,
+  modèle Gold exact (5 faits/6 dims/bridge/OBT), chiffres 12 tables + DQ par table, 5 lignes
+  réelles OBT, YAML réels (POPS + gold), 7 difficultés, glossaire, Power BI = cible confirmé.
+- Figure 15 (QUALITY_RESULTS par table) et Figure 16 (extrait gdw_synthese_credit) insérées
+  depuis données réelles → **0 placeholder [FIGURE ICI] restant** (8/8 figures + 6 Ch1 = 16).
+- Glossaire : 38 termes (table) injecté à la place des 3 entrées EAI/BI/BOA.
+- RESTE : Phase R2 expansion 35→55-70 p. (Ch2 état de l'art, Ch3 conception détaillée, Ch4
+  déroulé/difficultés, Ch1 BOA+SCRUM). Dashboards Power BI = à fournir SI construits (cible).
+
+## 2026-06-11 — Ch.2 étoffé + 5 figures théoriques générées (SVG→PNG via qlmanage)
+- Ch.2 réécrit/étoffé (état de l'art approfondi : Big Data 5V, Hadoop, Spark, Parquet,
+  DW/DL/Lakehouse, Iceberg, médaillon, Kimball/SCD1-2-3, qualité/gouvernance). Injecté en
+  remplaçant l'ancien Ch.2. Numérotation figures corrigée (Ch.2=9-15, Ch.3=16-18, Ch.4=19-21,
+  0 doublon). Bug évité : renumérotage global +5 avait touché les légendes Ch.2 → corrigé par
+  texte exact.
+- **Capacité figure débloquée** : pas de LibreOffice/ImageMagick/cairosvg/PIL, MAIS `qlmanage`
+  (Quick Look macOS) rasterise un SVG → PNG proprement (testé, rendu pro). Méthode : SVG carré
+  1200x1200 (contenu plein) → qlmanage -t -s 1600 → PNG 1600x1600 → embarqué ~9,5 cm.
+- 5 figures générées et embarquées : Fig9 Hadoop (HDFS/YARN), Fig10 Spark (driver/executors),
+  Fig12 Iceberg (couches/snapshots), Fig14 étoile (Kimball), Fig15 SCD2 (avant/après).
+- **0 placeholder [FIGURE ICI] restant.** Toutes les figures du rapport sont réelles.
+- Reste expansion : Ch.3, Ch.4, Ch.1 (BOA+SCRUM). Mots ~7900 → viser ~15000 pour 55-70 p.
+
+## 2026-06-11 (suite) — Ch.3 étoffé + 3 figures générées
+- Ch.3 reconstruit/étoffé : 3.1 intro, 3.2 archi, 3.3 médaillon (4 sous-sect), 3.4 choix techno
+  (tableau), 3.5 framework (principe/moteurs/pipeline run_table), 3.6 moteur DQ (7 types/3 états/
+  traçabilité), 3.7 historisation (snapshot/SCD2/as-of), 3.8 modèle Gold (constellation/faits-dims/OBT),
+  3.9 conclusion. Depuis le data pack.
+- 3 nouvelles figures SVG→PNG (qlmanage) : Fig18 flux run_table, Fig19 cycle règle DQ + 3 états,
+  Fig20 snapshot vs SCD2. + ré-embarquement Fig16 archi (rId100) et Fig21 modèle Gold (rId101) +
+  Fig17 YAML (code table).
+- Renumérotation : Ch.4 captions 19/20/21 → 22/23/24 (par texte exact, sans bug global). 0 doublon.
+- Reste expansion : Ch.4 (déroulé, difficultés détaillées, environnement, validation), Ch.1 (BOA+SCRUM).
+
+## 2026-06-11 (suite) — Ch.4 étoffé + Gantt généré
+- Ch.4 reconstruit/étoffé : 4.1 intro, 4.2 environnement détaillé (Spark 3.4.0 local, Iceberg
+  1.3.1, HMS, HDFS, 9.5Go, driver 4g), 4.3 déroulé+Gantt, 4.4 Bronze→Silver (descripteur YAML +
+  12 tables), 4.5 qualité (QUALITY_RESULTS), 4.6 historisation (6 dims SCD2), 4.7 Gold (OBT),
+  4.8 difficultés (7 réelles développées), 4.9 bilan réalisé/cible, 4.10 conclusion.
+- Fig 22 Gantt généré (chronologie SCRUM en escalier). Fig 23 descripteur YAML, Fig 24 QUALITY,
+  Fig 25 gdw_synthese (tables natives reconstruites). + Tableau 2 (12 tables) + Tableau 3 (6 dims).
+- ÉTAT : 4 chapitres étoffés, 25 figures réelles, 0 placeholder. Estimation ~55-65 pages.
+- Reste : Ch.1 (présentation BOA + SCRUM détaillé + bénéfices) pour finir l'expansion.
+  Puis MAJ champs Word (TOC + Liste des figures via style Légende) + relecture.
+
+## 2026-06-11 (suite) — Ch.1 étoffé (texte) + sources web EAI
+- Recherche web site officiel EAI (eurafric-information.com) : faits sourcés (créée oct 2008,
+  JV Bank of Africa BMCE Group + RMA + Crédit Mutuel/Euro-Information, 350+ ingénieurs, 15+
+  filiales, Datacenter Tier III+ Uptime Institute, Casablanca Bouskoura, valeurs EAI =
+  Engagement/trAnsparence/Innovation, Top Employer 2024).
+- Ch.1 : insertion (paragraphes, sans nouveaux titres numérotés pour ne pas casser la num.
+  Salma) après EAI = EAI officiel + groupe Bank of Africa + organisation Data Office ; après
+  SCRUM = rôles/cérémonies/artefacts + application au projet.
+- Pièges anchors résolus : "reconnu" (pas "reconnus"), SCRUM apostrophe = entité &#x2019;.
+- Taha a fourni 3 slides EAI (ARCHITECTURE DWH existant SAP BO ; Data Office ; Gouvernance)
+  → figures/slide_1/2/3.png. + 2 docs (EDD_TECHNIQUE.pptx, PETIT RAPPEL DES RG.docx) en réf.
+- RESTE (passe figures) : embarquer slide_2 (Data Office, Ch.1), slide_1 (DWH existant, Ch.2
+  §2.2.1) + enrichir texte existant, slide_3 (gouvernance, Ch.2 §2.3.9). PUIS renumérotation
+  COMPLETE des figures (insertions décalent tout). PUIS MAJ champs Word.
+
+## 2026-06-11 (fin) — 3 slides EAI intégrées + numérotation figures par champs SEQ
+- DÉCOUVERTE : les légendes de Salma utilisent des champs SEQ (auto-num), et la « Liste des
+  figures » est un champ Table des figures (TOC \c "Figure"). Mes légendes étaient en texte
+  littéral → conflit/doublons.
+- SOLUTION DÉFINITIVE : converti mes 17 légendes Figure + 3 Tableau en CHAMPS SEQ (même
+  structure que Salma). Désormais toutes les figures/tableaux s'auto-numérotent dans l'ordre
+  du document, et les listes (figures/tableaux) se peuplent seules à la MAJ des champs.
+- 3 slides EAI embarquées : slide_2 Data Office (Ch.1 §1.2), slide_1 DWH existant SAP
+  BusinessObjects (Ch.2 §2.2.1, + texte enrichi ODS/EDD/datamarts), slide_3 Gouvernance (Ch.2
+  §2.3.9). rId111-113, image22-24.
+- updateFields=true déjà actif → Word propose la MAJ à l'ouverture.
+- ÉTAT FINAL : 4 chapitres étoffés, 28 figures réelles (8 Salma + 17 schémas/tables générés +
+  3 slides EAI), 3 tableaux, glossaire 38 termes, conclusion, biblio. Pièges anchors: apostrophe
+  entité vs littérale, parenthèse "Dépassements)", "reconnu".
+- ACTION TAHA : ouvrir dans Word → accepter la MAJ des champs (ou tout sélectionner + F9) →
+  TOC + Liste des figures + Liste des tableaux + numéros se mettent à jour.
